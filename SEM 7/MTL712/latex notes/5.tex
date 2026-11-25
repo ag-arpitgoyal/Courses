@@ -1,0 +1,393 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[
+  left=1.05in,
+  right=1.05in,
+  top=1in,
+  bottom=1in,
+  headheight=14pt
+]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\linespread{1.25}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em plus 0.25em minus 0.1em}
+\setlength{\abovedisplayskip}{1.3em plus 0.3em minus 0.2em}
+\setlength{\belowdisplayskip}{1.3em plus 0.3em minus 0.2em}
+\setlength{\abovedisplayshortskip}{1em plus 0.2em}
+\setlength{\belowdisplayshortskip}{1.1em plus 0.2em}
+\setlength{\jot}{10pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\numberwithin{equation}{section}
+
+\newtheoremstyle{spacedplain}
+  {18pt}{18pt}{\itshape}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spaceddefinition}
+  {18pt}{18pt}{\normalfont}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spacedremark}
+  {18pt}{18pt}{\normalfont}{}{\itshape}{.}{0.5em}{}
+
+\theoremstyle{spacedplain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{spaceddefinition}
+\newtheorem{definition}[theorem]{Definition}
+
+\theoremstyle{spacedremark}
+\newtheorem{remark}[theorem]{Remark}
+
+\setlist[itemize]{leftmargin=*,itemsep=7pt,topsep=8pt,parsep=3pt}
+\setlist[enumerate]{leftmargin=*,itemsep=7pt,topsep=8pt,parsep=3pt}
+
+% Plain black frame, used only for the most important results.
+\newtcolorbox{keybox}{
+  enhanced,
+  colback=white,colframe=black,
+  boxrule=0.6pt,sharp corners,
+  left=10pt,right=10pt,top=4pt,bottom=6pt,
+  before skip=16pt,after skip=16pt
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Lecture 35}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Run-in headings inside proofs and sections, set on their own line.
+\newcommand{\step}[1]{\par\addvspace{0.6em}\noindent\textbf{#1}\par\nobreak}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+\title{\textbf{MTL712: Computational Methods for Differential\\Equations}\\[6pt]
+\large Lecture 35: ADI Methods and Three-Level Schemes}
+\author{\normalsize Typeset lecture notes}
+\date{\normalsize 30 October 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+{\linespread{1.0}\selectfont\setlength{\parskip}{0pt}\tableofcontents}
+
+%=====================================================================
+\section{Alternating Direction Implicit (ADI) Methods}
+%=====================================================================
+
+Consider the two-dimensional heat equation
+\[
+  \pd ut=Lu,
+  \qquad
+  L=D_1^2+D_2^2,
+  \qquad
+  D_1=\pd{}{x_1},\quad D_2=\pd{}{x_2},
+\]
+that is,
+\[
+  \pd ut=\pdd u{x_1}+\pdd u{x_2},
+\]
+with proper initial and boundary conditions.  As in one dimension, the
+exact solution satisfies
+\[
+  u_{l,m}^{n+1}=\exp(kL)\,u_{l,m}^n .
+\]
+
+\subsection{The implicit (Crank--Nicolson type) scheme}
+
+Split the exponential symmetrically about \(t_{n+1/2}\):
+\[
+  \exp\bigl(-\tfrac12kL\bigr)u_{l,m}^{n+1}
+  =\exp\bigl(\tfrac12kL\bigr)u_{l,m}^n,
+\]
+that is,
+\begin{equation}\label{eq:adi1}
+  \exp\bigl(-\tfrac12k(D_1^2+D_2^2)\bigr)u_{l,m}^{n+1}
+  =\exp\bigl(\tfrac12k(D_1^2+D_2^2)\bigr)u_{l,m}^n .
+\end{equation}
+The derivative operators are expanded in central differences:
+\begin{align*}
+  D_1^2&=\frac1{h^2}\Bigl[\delta_{x_1}^2-\frac1{12}\delta_{x_1}^4
+         +\frac1{90}\delta_{x_1}^6-\cdots\Bigr],\\
+  D_2^2&=\frac1{h^2}\Bigl[\delta_{x_2}^2-\frac1{12}\delta_{x_2}^4
+         +\frac1{90}\delta_{x_2}^6-\cdots\Bigr].
+\end{align*}
+Retaining only the second-order central differences, and using
+\(r=k/h^2\), equation \eqref{eq:adi1} becomes
+\[
+  \exp\bigl(-\tfrac12r\delta_{x_1}^2\bigr)
+  \exp\bigl(-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\exp\bigl(\tfrac12r\delta_{x_1}^2\bigr)
+   \exp\bigl(\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n .
+\]
+Keeping the first two terms of each exponential gives the following
+scheme.
+
+\begin{keybox}
+\begin{proposition}\label{prop:adi}
+The two-dimensional analogue of the Crank--Nicolson scheme is
+\begin{equation}\label{eq:adi2}
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)
+   \bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n .
+\end{equation}
+\end{proposition}
+\end{keybox}
+
+Recall that the one-dimensional Crank--Nicolson scheme is
+\[
+  \bigl(1-\tfrac12r\delta_x^2\bigr)U_m^{n+1}
+  =\bigl(1+\tfrac12r\delta_x^2\bigr)U_m^n ;
+\]
+\eqref{eq:adi2} is its analogue in two dimensions.
+
+\subsection{Splitting}
+
+Split \eqref{eq:adi2} into two formulas, each implicit in only one
+direction:
+\begin{equation}\label{eq:split}
+\begin{aligned}
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}
+  &=\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}.
+\end{aligned}
+\end{equation}
+Here \(U^{n+1*}\) is an intermediate value.
+
+Eliminating \(U_{l,m}^{n+1*}\) gives back the combined formula
+\eqref{eq:adi2}, under the assumption that \(\delta_{x_1}^2\) and
+\(\delta_{x_2}^2\) commute.  Indeed, multiplying the second equation of
+\eqref{eq:split} by \(\bigl(1-\tfrac12r\delta_{x_1}^2\bigr)\) and
+using the first,
+\begin{align*}
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)
+    \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}\\
+  &=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)
+    \bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n .
+\end{align*}
+
+\subsection{The Peaceman--Rachford ADI method}
+
+Taking the intermediate value to be the value at the half time level,
+\[
+  U_{l,m}^{n+1*}=U_{l,m}^{n+\frac12},
+\]
+in \eqref{eq:split} gives the Peaceman--Rachford formula.
+
+\begin{keybox}
+\begin{definition}[Peaceman--Rachford ADI method]
+\begin{align*}
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}
+  &=\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}.
+\end{align*}
+\end{definition}
+\end{keybox}
+
+\begin{itemize}
+  \item In the \emph{first step} we advance from \(t_n\) to
+    \(t_{n+1/2}\), using an implicit formula for
+    \(\partial^2u/\partial x_1^2\) and an explicit formula for
+    \(\partial^2u/\partial x_2^2\).
+  \item In the \emph{second step} we advance from \(t_{n+1/2}\) to
+    \(t_{n+1}\), using an explicit difference for
+    \(\partial^2u/\partial x_1^2\) and an implicit difference for
+    \(\partial^2u/\partial x_2^2\).
+\end{itemize}
+
+%=====================================================================
+\section{A Three-Level Scheme}
+%=====================================================================
+
+A three-level scheme involves three time levels, \(t_{n-1}\), \(t_n\)
+and \(t_{n+1}\).  Consider
+\[
+  \pd ut=\pdd ux,
+\]
+with
+\[
+  \text{IC: } u(x,0)=f(x),
+  \qquad
+  \text{BC: } u(0,t)=u(1,t)=0,\quad t>0
+\]
+(or other appropriate initial and boundary conditions).
+
+\step{Difference scheme}
+Use a central difference in time as well as in space:
+\[
+  \frac{U_m^{n+1}-U_m^{n-1}}{2k}
+  =\frac1{h^2}\bigl(U_{m+1}^n-2U_m^n+U_{m-1}^n\bigr).
+\]
+With \(r=k/h^2\) this is
+\[
+  U_m^{n+1}=U_m^{n-1}+2r\bigl(U_{m+1}^n-2U_m^n+U_{m-1}^n\bigr),
+\]
+that is,
+\begin{equation}\label{eq:richardson}
+  U_m^{n+1}=2r\,\delta_x^2U_m^n+U_m^{n-1}.
+\end{equation}
+(This three-level scheme is known as Richardson's scheme.)
+
+\step{Reduction to a two-level system}
+Define \(V_m^n=U_m^{n-1}\).  Then \eqref{eq:richardson} becomes
+\[
+  U_m^{n+1}=2r\,\delta_x^2U_m^n+V_m^n,
+  \qquad
+  V_m^{n+1}=U_m^n .
+\]
+
+\subsection{Stability analysis (von Neumann)}
+
+Write the system in matrix--vector form:
+\[
+  \begin{bmatrix}U\\ V\end{bmatrix}_m^{n+1}
+  =\begin{bmatrix}2r\delta_x^2&1\\ 1&0\end{bmatrix}
+   \begin{bmatrix}U\\ V\end{bmatrix}_m^{n}.
+\]
+With \(W=\begin{bmatrix}U\\ V\end{bmatrix}\) we have
+\[
+  W_m^{n+1}=\begin{bmatrix}2r\delta_x^2&1\\ 1&0\end{bmatrix}W_m^n .
+\]
+Let
+\[
+  W_m^n=W_0^n\,e^{i\beta mh},
+\]
+where \(W_0^n\) is a constant vector; this is a typical Fourier term.
+In components,
+\[
+  U_m^n=U_0^n\,e^{i\beta mh},
+  \qquad
+  V_m^n=V_0^n\,e^{i\beta mh}.
+\]
+Substituting,
+\begin{align*}
+  U_0^{n+1}e^{i\beta mh}
+  &=2r\Bigl[U_0^ne^{i\beta(m+1)h}-2U_0^ne^{i\beta mh}
+    +U_0^ne^{i\beta(m-1)h}\Bigr]+V_0^ne^{i\beta mh},\\
+  V_0^{n+1}e^{i\beta mh}&=U_0^ne^{i\beta mh}.
+\end{align*}
+Since \(e^{i\beta(m+1)h}+e^{i\beta(m-1)h}=2\cos\beta h\,e^{i\beta mh}\),
+\begin{align*}
+  U_0^{n+1}e^{i\beta mh}
+  &=2r\bigl(2\cos\beta h-2\bigr)U_0^ne^{i\beta mh}+V_0^ne^{i\beta mh},\\
+  V_0^{n+1}e^{i\beta mh}&=U_0^ne^{i\beta mh}.
+\end{align*}
+Therefore
+\[
+  W_m^{n+1}=\begin{bmatrix}2r(2\cos\beta h-2)&1\\ 1&0\end{bmatrix}W_m^n,
+\]
+and, using \(2\cos\beta h-2=-4\sin^2\frac{\beta h}2\),
+\[
+  W_m^{n+1}=\underbrace{\begin{bmatrix}-8r\sin^2\frac{\beta h}2&1\\[2pt] 1&0\end{bmatrix}}_{\text{amplification matrix}}W_m^n .
+\]
+
+\begin{definition}[Von Neumann condition for a two-level system]
+The von Neumann necessary condition for stability of a two-level
+system is
+\[
+  \max_{i}|\lambda_i|\le1,
+\]
+where the \(\lambda_i\) are the eigenvalues of the amplification
+matrix.
+\end{definition}
+
+\begin{keybox}
+\begin{theorem}\label{thm:richardson}
+The three-level scheme \eqref{eq:richardson} is unconditionally
+unstable.
+\end{theorem}
+\end{keybox}
+
+\begin{proof}
+Let \(\lambda_i\), \(i=1,2\), be the eigenvalues of the amplification
+matrix.  They satisfy
+\[
+  \lambda_i^2+8r\lambda_i\sin^2\frac{\beta h}2-1=0,
+\]
+so
+\begin{align*}
+  \lambda_{1,2}
+  &=\frac{-8r\sin^2\frac{\beta h}2
+     \pm\bigl(64r^2\sin^4\frac{\beta h}2+4\bigr)^{1/2}}{2}\\
+  &=-4r\sin^2\frac{\beta h}2
+     \pm\Bigl(1+16r^2\sin^4\frac{\beta h}2\Bigr)^{1/2}.
+\end{align*}
+That is,
+\begin{align*}
+  \lambda_1&=-4r\sin^2\frac{\beta h}2
+    +\Bigl(1+16r^2\sin^4\frac{\beta h}2\Bigr)^{1/2},\\
+  \lambda_2&=-4r\sin^2\frac{\beta h}2
+    -\Bigl(1+16r^2\sin^4\frac{\beta h}2\Bigr)^{1/2}.
+\end{align*}
+For every \(r>0\) and every \(\beta\) with
+\(\sin\frac{\beta h}2\ne0\), both terms of \(\lambda_2\) are negative
+and the square root exceeds \(1\), so
+\[
+  |\lambda_2|
+  =4r\sin^2\frac{\beta h}2+\Bigl(1+16r^2\sin^4\frac{\beta h}2\Bigr)^{1/2}
+  >1 .
+\]
+The von Neumann condition is therefore violated by \(\lambda_2\) for
+all values of \(r\), so the method is unconditionally unstable.
+\end{proof}
+
+%=====================================================================
+\section{The Du Fort--Frankel Scheme}
+%=====================================================================
+
+Consider again
+\[
+  \pd ut=\pdd ux
+\]
+with appropriate initial and boundary conditions, and \(r=k/h^2\).
+
+Start from the explicit three-level scheme \eqref{eq:richardson}:
+\[
+  U_m^{n+1}=2r\bigl(U_{m+1}^n+U_{m-1}^n-2U_m^n\bigr)+U_m^{n-1}.
+\]
+Replace \(U_m^n\) by the average of its neighbours in time,
+\[
+  U_m^n\ \longrightarrow\ \frac{U_m^{n+1}+U_m^{n-1}}2 .
+\]
+We get
+\[
+  U_m^{n+1}=2r\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+  -2r\bigl(U_m^{n+1}+U_m^{n-1}\bigr)+U_m^{n-1},
+\]
+so
+\[
+  (1+2r)\,U_m^{n+1}
+  =2r\bigl(U_{m+1}^n+U_{m-1}^n\bigr)+(1-2r)\,U_m^{n-1}.
+\]
+
+\begin{keybox}
+\begin{definition}[Du Fort--Frankel scheme]
+\[
+  U_m^{n+1}
+  =\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+   +\frac{1-2r}{1+2r}\,U_m^{n-1}.
+\]
+This scheme is unconditionally stable.
+\end{definition}
+\end{keybox}
+
+\end{document}

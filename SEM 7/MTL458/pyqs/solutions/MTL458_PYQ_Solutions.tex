@@ -1,0 +1,80 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.3cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{verbatim}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+
+\usetikzlibrary{positioning,arrows.meta}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!50!black,
+  urlcolor=blue!50!black,
+  pdftitle={MTL458 Operating Systems --- PYQ Solutions},
+  pdfauthor={MTL458}
+}
+
+\lstset{
+  basicstyle=\ttfamily\small,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  tabsize=4,
+  keepspaces=true
+}
+
+\setlength{\headheight}{14pt}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{MTL 458 Operating Systems}
+\rhead{PYQ Solutions}
+\cfoot{\thepage}
+
+\title{\textbf{MTL 458: Operating Systems}\\[0.4em]
+\large Previous Year Question Paper Solutions}
+\author{IIT Delhi \and Compiled solutions for all papers in the \texttt{pyqs} folder}
+\date{Papers: 2016--17, 2020--21, 2024--25}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\noindent\textbf{Notes.}
+\begin{itemize}[leftmargin=1.2em]
+  \item Every question from every paper is solved, including optional
+        ``attempt any four'' and ``any two parts'' items.
+  \item Each part restates the question and then gives the solution.
+  \item The 2016 papers are camera scans. A few numerals were checked
+        against the printed page (and, where needed, the standard
+        textbook instance of the same table). In particular, Major
+        2016--17 virtual addresses are \(1052\), \(2221\), \(5499\).
+  \item Minor 2024--25 Q5 is solved with cache \emph{hit} rate \(95\%\)
+        (miss rate then reduced to \(1\%\)).
+\end{itemize}
+
+\newpage
+\input{sol_minor1_2016.tex}
+\newpage
+\input{sol_minor2_2016.tex}
+\newpage
+\input{sol_major_2016.tex}
+\newpage
+\input{sol_minor1_2020.tex}
+\newpage
+\input{sol_major_2020.tex}
+\newpage
+\input{sol_minor1_2024.tex}
+
+\end{document}

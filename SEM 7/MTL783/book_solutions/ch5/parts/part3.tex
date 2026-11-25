@@ -1,0 +1,385 @@
+\newcommand{\ACFG}{A_{\mathrm{CFG}}}
+\newcommand{\ALLCFG}{\mathit{ALL}_{\mathrm{CFG}}}
+\newcommand{\ELBA}{E_{\mathrm{LBA}}}
+
+\begin{question}{Problem 5.25}
+Give an example of an undecidable language $B$, where $B\redm\comp{B}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Exercise~5.7 forbids this for any Turing-recognizable $B$: if $B$ is TR and $B\redm\comp{B}$, then $B$ is decidable. So $B$ must be neither TR nor co-TR. The language $J$ of Problem~5.24 works; flipping the leading bit swaps $J$ with $\comp{J}$.
+
+Let
+\[
+B \;=\; \{\,0x\mid x\in\Atm\,\}\;\cup\;\{\,1y\mid y\in\comp{\Atm}\,\}.
+\]
+(This is the language $J$ of Problem~5.24.) Mapping $x\mapsto 0x$ is a reduction $\Atm\redm B$, so $B$ is undecidable by Corollary~5.23 (Theorem~4.11).
+
+Define a computable $f$ by $f(0x)=1x$, $f(1y)=0y$, and $f(\eps)=0\enc{M_{\mathrm{acc}},\eps}$, where $M_{\mathrm{acc}}$ accepts immediately (so $\enc{M_{\mathrm{acc}},\eps}\in\Atm$). Then
+\begin{itemize}
+\item $0x\in B$ iff $x\in\Atm$ iff $1x\in\comp{B}$;
+\item $1y\in B$ iff $y\in\comp{\Atm}$ iff $0y\in\comp{B}$;
+\item $\eps\notin B$ and $f(\eps)\in B$, so $\eps\in B$ iff $f(\eps)\in\comp{B}$ (both false).
+\end{itemize}
+Hence $w\in B$ iff $f(w)\in\comp{B}$, i.e.\ $B\redm\comp{B}$.
+\end{soln}
+
+\begin{question}{Problem 5.26}
+Define a \emph{two-headed finite automaton} (2DFA) to be a deterministic finite automaton that has two read-only, bidirectional heads that start at the left-hand end of the input tape and can be independently controlled to move in either direction. The tape of a 2DFA is finite and is just large enough to contain the input plus two additional blank tape cells, one on the left-hand end and one on the right-hand end, that serve as delimiters. A 2DFA accepts its input by entering a special accept state. For example, a 2DFA can recognize the language $\{a^nb^nc^n\mid n\ge 0\}$.
+\begin{enumerate}[label=\alph*.]
+\item Let $A_{\mathrm{2DFA}}=\{\enc{M,x}\mid M$ is a 2DFA and $M$ accepts $x\}$.
+Show that $A_{\mathrm{2DFA}}$ is decidable.
+\item Let $E_{\mathrm{2DFA}}=\{\enc{M}\mid M$ is a 2DFA and $L(M)=\emptyset\}$.
+Show that $E_{\mathrm{2DFA}}$ is not decidable.
+\end{enumerate}
+\end{question}
+\begin{soln}
+\textbf{(a) Decidable.}
+\textbf{Idea.} The tape is read-only and finite, so a 2DFA has only finitely many configurations on a given input. Simulate until it accepts, repeats a configuration, or walks off the tape.
+
+A configuration is a triple $(q,i,j)$: state and the two head positions. If $|x|=n$ then each head has $n+2$ possible cells (input plus two delimiters), so there are at most $N=|Q|\,(n+2)^2$ configurations. The following TM $D$ decides $A_{\mathrm{2DFA}}$.
+
+$D=$ ``On input $\enc{M,x}$, where $M$ is a 2DFA with state set $Q$:
+\begin{enumerate}
+\item Simulate $M$ on $x$ for $|Q|\,(|x|+2)^2$ steps, treating a move off either delimiter as a crash.
+\item If $M$ enters its accept state during the simulation, \emph{accept}; otherwise \emph{reject}.''
+\end{enumerate}
+
+If $M$ accepts $x$ it does so before repeating a configuration, hence within $N$ steps. If it has not accepted by then, a configuration has repeated (or a head has left the tape). Because $M$ is deterministic, a repeated configuration means a loop that will never accept. So $D$ always halts and is correct.
+
+\textbf{(b) Undecidable.}
+\textbf{Idea.} The same computation-history reduction as for $\ELBA$ (Theorem~5.10). A 2DFA can check whether its input is an accepting computation history of a given TM, because two independent heads can walk two consecutive configurations in lockstep.
+
+Reduce $\Atm$ to $\comp{E_{\mathrm{2DFA}}}$. On input $\enc{M,w}$ construct a 2DFA $N_{M,w}$ that accepts its input $h$ iff $h=\#C_1\#C_2\#\cdots\#C_\ell\#$ is an accepting computation history of $M$ on $w$:
+\begin{enumerate}
+\item Using one head, check that $C_1$ is the start configuration $q_0w$ and that $C_\ell$ is accepting.
+\item For each $i$, park one head at the start of $C_i$ and the other at the start of $C_{i+1}$, then scan the two configurations in parallel and accept this pair iff $C_i$ yields $C_{i+1}$ according to $\delta_M$. Reposition and repeat.
+\item Accept $h$ iff every pair is valid and the start/accept checks succeed. (A malformed $h$ is rejected.)
+\end{enumerate}
+The construction of $\enc{N_{M,w}}$ from $\enc{M,w}$ is computable. Now $L(N_{M,w})\neq\emptyset$ iff $M$ accepts $w$, so
+\[
+\enc{M,w}\in\Atm \iff \enc{N_{M,w}}\notin E_{\mathrm{2DFA}}.
+\]
+If $E_{\mathrm{2DFA}}$ were decidable then so would $\Atm$, contradicting Theorem~4.11. (Rice's theorem does not apply: a 2DFA is not a TM.)
+\end{soln}
+
+\begin{question}{Problem 5.27}
+A \emph{two-dimensional finite automaton} (2DIM-DFA) is defined as follows. The input is an $m\times n$ rectangle, for any $m,n\ge 2$. The squares along the boundary of the rectangle contain the symbol $\#$ and the internal squares contain symbols over the input alphabet $\Sigma$. The transition function $\delta:Q\times(\Sigma\cup\{\#\})\to Q\times\{\mathrm{L},\mathrm{R},\mathrm{U},\mathrm{D}\}$ indicates the next state and the new head position (Left, Right, Up, Down). The machine accepts when it enters one of the designated accept states. It rejects if it tries to move off the input rectangle or if it never halts. Two such machines are equivalent if they accept the same rectangles. Consider the problem of determining whether two of these machines are equivalent. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+Let
+\[
+\mathit{EQ}_{\mathrm{2DIM\text{-}DFA}}
+=\{\enc{N_1,N_2}\mid N_1,N_2\text{ are 2DIM-DFAs and }L(N_1)=L(N_2)\}.
+\]
+
+\textbf{Idea.} Lay an accepting computation history out as a 2-dimensional rectangle, one configuration per row. A single 2DIM-DFA head can zigzag between adjacent rows to check that each configuration yields the next, so emptiness of that machine is as hard as $\Atm$.
+
+Reduce $\Atm$ to $\comp{\mathit{EQ}_{\mathrm{2DIM\text{-}DFA}}}$. Let $N_\emptyset$ be a fixed 2DIM-DFA that immediately tries to move off the rectangle, so $L(N_\emptyset)=\emptyset$. On input $\enc{M,w}$ construct a 2DIM-DFA $N_{M,w}$ which, on an $m\times n$ rectangle $R$, accepts iff the interior of $R$ is an accepting computation history of $M$ on $w$: row~1 is the start configuration $q_0w$ (padded by blanks), the last interior row is accepting, and each interior row yields the next according to $\delta_M$.
+
+To check that row $i$ yields row $i+1$, $N_{M,w}$ zigzags: at each column it reads a 3-cell window in row $i$ (remembered in the finite state), steps Down, and verifies the corresponding cell of row $i+1$. The $\#$ boundary detects the ends of a row, so no column-counter is needed. Malformed rectangles, including those on which the head would leave the grid, are rejected. Looping is rejecting by definition.
+
+The map $\enc{M,w}\mapsto\enc{N_{M,w},N_\emptyset}$ is computable, and
+\[
+\enc{M,w}\in\Atm \iff L(N_{M,w})\neq\emptyset \iff \enc{N_{M,w},N_\emptyset}\notin\mathit{EQ}_{\mathrm{2DIM\text{-}DFA}}.
+\]
+Thus $\mathit{EQ}_{\mathrm{2DIM\text{-}DFA}}$ is undecidable by Corollary~5.23.
+\end{soln}
+
+\begin{question}{Problem 5.28 $\bigstar$}
+\emph{Rice's theorem.} Let $P$ be any nontrivial property of the language of a Turing machine. Prove that the problem of determining whether a given Turing machine's language has property $P$ is undecidable.
+
+In more formal terms, let $P$ be a language consisting of Turing machine descriptions where $P$ fulfills two conditions. First, $P$ is nontrivial---it contains some, but not all, TM descriptions. Second, $P$ is a property of the TM's language---whenever $L(M_1)=L(M_2)$, we have $\enc{M_1}\in P$ iff $\enc{M_2}\in P$. Here, $M_1$ and $M_2$ are any TMs. Prove that $P$ is an undecidable language.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $P$ can distinguish the empty language from at least one nonempty RE language. Wrap $M$ on $w$ around a machine for that language so that the result recognizes it iff $M$ accepts $w$.
+
+Assume for a contradiction that $P$ is decidable and let $R_P$ be a TM that decides $P$. Let $T_\emptyset$ be a TM that always rejects, so $L(T_\emptyset)=\emptyset$. Without loss of generality $\enc{T_\emptyset}\notin P$: if $\enc{T_\emptyset}\in P$, run the same argument on $\comp{P}$ (which is still a nontrivial language property, and is decidable iff $P$ is). Because $P$ is nontrivial there is a TM $T$ with $\enc{T}\in P$. Design $S$ to decide $\Atm$ using $R_P$'s ability to distinguish $T_\emptyset$ from $T$.
+
+$S=$ ``On input $\enc{M,w}$:
+\begin{enumerate}
+\item Use $M$ and $w$ to construct the following TM $M_w$.
+$M_w=$ ``On input $x$:
+\begin{enumerate}
+\item Simulate $M$ on $w$. If it halts and rejects, \emph{reject}. If it accepts, proceed to stage~2.
+\item Simulate $T$ on $x$. If it accepts, \emph{accept}.''
+\end{enumerate}
+\item Run $R_P$ on $\enc{M_w}$. If YES, \emph{accept}; if NO, \emph{reject}.''
+\end{enumerate}
+
+The map $\enc{M,w}\mapsto\enc{M_w}$ is computable. If $M$ accepts $w$, then $M_w$ simulates $T$ on every $x$, so $L(M_w)=L(T)$. If $M$ rejects or loops on $w$, then $M_w$ never reaches stage~2, so $L(M_w)=\emptyset=L(T_\emptyset)$. Because $P$ is a property of the language,
+\[
+\enc{M_w}\in P \iff L(M_w)=L(T) \iff M\text{ accepts }w.
+\]
+Thus $S$ decides $\Atm$, contradicting Theorem~4.11. Therefore $P$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.29}
+Show that both conditions in Problem~5.28 are necessary for proving that $P$ is undecidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Drop nontriviality and $P$ is empty or is ``all TM encodings'', both decidable. Drop ``property of the language'' and $P$ may inspect the description (number of states, etc.), which is decidable.
+
+\textbf{Nontriviality is necessary.} If $P$ contains no TM descriptions then $P=\emptyset$, which is decidable. If $P$ contains every TM description then $P$ is the language of syntactically valid encodings $\enc{M}$, which a TM decides by parsing the input as a 7-tuple and checking that $\delta$ is a function on the stated $Q$ and $\Gamma$. In either case $P$ is decidable.
+
+\textbf{``Property of the language'' is necessary.} Let
+\[
+P=\{\enc{M}\mid M\text{ is a TM with an even number of states}\}.
+\]
+$P$ is nontrivial (there are TMs with $1$ state and TMs with $2$ states) and decidable (read $|Q|$ off $\enc{M}$). It is not a property of the language: adding an unreachable dummy state preserves $L(M)$ but changes membership in $P$.
+
+(Other decidable non-language properties work equally well, e.g.\ ``$q_{\mathrm{accept}}$ occurs in some transition''.)
+\end{soln}
+
+\begin{question}{Problem 5.30}
+Use Rice's theorem, which appears in Problem~5.28, to prove the undecidability of each of the following languages.
+\begin{enumerate}[label=\alph*.]
+\item $\mathit{INFINITE}_{\mathrm{TM}}=\{\enc{M}\mid M$ is a TM and $L(M)$ is an infinite language$\}$.
+\item $\{\enc{M}\mid M$ is a TM and $1011\in L(M)\}$.
+\item $\mathit{ALL}_{\mathrm{TM}}=\{\enc{M}\mid M$ is a TM and $L(M)=\Sigma^*\}$.
+\end{enumerate}
+\end{question}
+\begin{soln}
+In each case $P$ is a language of TM descriptions, so it is enough to check the two hypotheses of Problem~5.28.
+
+\textbf{(a)} $\mathit{INFINITE}_{\mathrm{TM}}$ is a language of TM descriptions. It is nontrivial because some TMs have infinite languages (e.g.\ a TM that accepts every input) and others do not (e.g.\ a TM that rejects every input). It depends only on the language: if $L(M_1)=L(M_2)$ then either both descriptions lie in $\mathit{INFINITE}_{\mathrm{TM}}$ or neither does. Rice's theorem therefore implies that $\mathit{INFINITE}_{\mathrm{TM}}$ is undecidable.
+
+\textbf{(b)} Let $P=\{\enc{M}\mid 1011\in L(M)\}$. Some TMs accept $1011$ and some do not, so $P$ is nontrivial. If $L(M_1)=L(M_2)$ then $1011\in L(M_1)$ iff $1011\in L(M_2)$, so $P$ is a property of the language. Rice's theorem implies that $P$ is undecidable.
+
+\textbf{(c)} $\mathit{ALL}_{\mathrm{TM}}$ is nontrivial because some TMs recognize $\Sigma^*$ and others do not. If $L(M_1)=L(M_2)$ then $L(M_1)=\Sigma^*$ iff $L(M_2)=\Sigma^*$, so it is a property of the language. Rice's theorem implies that $\mathit{ALL}_{\mathrm{TM}}$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.31}
+Let
+\[
+f(x)=\begin{cases}
+3x+1 & \text{for odd }x,\\
+x/2 & \text{for even }x,
+\end{cases}
+\]
+for any natural number $x$. If you start with an integer $x$ and iterate $f$, you obtain a sequence $x,f(x),f(f(x)),\ldots$\,. Stop if you ever hit $1$. For example, if $x=17$, you get the sequence $17,52,26,13,40,20,10,5,16,8,4,2,1$. Extensive computer tests have shown that every starting point between $1$ and a large positive integer gives a sequence that ends in $1$. But the question of whether all positive starting points end up at $1$ is unsolved; it is called the $3x+1$ problem.
+
+Suppose that $\Atm$ were decidable by a TM $H$. Use $H$ to describe a TM that is guaranteed to state the answer to the $3x+1$ problem.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $H$ decides, for each start value $i$, whether the $3x+1$ iteration from $i$ ever hits $1$. Build a second machine $C$ that uses $H$ to search for a counterexample, then ask $H$ whether $C$ itself accepts. That single yes/no is the answer to the $3x+1$ problem.
+
+For each $i\ge 1$ let $F_i$ be the TM
+$F_i=$ ``On any input:
+\begin{enumerate}
+\item Set $n\leftarrow i$.
+\item While $n\neq 1$, replace $n$ by $f(n)$.
+\item \emph{Accept}.''
+\end{enumerate}
+Then $F_i$ accepts (in fact, on every input) iff the sequence from $i$ hits $1$; otherwise it loops. Using $H$, define
+$C=$ ``On any input:
+\begin{enumerate}
+\item For $i=1,2,3,\ldots$:
+\item Run $H$ on $\enc{F_i,\eps}$.
+\item If $H$ rejects, \emph{accept}.''
+\end{enumerate}
+So $C$ accepts iff it finds an $i$ whose sequence never hits $1$. If every $i$ hits $1$, then $H$ always accepts in stage~2 and $C$ loops.
+
+The answering machine is
+$A=$ ``On any input:
+\begin{enumerate}
+\item Construct $C$ as above ($H$ is a fixed TM, so this is computable).
+\item Run $H$ on $\enc{C,\eps}$.
+\item If $H$ accepts, output \emph{NO}: some positive integer never reaches $1$.
+\item If $H$ rejects, output \emph{YES}: every positive integer reaches $1$.''
+\end{enumerate}
+$A$ always halts, because $H$ is a decider. $H$ accepts $\enc{C,\eps}$ iff $C$ accepts iff a counterexample exists, so the printed answer is correct.
+\end{soln}
+
+\begin{question}{Problem 5.32}
+Prove that the following two languages are undecidable.
+\begin{enumerate}[label=\alph*.]
+\item $\mathit{OVERLAP}_{\mathrm{CFG}}=\{\enc{G,H}\mid G$ and $H$ are CFGs where $L(G)\cap L(H)\neq\emptyset\}$.
+(Hint: Adapt the hint in Problem~5.21.)
+\item $\mathit{PREFIX\text{-}FREE}_{\mathrm{CFG}}=\{\enc{G}\mid G$ is a CFG where $L(G)$ is prefix-free$\}$.
+\end{enumerate}
+\end{question}
+\begin{soln}
+A language is \emph{prefix-free} if no member is a proper prefix of another member.
+
+\textbf{(a)}
+\textbf{Idea.} From a PCP instance build the two one-sided grammars of Problem~5.21. They share a string iff the tops and bottoms match under the same index sequence.
+
+Let
+\[
+P=\left\{\begin{bmatrix}t_1\\ b_1\end{bmatrix},\ldots,
+\begin{bmatrix}t_k\\ b_k\end{bmatrix}\right\}
+\]
+be a PCP instance (Theorem~5.15). Let $\mathrm{a}_1,\ldots,\mathrm{a}_k$ be fresh terminals and define CFGs $G_T$ and $G_B$ with start variables $T$ and $B$ and the $T$- and $B$-rules of Problem~5.21. Then
+\begin{align*}
+L(G_T)&=\{t_{i_1}\cdots t_{i_m}\,\mathrm{a}_{i_m}\cdots\mathrm{a}_{i_1}\mid m\ge 1\},\\
+L(G_B)&=\{b_{i_1}\cdots b_{i_m}\,\mathrm{a}_{i_m}\cdots\mathrm{a}_{i_1}\mid m\ge 1\}.
+\end{align*}
+A common string must use the same index sequence on both sides (the trailing $\mathrm{a}_{i_j}$ uniquely recover it), hence
+\[
+t_{i_1}\cdots t_{i_m}\,\mathrm{a}_{i_m}\cdots\mathrm{a}_{i_1}
+\;=\;
+b_{i_1}\cdots b_{i_m}\,\mathrm{a}_{i_m}\cdots\mathrm{a}_{i_1},
+\]
+which is a match of $P$. Conversely every match produces such a string. So
+\[
+\enc{P}\in\mathit{PCP} \iff \enc{G_T,G_B}\in\mathit{OVERLAP}_{\mathrm{CFG}}.
+\]
+The map is computable, so $\mathit{OVERLAP}_{\mathrm{CFG}}$ is undecidable by Corollary~5.23.
+
+\textbf{(b)}
+\textbf{Idea.} Tag the two sides of the same grammars with different numbers of a fresh endmarker $\#$. Then $w\#$ is a proper prefix of $w\#\#$ exactly when the two sides share $w$.
+
+Let $\#$ be a new terminal. From $P$ as in~(a), form $G$ with start $S$ and rules
+\[
+S\to T\#\mid B\#\#
+\]
+together with the $T$- and $B$-rules of Problem~5.21. The map $P\mapsto G$ is computable. We claim $L(G)$ is prefix-free iff $P$ has no match.
+
+If $P$ has a match giving a string $w\in L(G_T)\cap L(G_B)$, then $w\#,w\#\#\in L(G)$ and $w\#$ is a proper prefix of $w\#\#$, so $L(G)$ is not prefix-free.
+
+If $P$ has no match then $L(G_T)\cap L(G_B)=\emptyset$, and $L(G)=L(G_T)\#\cup L(G_B)\#\#$. Suppose $x$ is a proper prefix of $y$, both in $L(G)$. Strings of $L(G_T)$ and $L(G_B)$ contain no $\#$, so the first $\#$ of $x$ and of $y$ is at the same place: $x=u\#\cdots$ and $y=u\#\cdots$ with the same $u$. If both came from the same side, then $x=y$. So one is $u\#$ and the other $u\#\#$, which needs $u\in L(G_T)\cap L(G_B)=\emptyset$, impossible. Thus $L(G)$ is prefix-free. Therefore
+\[
+\enc{P}\in\mathit{PCP} \iff \enc{G}\notin\mathit{PREFIX\text{-}FREE}_{\mathrm{CFG}},
+\]
+and $\mathit{PREFIX\text{-}FREE}_{\mathrm{CFG}}$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.33}
+Consider the problem of determining whether a PDA accepts some string of the form $\{ww\mid w\in\{0,1\}^*\}$. Use the computation history method to show that this problem is undecidable.
+\end{question}
+\begin{soln}
+Let
+\[
+\mathit{WW}_{\mathrm{PDA}}=\{\enc{P}\mid P\text{ is a PDA and }L(P)\cap\{ww\mid w\in\{0,1\}^*\}\neq\emptyset\}.
+\]
+\textbf{Binary encoding.} Encode every state/tape symbol of $M$ and the separator $\#$ as a block $0x$ with $x\in\{0,1\}^k$ (distinct $x$'s), and encode the marker $\$$ as the block $1^{k+1}$. Every non-$\$$ block starts with $0$, so outside the $\$$ blocks there is \emph{no run of more than $k$ ones}. This makes the $\$$'s easy to locate in a bit string.
+
+\textbf{Idea.} A PDA cannot check every consecutive pair of configurations in one pass (that is why $\ALLCFG$ uses the complement, Theorem~5.13). Give it \emph{two} copies of a history: the first copy checks the odd-to-even steps, the second copy the even-to-odd steps. The only strings of the form $zz$ it accepts are $hh$ for a genuine accepting history $h$.
+
+On input $\enc{M,w}$ construct a PDA $P_{M,w}$ as follows. Write histories in the zigzag form of Theorem~5.13,
+\[
+h \;=\; \$\,\#C_1\#C_2^R\#C_3\#C_4^R\#\cdots\#C_\ell^{(R)}\,\$\,,
+\]
+with no $\$$ inside any $C_i$. The PDA accepts inputs of the form $\$\,\alpha\,\$\$\,\beta\,\$$ on which:
+\begin{enumerate}
+\item $\alpha$ starts with the start configuration of $M$ on $w$, and every odd-indexed configuration yields the next (push $C_{2i-1}$, pop against $C_{2i}^R$);
+\item $\beta$ has the same zigzag shape, every even-indexed configuration yields the next, and the last configuration is accepting. (On an even-to-odd pair the tape shows $C_{2i}^R\#C_{2i+1}$; pushing the reversed block and matching the next unreversed block still compares corresponding cells, so the local-window yield check goes through.)
+\end{enumerate}
+Nondeterminism switches at the unique $\$\$$ boundary. The construction is computable.
+
+\textbf{Correctness.} Suppose $M$ accepts $w$, with zigzag accepting history $h=\$\alpha\$$. Then $hh=\$\alpha\$\$\alpha\$$, both parity-checks succeed, and $P_{M,w}$ accepts the string $hh$ of the form $zz$.
+
+Conversely, suppose $P_{M,w}$ accepts some $zz=X\,Y$ with $X=\$\alpha\$$ and $Y=\$\beta\$$. We show $X=Y=z$. The maximal runs of $\ge k+1$ ones in $zz$ are exactly three: one at the start, one containing the middle $\$\$$, which ends at position $|X|+k$ (the next bit begins the $\#$ block of $\beta$, a $0$), and one at the end. Since $z$ begins with $1^{k+1}0$ (a $\$$ then a $\#$ block), the second copy of $z$ makes positions $|z|,\dots,|z|+k$ ones and position $|z|+k+1$ a zero. That run is not the first or last one, so it is the middle run, which therefore ends at $|z|+k$. Hence $|X|+k=|z|+k$, i.e.\ $|X|=|z|$, so $X=z=Y$ and $\alpha=\beta$. That common sequence therefore passed \emph{both} the odd-to-even and the even-to-odd checks, started with $q_0w$, and ended accepting: it is an accepting computation history of $M$ on $w$.
+
+Thus $\enc{M,w}\in\Atm$ iff $\enc{P_{M,w}}\in\mathit{WW}_{\mathrm{PDA}}$, so $\mathit{WW}_{\mathrm{PDA}}$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.34}
+Let $X=\{\enc{M,w}\mid M$ is a single-tape TM that never modifies the portion of the tape that contains the input $w\}$. Is $X$ decidable? Prove your answer.
+\end{question}
+\begin{soln}
+$X$ is undecidable.
+
+\textbf{Idea.} Rice's theorem does \emph{not} apply: ``never overwrites the input cells on this particular run'' is a property of a machine-plus-input, not of $L(M)$. Reduce $\Atm$ to $\comp{X}$ by simulating $M$ on $w$ in a work area to the \emph{right} of the input and overwriting the input only if that simulation accepts.
+
+$F=$ ``On input $\enc{M,w}$:
+\begin{enumerate}
+\item Construct the following TM $M'$.
+$M'=$ ``On input $x$:
+\begin{enumerate}
+\item Scan to the first blank without writing (so the cells holding $x$ are untouched). Write a marker $\$$ there, then write $w$ to its right.
+\item Simulate $M$ on that copy of $w$, treating $\$$ as a left wall (a left move off $\$$ is ignored, as in Theorem~5.15).
+\item If the simulation accepts, return to the leftmost cell of $x$ and overwrite it with a symbol other than the one written there. If the simulation rejects, \emph{reject} without returning.''
+\end{enumerate}
+\item Output $\enc{M',0}$.''
+\end{enumerate}
+(The dummy input $0$ guarantees a nonempty input region to overwrite. $w$ is hardcoded in $M'$, so $M'$ ignores the contents of $x$ except possibly in stage~3.)
+
+If $M$ accepts $w$, then on input $0$ the machine $M'$ executes stage~3 and modifies the input cell, so $\enc{M',0}\notin X$. If $M$ rejects or loops on $w$, then $M'$ never returns from the work area and never writes on the cell holding $0$, so $\enc{M',0}\in X$. Hence
+\[
+\enc{M,w}\in\Atm \iff \enc{M',0}\notin X.
+\]
+$F$ is computable, so $X$ is undecidable by Corollary~5.23.
+
+(The same reduction shows that even the special case ``does $M$ ever overwrite its input on input $0$?'' is undecidable. A naive simulator that watches the first $|w|$ cells may loop: $M$ can write unboundedly to the right of $w$ without ever touching $w$, so $X$ is not decidable by dovetailing or by a configuration count.)
+\end{soln}
+
+\begin{question}{Problem 5.35}
+Say that a variable $A$ in CFG $G$ is \emph{necessary} if it appears in every derivation of some string $w\in G$. Let
+$\mathit{NECESSARY}_{\mathrm{CFG}}=\{\enc{G,A}\mid A$ is a necessary variable in $G\}$.
+\begin{enumerate}[label=\alph*.]
+\item Show that $\mathit{NECESSARY}_{\mathrm{CFG}}$ is Turing-recognizable.
+\item Show that $\mathit{NECESSARY}_{\mathrm{CFG}}$ is undecidable.
+\end{enumerate}
+\end{question}
+\begin{soln}
+Write $L(G)$ for the language of $G$. Let $G_{-A}$ be $G$ with the variable $A$ and every rule that mentions $A$ deleted. Then $L(G_{-A})$ is the set of strings in $L(G)$ that have \emph{some} derivation avoiding $A$, so $A$ is necessary iff $L(G)\setminus L(G_{-A})\neq\emptyset$.
+
+\textbf{(a) Turing-recognizable.}
+\textbf{Idea.} $A_{\mathrm{CFG}}$ is decidable (Theorem~4.7), so we can search for a string in $L(G)$ but not in $L(G_{-A})$.
+
+$R=$ ``On input $\enc{G,A}$:
+\begin{enumerate}
+\item Form $G_{-A}$.
+\item For each $x\in\Sigma^*$ in lexicographic order:
+\item If $\enc{G,x}\in\ACFG$ and $\enc{G_{-A},x}\notin\ACFG$, \emph{accept}.''
+\end{enumerate}
+If $A$ is necessary, some $x$ is found and $R$ accepts. If not, $L(G)=L(G_{-A})$ and $R$ loops. (Do not enumerate derivations of a fixed $x$: a CFG may have infinitely many derivations of one string.)
+
+\textbf{(b) Undecidable.}
+\textbf{Idea.} Reduce from $\ALLCFG$ (Theorem~5.13). Add a fresh variable that by itself generates $\Sigma^*$; it is necessary iff the original grammar missed something.
+
+On input $\enc{G}$, with start variable $S$ and terminals $\Sigma$, form $G'$ by adding a fresh variable $X$ and the rules
+\[
+S\to X,\qquad X\to\sigma X\ \ (\sigma\in\Sigma),\qquad X\to\eps.
+\]
+Then $L(G')=\Sigma^*$ always, and the map $\enc{G}\mapsto\enc{G',X}$ is computable.
+
+If $L(G)=\Sigma^*$, every string already has a derivation in $G$ that never uses $X$, so $X$ is not necessary in $G'$. If $L(G)\neq\Sigma^*$, some $w\notin L(G)$ still belongs to $L(G')$ via $X$, and every derivation of that $w$ in $G'$ uses $X$, so $X$ is necessary. Therefore
+\[
+\enc{G}\in\ALLCFG \iff \enc{G',X}\notin\mathit{NECESSARY}_{\mathrm{CFG}},
+\]
+and $\mathit{NECESSARY}_{\mathrm{CFG}}$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.36 $\bigstar$}
+Say that a CFG is \emph{minimal} if none of its rules can be removed without changing the language generated. Let $\mathit{MIN}_{\mathrm{CFG}}=\{\enc{G}\mid G$ is a minimal CFG$\}$.
+\begin{enumerate}[label=\alph*.]
+\item Show that $\mathit{MIN}_{\mathrm{CFG}}$ is T-recognizable.
+\item Show that $\mathit{MIN}_{\mathrm{CFG}}$ is undecidable.
+\end{enumerate}
+\end{question}
+\begin{soln}
+\textbf{(a) Turing-recognizable.}
+\textbf{Idea.} $G$ is minimal iff every rule $r$ has a witness string in $L(G)\setminus L(G-r)$. Search for a full set of witnesses using $A_{\mathrm{CFG}}$.
+
+$R=$ ``On input $\enc{G}$:
+\begin{enumerate}
+\item If $G$ has no rules, \emph{accept} (vacuously minimal).
+\item For each rule $r$ of $G$, enumerate $x\in\Sigma^*$ until $A_{\mathrm{CFG}}$ reports $x\in L(G)$ and $x\notin L(G-r)$.
+\item If every rule has been given a witness, \emph{accept}.''
+\end{enumerate}
+Stage~2 halts for a given $r$ iff $r$ is irredundant. So $R$ accepts iff every rule is irredundant iff $G$ is minimal, and loops otherwise.
+
+\textbf{(b) Undecidable.}
+\textbf{Idea.} A decider for minimality decides $\ALLCFG$ (Theorem~5.13), in the same ``use the supposed decider as a subroutine'' style as Theorems~5.1--5.4. Minimality supplies, for each rule, a short witness; covering $\Sigma^*$ then reduces to finitely many $A_{\mathrm{CFG}}$ tests and finitely many minimality tests of ``tail'' gadgets.
+
+Assume $R$ decides $\mathit{MIN}_{\mathrm{CFG}}$. The following $S$ decides $\ALLCFG$. On input $\enc{G}$ with terminals $\Sigma$:
+\begin{enumerate}
+\item For every subgrammar $G'$ obtained by deleting some subset of the rules of $G$ (finitely many), run $R$ on $\enc{G'}$.
+\item For each $G'$ that $R$ accepts, test whether $L(G')=\Sigma^*$ by the procedure below. If any such $G'$ generates $\Sigma^*$, then so does $G$: \emph{accept}. If none do, \emph{reject}.
+\end{enumerate}
+
+\emph{Testing $L(G')=\Sigma^*$ when $G'$ is known to be minimal.}
+\begin{enumerate}
+\item For each rule $r$ of $G'$, find a witness $w_r\in L(G')\setminus L(G'-r)$ by enumerating strings and calling $A_{\mathrm{CFG}}$ (Theorem~4.7). The search halts because $G'$ is minimal.
+\item Let $p$ exceed $|w_r|$ for every $r$. Using $A_{\mathrm{CFG}}$, check that every string of length $<p$ is in $L(G')$. If some short string is missing, $L(G')\neq\Sigma^*$.
+\item For every $v\in\Sigma^p$, test $v\Sigma^*\subseteq L(G')$ as follows. Add a fresh start variable $S_0$, a fresh variable $T$, and the rules $S_0\to S\mid vT$, $T\to T\sigma$ for each $\sigma\in\Sigma$, and $T\to\eps$ ($S$ is the old start variable). A fresh start is essential: if we added $S\to vT$ directly and $S$ occurred on a right-hand side, extra strings outside $v\Sigma^*$ would appear. Now the new language is $L(G')\cup L'$ with $L'\subseteq v\Sigma^*$. Every original rule remains necessary in any such extension, because its witness is shorter than $|v|$, and $S_0\to S$ is necessary because $\eps\in L(G')$ (checked in stage~2) while $\eps\notin v\Sigma^*$. Hence:
+\begin{itemize}
+\item if $v\Sigma^*\subseteq L(G')$, every added $T$-rule is redundant, so $R$ \emph{rejects} every grammar consisting of $G'$ plus a nonempty subset of the $T$-rules;
+\item if $v\Sigma^*\not\subseteq L(G')$, choose a smallest $\Sigma'\subseteq\Sigma$ with $v\Sigma'^*\not\subseteq L(G')$ and keep the rules $S_0\to vT$, $T\to\eps$ and $T\to T\sigma$ for $\sigma\in\Sigma'$. Each kept rule is necessary: without $S_0\to vT$ or $T\to\eps$ the missing strings disappear, and without $T\to T\sigma$ the added part shrinks to $v(\Sigma'\setminus\{\sigma\})^*\subseteq L(G')$ by the choice of $\Sigma'$. So this extension is minimal and $R$ \emph{accepts} it.
+\end{itemize}
+Thus $v\Sigma^*\subseteq L(G')$ iff $R$ rejects every $T$-extension. There are finitely many $v$ of length $p$ and finitely many subsets of $T$-rules.
+\end{enumerate}
+Then $L(G')=\Sigma^*$ iff stages~2--3 all succeed. Therefore $S$ decides $\ALLCFG$, which is impossible. Hence $\mathit{MIN}_{\mathrm{CFG}}$ is undecidable.
+\end{soln}

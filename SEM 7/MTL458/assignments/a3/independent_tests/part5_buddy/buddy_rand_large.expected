@@ -1,0 +1,340 @@
+op 200 live 9 nulls 77 hash 366c5894e316e70d
+op 400 live 7 nulls 143 hash 7c93cbafbd05e8c9
+op 600 live 4 nulls 220 hash 697932cf6be1566b
+op 800 live 4 nulls 284 hash f49104c25e4d74d5
+op 1000 live 7 nulls 345 hash 8c986cbad88422ba
+op 1200 live 4 nulls 418 hash 14556cadf0a0d2f2
+op 1400 live 11 nulls 483 hash 8e6271f0a53766c1
+op 1600 live 3 nulls 555 hash 11a46d484172abed
+op 1800 live 7 nulls 619 hash 750e90390df5683f
+op 2000 live 6 nulls 676 hash 73d829cf562a7180
+op 2200 live 6 nulls 750 hash 0d782627e7225983
+op 2400 live 4 nulls 818 hash 82fc964e0a5b477c
+op 2600 live 6 nulls 890 hash 2647f3027caf1e07
+op 2800 live 4 nulls 966 hash a022345c9911b24a
+op 3000 live 5 nulls 1027 hash a7d739fa06f5ed1c
+op 3200 live 4 nulls 1092 hash a35a147dfe86797d
+op 3400 live 2 nulls 1156 hash c2527ed48105370c
+op 3600 live 5 nulls 1225 hash ef326077a31afb13
+op 3800 live 3 nulls 1301 hash 54ca15d55e1589ac
+op 4000 live 8 nulls 1366 hash f7051104acf584e6
+buddy 1048576
+  0 A 262144 135581
+  262144 A 262144 214386
+  524288 A 131072 89704
+  655360 F 2048
+  657408 A 512 438
+  657920 F 512
+  658432 F 1024
+  659456 A 4096 2260
+  663552 A 4096 2178
+  667648 F 4096
+  671744 F 16384
+  688128 F 32768
+  720896 F 65536
+  786432 A 131072 91435
+  917504 A 131072 127069
+op 4200 live 6 nulls 1442 hash 2e10aa92d8c11141
+op 4400 live 3 nulls 1527 hash 867d1901b221d757
+op 4600 live 5 nulls 1589 hash a8d7fd03f9b74abb
+op 4800 live 6 nulls 1656 hash 23a8cdcc9a4058aa
+op 5000 live 4 nulls 1734 hash 0b12a408820df98e
+op 5200 live 5 nulls 1787 hash 9617026d2070375e
+op 5400 live 5 nulls 1867 hash 3b2567ccdcb3db0a
+op 5600 live 5 nulls 1945 hash f2f65f78f2198e3d
+op 5800 live 2 nulls 2002 hash 460aa25ac4b64a8f
+op 6000 live 8 nulls 2058 hash 74a076bb6ed161fc
+op 6200 live 6 nulls 2124 hash 01cc1835822446c8
+op 6400 live 6 nulls 2198 hash 5972b3dca0e03ed3
+op 6600 live 6 nulls 2264 hash d590c8d236b0c39e
+op 6800 live 5 nulls 2337 hash 25024305e9fe7369
+op 7000 live 7 nulls 2403 hash a20ef4e2fe1dec2b
+op 7200 live 5 nulls 2491 hash c3094d0a1e20b530
+op 7400 live 5 nulls 2567 hash d2d91f22f581c77c
+op 7600 live 3 nulls 2649 hash bcf571ca75418a5a
+op 7800 live 7 nulls 2705 hash 1ccfec8ecf52ba10
+op 8000 live 4 nulls 2774 hash b8a744093a1bc834
+buddy 1048576
+  0 A 524288 404006
+  524288 A 4096 2895
+  528384 A 4096 2442
+  532480 A 4096 3657
+  536576 F 4096
+  540672 F 16384
+  557056 F 32768
+  589824 F 65536
+  655360 F 131072
+  786432 F 262144
+op 8200 live 5 nulls 2827 hash 9af10c525ad414f8
+op 8400 live 3 nulls 2905 hash a74c6ec433a5cf40
+op 8600 live 6 nulls 2960 hash 7f12a346be847704
+op 8800 live 4 nulls 3030 hash fa7bb62b2634acca
+op 9000 live 6 nulls 3098 hash 535f164778753c8d
+op 9200 live 4 nulls 3176 hash 3478a32f3ba1002b
+op 9400 live 6 nulls 3232 hash 33f8a4d942bfb0ea
+op 9600 live 3 nulls 3287 hash 195a229a92b623fb
+op 9800 live 6 nulls 3344 hash 330d7ac505070c5a
+op 10000 live 6 nulls 3398 hash 64e4b78dd1a35531
+op 10200 live 5 nulls 3465 hash 0f90cebc5ed77c83
+op 10400 live 4 nulls 3550 hash 3e285378533cf342
+op 10600 live 6 nulls 3626 hash 62972d210c89f94f
+op 10800 live 3 nulls 3703 hash af95124d8415eb91
+op 11000 live 5 nulls 3759 hash 4260a2af149a79fa
+op 11200 live 8 nulls 3828 hash f03067dc36bb058f
+op 11400 live 8 nulls 3896 hash 6a6b3ff75d5c1617
+op 11600 live 3 nulls 3977 hash 123884764e505e1c
+op 11800 live 7 nulls 4059 hash 095bae74e3373edf
+op 12000 live 5 nulls 4123 hash 44fbe585e2aa968a
+buddy 1048576
+  0 F 8192
+  8192 A 4096 2584
+  12288 A 1024 623
+  13312 F 1024
+  14336 F 2048
+  16384 F 16384
+  32768 F 32768
+  65536 F 65536
+  131072 A 131072 70019
+  262144 A 262144 196049
+  524288 A 524288 518778
+op 12200 live 4 nulls 4210 hash 3048f1c6f09a978c
+op 12400 live 3 nulls 4283 hash 89cb522e841f370f
+op 12600 live 7 nulls 4351 hash a450950846136c09
+op 12800 live 6 nulls 4426 hash 99704b0542a0be43
+op 13000 live 2 nulls 4494 hash 2a3486ed8b3b8f11
+op 13200 live 5 nulls 4551 hash f278feecfd60f3d0
+op 13400 live 6 nulls 4622 hash 270851d49948910f
+op 13600 live 7 nulls 4685 hash 7efa8655b471260c
+op 13800 live 3 nulls 4765 hash 02e3210c092c4fba
+op 14000 live 8 nulls 4828 hash c741e36059d1c06b
+op 14200 live 6 nulls 4876 hash 3a1e566f98429ca8
+op 14400 live 7 nulls 4953 hash 09f13bf8c8aabb30
+op 14600 live 4 nulls 5014 hash 2f717a03915d0384
+op 14800 live 5 nulls 5095 hash 51e3be13ade9fe0c
+op 15000 live 8 nulls 5158 hash 4c51f1738e74d67e
+op 15200 live 6 nulls 5222 hash cb3ec522329ef1a3
+op 15400 live 4 nulls 5286 hash 8e6e590b058d04bc
+op 15600 live 6 nulls 5354 hash d40004e60e008d87
+op 15800 live 6 nulls 5426 hash 1e6dd48bd9d3b1a7
+op 16000 live 3 nulls 5509 hash 5188fb9657ed583a
+buddy 1048576
+  0 F 262144
+  262144 A 262144 152242
+  524288 A 131072 109057
+  655360 A 4096 2631
+  659456 F 4096
+  663552 F 8192
+  671744 F 16384
+  688128 F 32768
+  720896 F 65536
+  786432 F 262144
+op 16200 live 3 nulls 5573 hash 460440c33bfaa34a
+op 16400 live 5 nulls 5633 hash cf43fc292a1a9917
+op 16600 live 3 nulls 5697 hash eaf4fae4eb154492
+op 16800 live 8 nulls 5756 hash f6aaa329128f9ccb
+op 17000 live 6 nulls 5822 hash e79174eed56d7595
+op 17200 live 6 nulls 5888 hash 2c8df6e3c6200504
+op 17400 live 4 nulls 5960 hash f1e4b213aec8e951
+op 17600 live 4 nulls 6048 hash 2d1a8105e2845c8f
+op 17800 live 6 nulls 6100 hash dfa019aeb6ec5e50
+op 18000 live 5 nulls 6157 hash 200d9c414b7fa415
+op 18200 live 5 nulls 6247 hash e95c427217254fdc
+op 18400 live 3 nulls 6323 hash 86f2a6cac95e0585
+op 18600 live 6 nulls 6398 hash a89159642821a42d
+op 18800 live 6 nulls 6466 hash 108f14db21f9f5eb
+op 19000 live 6 nulls 6528 hash 76c46e97d3ea04c8
+op 19200 live 8 nulls 6614 hash 2db32734fbb004b8
+op 19400 live 4 nulls 6680 hash 9db7df4f487d3e05
+op 19600 live 10 nulls 6746 hash d58017bd36a8a8b9
+op 19800 live 2 nulls 6814 hash 238025fb29e56f87
+op 20000 live 7 nulls 6877 hash c21ea63752fcce2c
+buddy 1048576
+  0 A 524288 327644
+  524288 A 262144 209294
+  786432 A 4096 3313
+  790528 A 4096 2665
+  794624 F 4096
+  798720 A 1024 945
+  799744 F 1024
+  800768 A 2048 1521
+  802816 A 4096 2420
+  806912 F 4096
+  811008 F 8192
+  819200 F 32768
+  851968 F 65536
+  917504 F 131072
+op 20200 live 5 nulls 6939 hash 5b030313e9b1d0c8
+op 20400 live 5 nulls 7001 hash ede8b759b713c777
+op 20600 live 8 nulls 7080 hash 5bc232c014a84b23
+op 20800 live 5 nulls 7153 hash 11e092516155a0cf
+op 21000 live 5 nulls 7215 hash 37c99bb49dc7a756
+op 21200 live 5 nulls 7283 hash a81bd9d633247e2c
+op 21400 live 7 nulls 7343 hash 54f2a66bac4bea9f
+op 21600 live 5 nulls 7421 hash 8a284e5caf28deb5
+op 21800 live 8 nulls 7484 hash ead6fb0cdcd6b6dd
+op 22000 live 2 nulls 7556 hash 9828f9eb8f4ca07c
+op 22200 live 4 nulls 7626 hash ccaf9d9f94004afe
+op 22400 live 5 nulls 7699 hash d500ccfbfc7adf3c
+op 22600 live 6 nulls 7790 hash 59fc26cb69b0dcdd
+op 22800 live 3 nulls 7865 hash 8230bc90a23c95ca
+op 23000 live 5 nulls 7953 hash 12e149c648d38c7d
+op 23200 live 3 nulls 8013 hash 7b35b0844132183c
+op 23400 live 4 nulls 8080 hash 5679d2a8944f5b75
+op 23600 live 2 nulls 8146 hash 76bf9b5477eba5eb
+op 23800 live 5 nulls 8199 hash d8a5cdf3c39680d2
+op 24000 live 5 nulls 8273 hash 2037a1b8c6f9e3fb
+buddy 1048576
+  0 F 262144
+  262144 A 4096 2460
+  266240 F 4096
+  270336 A 1024 857
+  271360 F 1024
+  272384 A 2048 1379
+  274432 A 4096 3480
+  278528 F 16384
+  294912 F 32768
+  327680 F 65536
+  393216 F 131072
+  524288 A 524288 461032
+op 24200 live 4 nulls 8344 hash d3089a080c77c0e3
+op 24400 live 5 nulls 8417 hash d7acb128b073e497
+op 24600 live 5 nulls 8483 hash b2b94c223bd06e88
+op 24800 live 6 nulls 8540 hash 10cdf57f922540ce
+op 25000 live 4 nulls 8608 hash 3f979bf192c88aa1
+op 25200 live 7 nulls 8673 hash 623cca0e48cc3cf4
+op 25400 live 4 nulls 8736 hash 8cbcb233994d00c7
+op 25600 live 7 nulls 8813 hash 2a352951b1c38562
+op 25800 live 8 nulls 8864 hash c3e27ec202214b55
+op 26000 live 8 nulls 8926 hash fb4d2a84d0ae15a8
+op 26200 live 7 nulls 9005 hash b765d730608794ba
+op 26400 live 3 nulls 9069 hash 2ab7c85b8a2483da
+op 26600 live 3 nulls 9135 hash ddc626da902081a1
+op 26800 live 9 nulls 9195 hash 51b599001f46def6
+op 27000 live 4 nulls 9272 hash 5eba4031832e8177
+op 27200 live 4 nulls 9340 hash 4b710e3ee548ce95
+op 27400 live 8 nulls 9404 hash 27b4ff705f61ef01
+op 27600 live 4 nulls 9474 hash e0734f9f4347d1a0
+op 27800 live 6 nulls 9534 hash 582398a34472e8dd
+op 28000 live 5 nulls 9593 hash 6fdd48528b7e049f
+buddy 1048576
+  0 A 2048 1607
+  2048 F 1024
+  3072 A 1024 565
+  4096 A 4096 3467
+  8192 F 4096
+  12288 A 4096 2450
+  16384 F 16384
+  32768 F 32768
+  65536 F 65536
+  131072 F 131072
+  262144 F 262144
+  524288 A 524288 332959
+op 28200 live 2 nulls 9682 hash 2c21da9499b7d9f9
+op 28400 live 4 nulls 9768 hash 62485432f6cfb1b1
+op 28600 live 4 nulls 9840 hash d366c713e9900f4b
+op 28800 live 5 nulls 9909 hash 87dedb7756b0a0b9
+op 29000 live 7 nulls 9973 hash f82b653660f66766
+op 29200 live 1 nulls 10047 hash 49de10215339796e
+op 29400 live 2 nulls 10124 hash edf96e5840631ba8
+op 29600 live 2 nulls 10192 hash c4dbf61fe0d5eb2c
+op 29800 live 5 nulls 10261 hash ecca3d7ea8b7e433
+op 30000 live 8 nulls 10330 hash a52e3487be67e27a
+op 30200 live 2 nulls 10394 hash 873c43a9530cc91f
+op 30400 live 6 nulls 10472 hash 914461c7c86dee24
+op 30600 live 4 nulls 10534 hash 3685bbbaaa01b14e
+op 30800 live 3 nulls 10607 hash fd7f83a24b555f7f
+op 31000 live 5 nulls 10663 hash 52de0efbe892985c
+op 31200 live 7 nulls 10733 hash 67555d26a3116438
+op 31400 live 6 nulls 10792 hash 8010fdb9384a4bb2
+op 31600 live 3 nulls 10869 hash 23a3646b1a384326
+op 31800 live 7 nulls 10931 hash 885a2ba7cbd2b8b9
+op 32000 live 4 nulls 11018 hash 3414c7d7ec4d70e6
+buddy 1048576
+  0 A 524288 520888
+  524288 F 131072
+  655360 F 16384
+  671744 F 2048
+  673792 A 2048 1431
+  675840 A 4096 3140
+  679936 F 8192
+  688128 F 32768
+  720896 F 65536
+  786432 A 262144 146723
+op 32200 live 6 nulls 11100 hash 5362900c08ae2916
+op 32400 live 9 nulls 11175 hash a986e167db780e9c
+op 32600 live 4 nulls 11250 hash e7e88c08b4dc3404
+op 32800 live 4 nulls 11320 hash fe382f07f2a3a0a1
+op 33000 live 4 nulls 11416 hash 90df8ad478a6c83b
+op 33200 live 5 nulls 11495 hash 4392288688d0745c
+op 33400 live 4 nulls 11554 hash 722ad1fc7b552382
+op 33600 live 7 nulls 11623 hash 141b6af49b5a1d3d
+op 33800 live 5 nulls 11697 hash 6913204f08198f27
+op 34000 live 6 nulls 11778 hash 42c3342345e15fed
+op 34200 live 6 nulls 11860 hash 84c18844987e62fe
+op 34400 live 6 nulls 11922 hash d5f3909b8e290151
+op 34600 live 5 nulls 11973 hash 1f3f93d85139fd7d
+op 34800 live 4 nulls 12048 hash ae40655b64d5b543
+op 35000 live 7 nulls 12121 hash ede2ffd14f2f6d32
+op 35200 live 6 nulls 12182 hash c613ec224701b7f5
+op 35400 live 6 nulls 12266 hash f8f8bcead0d932af
+op 35600 live 10 nulls 12342 hash 26d12e7260818f01
+op 35800 live 5 nulls 12409 hash 393d98162f4f5bf5
+op 36000 live 5 nulls 12469 hash 68156d25f869188d
+buddy 1048576
+  0 F 262144
+  262144 F 131072
+  393216 F 16384
+  409600 A 4096 3060
+  413696 A 4096 2814
+  417792 A 4096 2181
+  421888 A 2048 1094
+  423936 F 2048
+  425984 F 32768
+  458752 F 65536
+  524288 A 524288 410171
+op 36200 live 4 nulls 12538 hash 8199b140ec530e4a
+op 36400 live 3 nulls 12621 hash a4827a6f2efdf33e
+op 36600 live 6 nulls 12698 hash 33333ac128e258e3
+op 36800 live 6 nulls 12770 hash 27dc3f7657ab6b01
+op 37000 live 6 nulls 12854 hash ddd5b614ccf11b13
+op 37200 live 4 nulls 12916 hash 8fe5b3d708e4a03f
+op 37400 live 6 nulls 12980 hash 1512391087929dee
+op 37600 live 4 nulls 13066 hash a5a0308741d540b6
+op 37800 live 4 nulls 13118 hash a012057a07d68ef6
+op 38000 live 5 nulls 13177 hash 3c832ffe54fa4761
+op 38200 live 5 nulls 13233 hash f23e1f1226f962f3
+op 38400 live 3 nulls 13303 hash f5f5b1f94d5bf3b9
+op 38600 live 4 nulls 13374 hash 68533245bc19b6c2
+op 38800 live 5 nulls 13431 hash f39d5a5d9d2a2d3c
+op 39000 live 7 nulls 13493 hash 0eeccf55f435afde
+op 39200 live 5 nulls 13557 hash 572018b088178e2d
+op 39400 live 5 nulls 13631 hash b682cf0a3c4c2264
+op 39600 live 4 nulls 13700 hash c99a3a0e3f2893f3
+op 39800 live 7 nulls 13757 hash c172475426f8a034
+op 40000 live 5 nulls 13837 hash 48eab11176d43325
+buddy 1048576
+  0 A 524288 331375
+  524288 F 4096
+  528384 A 4096 3328
+  532480 A 4096 2480
+  536576 F 4096
+  540672 F 16384
+  557056 F 32768
+  589824 F 65536
+  655360 A 131072 75314
+  786432 A 262144 186907
+corrupt 0
+buddy 1048576
+  0 A 524288 331375
+  524288 F 4096
+  528384 A 4096 3328
+  532480 A 4096 2480
+  536576 F 4096
+  540672 F 16384
+  557056 F 32768
+  589824 F 65536
+  655360 A 131072 75314
+  786432 A 262144 186907
+corrupt 0
+buddy 1048576
+  0 F 1048576

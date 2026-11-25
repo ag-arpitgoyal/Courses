@@ -1,0 +1,240 @@
+\section{Minor Examination, 2024--25 (Semester 1)}
+
+\subsection*{Q1. Short definitions}
+
+\textbf{Question.}
+For each of the following terms, explain in one or two lines what they mean.
+
+\begin{enumerate}
+\item[(i)] \textbf{Principle of Isolation.}
+Each process should run as if it has the machine to itself: its state and resources are protected so that one process cannot improperly observe or modify another process.
+
+\item[(ii)] \textbf{TLB.}
+A translation lookaside buffer (TLB) is a small, fast hardware cache of recently used page-table entries, mapping virtual page numbers to physical frame numbers and storing access permissions.
+
+\item[(iii)] \textbf{Thrashing.}
+Thrashing is the condition in which the system spends most of its time servicing page faults and moving pages between memory and disk, instead of executing useful work.
+
+\item[(iv)] \textbf{Indirection (in the context of paging).}
+The page table provides a level of indirection between virtual and physical
+memory: a virtual page number indexes a PTE, which identifies the physical
+frame containing that page.
+
+\item[(v)] \textbf{Memory Hogs.}
+Memory hogs are processes that consume a very large amount of memory, leaving
+less physical memory available to other processes and potentially causing
+heavy paging.
+
+\item[(vi)] \textbf{Starvation.}
+Starvation is indefinite postponement: a process remains ready or waiting but repeatedly fails to receive the CPU or another needed resource because other processes are continually preferred.
+
+\item[(vii)] \textbf{Demand paging.}
+Demand paging brings a virtual page into physical memory only when the process first references it; a reference to a non-resident page causes a page fault.
+\end{enumerate}
+
+\subsection*{Q2. Output of the \texttt{fork}/\texttt{exec}/\texttt{wait} program}
+
+\textbf{Question.}
+Predict the output of the following C program. Assume that function
+\texttt{mywc()} takes a filename as parameter and writes the number of words
+in it (integer) in standard output followed by filename. Justify your answer.
+
+\begin{verbatim}
+int main(int argc, char *argv[])
+{
+        printf("First: %d \n", (int) getpid());
+        int rc = fork();
+        if (rc == 0) {
+                printf("Second: (pid:%d)\n", (int) getpid());
+                char *myargs[3];
+                myargs[0] = strdup("mywc");
+                myargs[1] = strdup("abc.c");
+                myargs[2] = NULL;
+                execvp(myargs[0], myargs);
+                printf("Second: %d"\n, (int) getpid());
+        } else {
+                wait(NULL);
+                printf("First: %d\n Second:%d\n", rc, (int) getpid());
+        }
+return 0;
+}
+\end{verbatim}
+
+\textbf{Solution.}
+As printed, the program has no output because it does not compile: in the
+second \texttt{printf} after \texttt{execvp}, the string closes before
+\verb|\n|. The evidently intended line is
+\begin{verbatim}
+printf("Second: %d\n", (int) getpid());
+\end{verbatim}
+Under that intended correction, let the parent's PID be \(P\), the child's
+PID be \(C\), and let \(W\) be the word count printed by \texttt{mywc}. If
+\texttt{execvp()} succeeds, the output is
+\begin{verbatim}
+First: P
+Second: (pid:C)
+W abc.c
+First: C
+ Second:P
+\end{verbatim}
+Here \(P,C,W\) stand for their corresponding decimal integers. The first line
+is printed before \texttt{fork()}. In the child, \texttt{fork()} returns zero,
+so it prints its own PID \(C\), and successful \texttt{execvp()} replaces the
+child's program image with \texttt{mywc}; consequently, the \texttt{printf()}
+following \texttt{execvp()} is not executed. In the parent, \texttt{fork()}
+returns the child's PID \(C\). The call to \texttt{wait(NULL)} ensures that the
+parent's final two lines occur only after \texttt{mywc} has terminated; the
+second argument of that final \texttt{printf()} is the parent's PID \(P\).
+
+If \texttt{execvp()} fails, it returns to the child, so one extra line appears
+before the parent can return from \texttt{wait()}:
+\begin{verbatim}
+First: P
+Second: (pid:C)
+Second: C
+First: C
+ Second:P
+\end{verbatim}
+
+\subsection*{Q3. Locality and the TLB}
+
+\begin{enumerate}
+\item[(i)] \textbf{Question: What do we mean by temporal and spacial locality
+of a program? Explain with an example each.}
+
+\textbf{Solution.}
+Temporal locality means that a recently accessed address is likely to be
+accessed again soon; repeatedly reading and updating a loop counter is an
+example. Spatial locality means that addresses near a recently accessed
+address are likely to be accessed soon; sequential traversal of an array is an
+example.
+
+\item[(ii)] \textbf{Question: How do temporal and spacial locality help in
+making memory accesses faster in the context of TLB?}
+
+\textbf{Solution.}
+With temporal locality, repeated accesses commonly use the same virtual page
+number (VPN), so its cached translation produces TLB hits. With spatial
+locality, nearby addresses often lie on the same page and hence reuse one TLB
+entry; even when traversal reaches nearby pages, their recently installed
+entries may still be in the TLB. A TLB hit avoids an additional page-table
+lookup in memory.
+
+\item[(iii)] \textbf{Question: What do we mean by a fully associative TLB? Why
+is that important?}
+
+\textbf{Solution.}
+In a fully associative TLB, a translation for any VPN may be stored in any TLB
+slot, and the requested VPN is compared with all valid entries. Thus any
+recently used page can occupy any free or selected slot, avoiding
+set-conflict misses that a restrictive direct-mapped or set-associative
+placement could cause in a small TLB.
+\end{enumerate}
+
+\subsection*{Q4. Page faults}
+
+\textbf{Question.}
+What is a page fault? Which part of modern computer handles page fault?
+Describe the key steps that the component has to take while handling the page
+fault.
+
+\textbf{Solution.}
+A page fault is a synchronous exception caused when a process accesses a
+virtual address whose PTE says that the page is not present, or when the
+requested access violates the PTE's protection bits. The MMU detects the
+condition and raises the exception; the CPU traps into the operating-system
+kernel's page-fault handler, which performs the actual handling.
+
+For a legal reference to a non-resident page, the handler:
+\begin{enumerate}
+\item saves the process state and obtains the faulting virtual address and
+access type;
+\item checks that the address and requested access are legal (otherwise it
+signals or terminates the process);
+\item finds a free physical frame or selects a victim frame; if an evicted
+page is dirty, writes it back to disk;
+\item reads the required page from disk into the chosen frame;
+\item updates the relevant PTE (and invalidates or updates stale TLB entries)
+to record the frame, permissions, and present/valid bit; and
+\item restarts the faulting instruction, which can now complete.
+\end{enumerate}
+
+\subsection*{Q5. Average memory-access time}
+
+\textbf{Question.}
+Find the average memory access time (AMAT) in the scenario, where the cache
+miss rate is \(95\%\), time to access memory is \(50\) nanoseconds, and the
+time to access the disk is \(20\)ms. How does AMAT change in this case if the
+cache miss rate is reduced to \(1\%\)?
+
+\textbf{Solution.}
+The paper has a handwritten correction replacing the first ``miss'' by
+``hit''; accordingly, the initial hit rate is \(95\%\) and the initial miss
+rate is \(5\%\). Here memory is acting as a cache for disk. Using the OSTEP
+weighted-average formula and
+\(20\,\mathrm{ms}=20{,}000{,}000\,\mathrm{ns}\),
+\[
+\begin{array}{rcl}
+\mathrm{AMAT}_{5\%\ \mathrm{miss}}
+  &=& 0.95(50)+0.05(20{,}000{,}000)\ \mathrm{ns}\\
+  &=&47.5+1{,}000{,}000\\
+  &=&1{,}000{,}047.5\ \mathrm{ns}\\
+  &\approx& 1.0000475\ \mathrm{ms}.
+\end{array}
+\]
+When the miss rate is \(1\%\), the hit rate is \(99\%\), and hence
+\[
+\begin{array}{rcl}
+\mathrm{AMAT}_{1\%\ \mathrm{miss}}
+  &=&0.99(50)+0.01(20{,}000{,}000)\ \mathrm{ns}\\
+  &=&49.5+200{,}000\\
+  &=&200{,}049.5\ \mathrm{ns}\\
+  &\approx&0.2000495\ \mathrm{ms}.
+\end{array}
+\]
+Thus the AMAT falls from \(1{,}000{,}047.5\) ns to \(200{,}049.5\) ns, a
+reduction by a factor of
+\[
+\frac{1{,}000{,}047.5}{200{,}049.5}\approx 4.999,
+\]
+i.e., approximately fivefold.
+
+\subsection*{Q6. LRU versus FIFO}
+
+\textbf{Question.}
+Make an example with five page frames and eight pages where LRU performs
+better than FIFO. What is one disadvantage of LRU over FIFO?
+
+\textbf{Solution.}
+Use pages \(\{0,1,\ldots,7\}\) and the reference string
+\[
+4,\ 6,\ 2,\ 1,\ 0,\ 4,\ 5,\ 3,\ 7,\ 4.
+\]
+Starting with five empty frames, the complete simulation is:
+
+\begin{center}
+\begin{tabular}{c|c|c|c|c|c}
+Step & Ref. & FIFO frame contents & FIFO & LRU frame contents & LRU\\ \hline
+1  & 4 & \(4,-,-,-,-\) & fault & \(4,-,-,-,-\) & fault\\
+2  & 6 & \(4,6,-,-,-\) & fault & \(4,6,-,-,-\) & fault\\
+3  & 2 & \(4,6,2,-,-\) & fault & \(4,6,2,-,-\) & fault\\
+4  & 1 & \(4,6,2,1,-\) & fault & \(4,6,2,1,-\) & fault\\
+5  & 0 & \(4,6,2,1,0\) & fault & \(4,6,2,1,0\) & fault\\
+6  & 4 & \(4,6,2,1,0\) & hit   & \(4,6,2,1,0\) & hit\\
+7  & 5 & \(5,6,2,1,0\) & fault & \(4,5,2,1,0\) & fault\\
+8  & 3 & \(5,3,2,1,0\) & fault & \(4,5,3,1,0\) & fault\\
+9  & 7 & \(5,3,7,1,0\) & fault & \(4,5,3,7,0\) & fault\\
+10 & 4 & \(5,3,7,4,0\) & fault & \(4,5,3,7,0\) & hit\\ \hline
+\multicolumn{2}{c|}{Total} & \multicolumn{2}{c|}{9 faults}
+& \multicolumn{2}{c}{8 faults}
+\end{tabular}
+\end{center}
+
+FIFO evicts page \(4\) at step 7 because it was loaded first, even though it
+was just referenced at step 6; it therefore faults on page \(4\) at step 10.
+LRU retains page \(4\), so it hits at step 10 and has fewer faults.
+
+A disadvantage of exact LRU is its implementation overhead: the system must
+track and update recency information (for example, timestamps or an ordered
+stack) on memory references. FIFO needs only a simple queue recording page
+arrival order.

@@ -1,0 +1,11 @@
+error: invalid pointer
+error: invalid pointer
+region 0 65536
+  32 D 128 10
+  160 A 128 10
+  288 F 65248
+error: write after free (block 0:32)
+region 0 65536
+  32 F 128
+  160 D 128 10
+  288 F 65248

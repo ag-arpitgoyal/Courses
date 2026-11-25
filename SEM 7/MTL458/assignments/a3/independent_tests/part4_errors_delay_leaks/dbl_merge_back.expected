@@ -1,0 +1,14 @@
+error: double free (block 0:32)
+error: invalid pointer
+error: invalid pointer
+q NULL
+error: double free (block 0:32)
+q NULL
+region 0 65536
+  32 F 256
+  288 A 128 10
+  416 F 65120
+error: invalid pointer
+error: double free (block 0:32)
+region 0 65536
+  32 F 65504

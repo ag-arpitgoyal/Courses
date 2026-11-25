@@ -1,0 +1,7 @@
+moved: yes
+move: data ok
+region 0 65536
+  32 F 144
+  176 A 128 10
+  304 A 1040 1000
+  1344 F 64192

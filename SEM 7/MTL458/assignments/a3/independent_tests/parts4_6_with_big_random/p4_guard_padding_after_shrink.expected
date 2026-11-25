@@ -1,0 +1,7 @@
+check p ok
+check q ok
+error: overflow detected (block 0:176)
+region 0 65536
+  32 F 288
+  320 A 128 10
+  448 F 65088

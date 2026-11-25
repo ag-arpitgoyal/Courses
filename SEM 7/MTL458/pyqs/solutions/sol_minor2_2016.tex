@@ -1,0 +1,312 @@
+\section{Minor Test 2, 2016--17 (Semester 1)}
+
+\subsection*{Question 1}
+\textbf{Question.}
+First, give a solution (algorithm) which allows at most \(n-1\) entries in
+the buffer, of the producer--consumer problem with a finite buffer.
+Secondly, modify the algorithm to remedy this deficiency.
+
+\textbf{Solution.}
+Let \texttt{buffer[0..n-1]} be a circular buffer.  Initially,
+\(\texttt{in}=\texttt{out}=0\).  For one producer and one consumer, the
+following algorithm reserves one array position in order to distinguish
+``empty'' from ``full'':
+
+\begin{verbatim}
+/* Producer */
+for (;;) {
+    item = produce_item();
+    while ((in + 1) % n == out)
+        ;                       /* full: spin */
+    buffer[in] = item;
+    in = (in + 1) % n;
+}
+
+/* Consumer */
+for (;;) {
+    while (in == out)
+        ;                       /* empty: spin */
+    item = buffer[out];
+    out = (out + 1) % n;
+    consume_item(item);
+}
+\end{verbatim}
+
+Here \(\texttt{in}=\texttt{out}\) denotes an empty buffer, whereas
+\((\texttt{in}+1)\bmod n=\texttt{out}\) denotes a full buffer.  Thus at
+most \(n-1\) items can be stored: one physical slot is deliberately
+wasted.  (With multiple producers or multiple consumers, the index
+updates would additionally need mutual exclusion.)
+
+To use all \(n\) slots, keep empty and full states separately using
+counting semaphores.  Let
+\[
+  \texttt{mutex}=1,\qquad \texttt{empty}=n,\qquad \texttt{full}=0,
+  \qquad \texttt{in}=\texttt{out}=0.
+\]
+The corrected bounded-buffer algorithm is:
+
+\begin{verbatim}
+/* Producer */
+for (;;) {
+    item = produce_item();
+    sem_wait(&empty);
+    sem_wait(&mutex);
+    buffer[in] = item;
+    in = (in + 1) % n;
+    sem_post(&mutex);
+    sem_post(&full);
+}
+
+/* Consumer */
+for (;;) {
+    sem_wait(&full);
+    sem_wait(&mutex);
+    item = buffer[out];
+    out = (out + 1) % n;
+    sem_post(&mutex);
+    sem_post(&empty);
+    consume_item(item);
+}
+\end{verbatim}
+
+\texttt{empty} now records the number of free slots and \texttt{full}
+records the number of occupied slots, so the state with
+\(\texttt{full}=n\) is unambiguous.  Hence all \(n\) slots can be used.
+\texttt{mutex} protects the buffer and indices, so this version also
+works with multiple producers and consumers.
+
+\subsection*{Question 2}
+\textbf{Question.}
+Apply the deadlock-detection algorithm to
+\[
+ \mathit{Available}=(2,1,0,0),
+\]
+\[
+ \mathit{Request}=
+ \begin{bmatrix}
+ 2&0&0&1\\
+ 1&0&1&0\\
+ 2&1&0&0
+ \end{bmatrix},
+ \qquad
+ \mathit{Allocation}=
+ \begin{bmatrix}
+ 0&0&1&0\\
+ 2&0&0&1\\
+ 0&1&2&0
+ \end{bmatrix},
+\]
+and show the result.
+
+\textbf{Solution.}
+Call the three rows \(P_1,P_2,P_3\).  Initially,
+\[
+ \mathit{Work}=(2,1,0,0).
+\]
+Every process has a nonzero allocation, so initially
+\(\mathit{Finish}[1]=\mathit{Finish}[2]=\mathit{Finish}[3]=\mathrm{false}\).
+A vector comparison below is componentwise.
+
+In the first scan,
+\[
+\begin{aligned}
+ \mathit{Request}_1=(2,0,0,1)&\nleq(2,1,0,0)
+       &&\text{(the fourth component fails)},\\
+ \mathit{Request}_2=(1,0,1,0)&\nleq(2,1,0,0)
+       &&\text{(the third component fails)},\\
+ \mathit{Request}_3=(2,1,0,0)&\leq(2,1,0,0).
+\end{aligned}
+\]
+Therefore \(P_3\) can finish and release its allocation:
+\[
+ \mathit{Work}
+ =(2,1,0,0)+(0,1,2,0)
+ =(2,2,2,0),
+ \qquad \mathit{Finish}[3]=\mathrm{true}.
+\]
+
+With this new work vector, \(P_1\) still cannot finish because it needs
+one unit of the fourth resource.  However,
+\[
+ \mathit{Request}_2=(1,0,1,0)\leq(2,2,2,0),
+\]
+so \(P_2\) finishes and releases its allocation:
+\[
+ \mathit{Work}
+ =(2,2,2,0)+(2,0,0,1)
+ =(4,2,2,1),
+ \qquad \mathit{Finish}[2]=\mathrm{true}.
+\]
+Finally,
+\[
+ \mathit{Request}_1=(2,0,0,1)\leq(4,2,2,1),
+\]
+so \(P_1\) finishes:
+\[
+ \mathit{Work}
+ =(4,2,2,1)+(0,0,1,0)
+ =(4,2,3,1),
+ \qquad \mathit{Finish}[1]=\mathrm{true}.
+\]
+Thus a complete finishing sequence is
+\[
+ \boxed{P_3,\ P_2,\ P_1}.
+\]
+All \(\mathit{Finish}\) entries become true; therefore no process is
+deadlocked.
+
+\subsection*{Question 3}
+\textbf{Question.}
+Suppose there are two types of philosophers.  A ``lefty'' always picks
+up the left fork first, while a ``righty'' always picks up the right
+fork first.  Using semaphores, define both types of philosophers'
+behaviour.
+
+\textbf{Solution.}
+Number the \(N\) philosophers and forks from \(0\) to \(N-1\).  For
+philosopher \(i\), define
+\[
+  \mathit{left}(i)=i,\qquad
+  \mathit{right}(i)=(i+1)\bmod N.
+\]
+Each \texttt{fork[i]} is a binary semaphore initialized to \(1\).
+
+\begin{verbatim}
+void lefty(int i)
+{
+    int left  = i;
+    int right = (i + 1) % N;
+
+    for (;;) {
+        think();
+        sem_wait(&fork[left]);
+        sem_wait(&fork[right]);
+        eat();
+        sem_post(&fork[right]);
+        sem_post(&fork[left]);
+    }
+}
+
+void righty(int i)
+{
+    int left  = i;
+    int right = (i + 1) % N;
+
+    for (;;) {
+        think();
+        sem_wait(&fork[right]);
+        sem_wait(&fork[left]);
+        eat();
+        sem_post(&fork[left]);
+        sem_post(&fork[right]);
+    }
+}
+\end{verbatim}
+
+If all philosophers acquire forks in the same order, each can hold one
+fork while waiting for the next, producing a circular wait.  If there
+is at least one lefty and at least one righty (for example, make the
+last philosopher right-handed and all others left-handed), this
+directed cycle is broken, so deadlock is avoided.  This argument
+establishes deadlock freedom; it does not by itself guarantee freedom
+from starvation under an unfair semaphore implementation.
+
+\subsection*{Question 4}
+\textbf{Question.}
+Five batch jobs \(A\) through \(E\) arrive at essentially the same time.
+Their running times are \(15,9,3,6,12\) minutes, respectively, and
+their priorities are \(6,3,7,9,4\), respectively, where a lower value
+means a higher priority.  For non-preemptive priority scheduling and
+shortest-job-first (SJF), determine the turnaround time of each process
+and the average turnaround time.
+
+\textbf{Solution.}
+All arrival times are \(0\), so for every job,
+\[
+  \mathit{turnaround\ time}
+  =\mathit{completion\ time}-\mathit{arrival\ time}
+  =\mathit{completion\ time}.
+\]
+
+\paragraph{Non-preemptive priority scheduling.}
+Increasing priority number gives the execution order
+\[
+ \underbrace{0}_{}
+ \;|\;B\;|\;9\;|\;E\;|\;21\;|\;A\;|\;36\;|\;C\;|\;39\;|\;D\;|\;45.
+\]
+Thus
+\[
+\begin{array}{c|ccccc}
+\text{Job} & A&B&C&D&E\\ \hline
+\text{Turnaround time (min)}&36&9&39&45&21
+\end{array}
+\]
+and
+\[
+ \overline{T}_{\rm priority}
+ =\frac{36+9+39+45+21}{5}
+ =\frac{150}{5}
+ =\boxed{30\text{ min}}.
+\]
+
+\paragraph{Non-preemptive SJF.}
+Increasing burst time gives the execution order
+\[
+ \underbrace{0}_{}
+ \;|\;C\;|\;3\;|\;D\;|\;9\;|\;B\;|\;18\;|\;E\;|\;30\;|\;A\;|\;45.
+\]
+Thus
+\[
+\begin{array}{c|ccccc}
+\text{Job} & A&B&C&D&E\\ \hline
+\text{Turnaround time (min)}&45&18&3&9&30
+\end{array}
+\]
+and
+\[
+ \overline{T}_{\rm SJF}
+ =\frac{45+18+3+9+30}{5}
+ =\frac{105}{5}
+ =\boxed{21\text{ min}}.
+\]
+
+\subsection*{Question 5}
+\textbf{Question.}
+What are the four conditions that create deadlock?  List two ways in
+which the no-preemption condition can be prevented.
+
+\textbf{Solution.}
+The four Coffman conditions, all of which must hold simultaneously for
+deadlock to be possible, are:
+\begin{enumerate}
+ \item \textbf{Mutual exclusion:} at least one resource is
+       non-shareable, so only one process can use it at a time.
+ \item \textbf{Hold and wait:} a process holds one or more resources
+       while waiting to acquire additional resources.
+ \item \textbf{No preemption:} a resource cannot be forcibly taken
+       away; it is released only voluntarily by its holder.
+ \item \textbf{Circular wait:} there is a cycle of processes in which
+       each process waits for a resource held by the next process in
+       the cycle.
+\end{enumerate}
+
+Deadlock can be prevented by invalidating the no-preemption condition,
+for example in either of the following ways.
+\begin{enumerate}
+ \item If a process holding resources requests another resource that
+       cannot be allocated immediately, require it to release all
+       resources it currently holds.  It retries only after the needed
+       resources can be acquired again.  Thus it cannot indefinitely
+       retain its allocation while blocked.
+ \item Permit the operating system to forcibly reclaim a resource from
+       its current holder, return that resource to the available pool,
+       and later restart or roll back the affected computation.  This
+       is practical only for resources whose state can be saved and
+       restored, such as CPU state and, with appropriate mechanisms,
+       memory pages; it is generally unsuitable for inherently
+       non-preemptible devices in the middle of an operation.
+\end{enumerate}
+The rule that a process must request all resources at once is instead
+normally classified as prevention of \emph{hold and wait}, not as
+prevention of no-preemption.

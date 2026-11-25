@@ -1,0 +1,10 @@
+csv length 176396 hash 9e492cbcd6db1dc7
+csv head 0,37,74,111,148,185,222,259,296,333,370,
+csv tail 9671,9708,9745,9782,9819,9856,9893,9930,
+joined length 34355 hash 8df98af5e629f222
+first words: a a a; last word: zzu
+reversed hash 13a28791efe18356 head uzz rttzz vtcmcjwpzz poflzz zz
+shrunk prefix 'a a a a a a a a a a '
+hello
+leak: block 0:32 (6 bytes)
+leak summary: 1 blocks, 6 bytes

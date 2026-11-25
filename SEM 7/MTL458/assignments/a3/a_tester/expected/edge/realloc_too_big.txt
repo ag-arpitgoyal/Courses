@@ -1,0 +1,5 @@
+my_realloc(a, (1UL << 30) + 1) -> NULL
+unchanged: data ok
+region 0 65536
+  32 A 144 100
+  176 F 65360

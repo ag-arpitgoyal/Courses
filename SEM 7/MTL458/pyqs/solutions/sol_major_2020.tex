@@ -1,0 +1,537 @@
+\section{Major Examination, 2020--21 (Semester 2)}
+
+\subsection*{Q1. True or false, with justification}
+
+\begin{enumerate}
+\item[(a)] \emph{While executing \texttt{char *c = (char *) malloc(30 *
+sizeof(char));}, memory is allocated on the heap only.}
+
+\textbf{False.}  The 30-byte object returned by \texttt{malloc} has allocated
+storage duration and is normally obtained from the allocator's heap arena,
+but the local pointer variable \texttt{c} has automatic storage duration
+(normally a stack slot, unless optimized into a register or away).  Moreover,
+a general-purpose allocator may obtain dynamic
+storage using \texttt{mmap} rather than only by extending the traditional
+\texttt{brk}-based heap.  Thus it is not correct to say that all memory
+involved is allocated ``on the heap only.''
+
+\item[(b)] \emph{A context switch can occur only after a timer interrupt.}
+
+\textbf{False.}  A timer interrupt permits preemptive context switches, but
+it is only one cause.  A running process may block in a system call, wait for
+I/O, sleep, yield the processor, or incur a page fault that cannot be
+resolved immediately.  In each case the scheduler may switch to another
+runnable process.
+
+\item[(c)] \emph{Threads \(T_1\) and \(T_2\) share \(x\).  \(T_1\) protects
+\(x\) using a POSIX mutex.  If \(T_2\) writes \(x\) without locking the
+mutex, a trap is generated.}
+
+\textbf{False.}  A POSIX mutex is a software synchronization convention;
+ordinary memory accesses do not carry information about which mutex should
+protect them.  The hardware therefore does not trap merely because \(T_2\)
+failed to lock the mutex.  The accesses constitute a data race (and hence
+undefined behaviour in the C/POSIX memory model) if they are conflicting and
+concurrent, but no protection trap is inherently generated.
+
+\item[(d)] \emph{A thread cannot go to sleep while holding a lock, because
+that might violate atomicity.}
+
+\textbf{False.}  A thread can, for example, issue a blocking I/O operation
+while retaining a mutex.  Other threads then remain excluded, so the mutual
+exclusion, and hence the critical section's atomicity with respect to those
+threads, is not violated.  Doing this is often poor design because it can
+cause long delays, lock convoys, or deadlock.  Some special locks, such as
+kernel spinlocks, impose a separate rule that their holders must not sleep,
+but that is not a property of every lock.
+
+\item[(e)] \emph{With a write-back disk buffer cache, a process writing a
+block remains blocked until that block reaches the disk.}
+
+\textbf{False.}  In a write-back cache the write normally modifies the
+in-memory cached block and marks it dirty.  The call can return before a
+later background write sends the block to disk.  An explicit operation such
+as \texttt{fsync} is needed when the process requires the data to reach
+stable storage before proceeding (and a write can still block for unrelated
+resource-pressure reasons).
+\end{enumerate}
+
+\subsection*{Q2. Traps and limited direct execution}
+
+\begin{enumerate}
+\item[(a)] \emph{What are trap handlers?  Explain the hardware/software
+interaction and the steps of trap handling.}
+
+A trap handler is trusted kernel code that handles a transfer of control
+caused by a system call, a synchronous exception (such as a protection fault
+or divide-by-zero), or an asynchronous interrupt.  At boot, the kernel
+installs handler addresses in a protected trap/interrupt vector table.
+
+A typical trap proceeds as follows.
+\begin{enumerate}
+\item The process executes a trap-generating instruction, suffers an
+exception, or is interrupted.
+\item Hardware records the cause and saves enough state to resume execution,
+such as the program counter and status register.  It changes from user mode
+to kernel mode, selects the protected kernel stack, and vectors to the
+registered entry point.  User code cannot choose an arbitrary kernel entry
+address.
+\item The low-level entry stub saves the remaining registers in a trap frame.
+The kernel handler examines the cause, validates any system-call arguments,
+and performs the requested service or handles the fault/interrupt.  It may
+wake processes and invoke the scheduler.
+\item To resume a process, the kernel restores its trap frame and executes a
+privileged return-from-trap instruction.  This restores the saved program
+counter and user privilege level (or restores a different process if a
+context switch occurred).
+\end{enumerate}
+
+\item[(b)] \emph{How does trap handling help implement limited direct
+execution (LDE)?}
+
+LDE lets an application execute its ordinary instructions directly on the
+CPU for speed, but only in user mode.  Whenever the application needs a
+privileged service, it executes the designated system-call trap and enters
+the kernel through a controlled entry point.  Faults transfer control to the
+kernel when the application violates a protection rule, and interrupts let
+the kernel regain control even if the application does not voluntarily trap.
+The OS thus retains control while most application instructions run
+natively.
+
+\item[(c)] \emph{Give three forms of hardware support used by the OS to stop
+a program from taking over the machine or doing something harmful in the
+LDE model.}
+
+\begin{enumerate}
+\item \textbf{Privilege modes and privileged instructions:} user code cannot
+disable interrupts, alter page tables, perform raw device I/O, or install
+trap handlers.  A controlled trap instruction is used to request kernel
+services.
+\item \textbf{A programmable timer interrupt:} the OS arranges a future
+interrupt before running a process, guaranteeing that it can regain the CPU
+and preempt an infinite loop.
+\item \textbf{Memory protection through the MMU:} page tables (or
+base-and-bounds registers) restrict the process to authorized memory and
+cause a protection fault on an illegal access.
+\end{enumerate}
+\end{enumerate}
+
+\subsection*{Q3. \texttt{fork}, \texttt{exec}, and \texttt{wait}}
+
+\begin{enumerate}
+\item[(a)] \emph{Give all possible outputs of the following program, covering
+both success and failure of system calls.  The command \texttt{wc} prints
+the count for \texttt{p1.c}.}
+
+\begin{verbatim}
+int rc = fork();
+if (rc == 0) {
+    printf("Hello1\n");
+    char *myargs[3];
+    myargs[0] = strdup("wc");
+    myargs[1] = strdup("p1.c");
+    myargs[2] = NULL;
+    execvp(myargs[0], myargs);
+    printf("Hello2\n");
+} else if (rc > 0) {
+    wait();
+    printf("Hello3\n");
+} else {
+    printf("Hello4\n");
+}
+\end{verbatim}
+
+Treating the paper's \texttt{wait()} as \texttt{wait(NULL)}, and assuming
+the displayed newline-terminated output is observed, the cases are:
+
+\begin{enumerate}
+\item If \texttt{fork} fails, there is no child and the output is
+\begin{verbatim}
+Hello4
+\end{verbatim}
+
+\item If \texttt{fork} and \texttt{execvp} both succeed, \texttt{execvp}
+replaces the child, so \texttt{Hello2} is not executed.  The order is
+\begin{verbatim}
+Hello1
+<wc output for p1.c>
+Hello3
+\end{verbatim}
+The first line precedes \texttt{wc} by child program order, and
+\texttt{Hello3} is last because the parent waits for the child.  If
+\texttt{p1.c} does not exist, \texttt{execvp} has still succeeded:
+\texttt{wc} prints an error diagnostic instead of a count, then terminates,
+and \texttt{Hello3} follows.
+
+\item If \texttt{fork} succeeds but \texttt{execvp} fails, execution
+continues after \texttt{execvp} in the child:
+\begin{verbatim}
+Hello1
+Hello2
+Hello3
+\end{verbatim}
+Again, the wait ensures that the parent's line is last.
+\end{enumerate}
+
+\item[(b)] \emph{A parent forks a child that executes \texttt{cmd1}, then
+forks a second child that executes \texttt{cmd2}, and finally calls
+\texttt{wait} twice.  Is the order deterministic?  How can that behaviour
+be reversed?}
+
+The two commands execute \textbf{concurrently}, and their execution,
+completion, and output order is non-deterministic.  The fact that the first
+\texttt{fork} is called first does not force its child to run first.  Also,
+the two waits occur only after both children have been created, so they
+cannot impose an order between the commands.
+
+To make the order deterministic, the parent can wait specifically for the
+first child before creating the second:
+
+\begin{verbatim}
+pid_t p1 = fork();
+if (p1 == 0) {
+    exec(cmd1);
+    _exit(1);                 /* reached only if exec fails */
+}
+waitpid(p1, NULL, 0);
+
+pid_t p2 = fork();
+if (p2 == 0) {
+    exec(cmd2);
+    _exit(1);
+}
+waitpid(p2, NULL, 0);
+\end{verbatim}
+
+This guarantees that \texttt{cmd1} terminates before \texttt{cmd2} starts.
+Conversely, moving both waits after both forks, as in the question, changes
+a sequential version back to non-deterministic concurrent execution.
+\end{enumerate}
+
+\subsection*{Q4. Six-level paging}
+
+\emph{A byte-addressable system has 64-bit virtual addresses, 8-KiB pages,
+and 8-byte PTEs.  It uses demand allocation at every page-table level.}
+
+The page offset has
+\[
+ \log_2(8192)=13
+\]
+bits.  A page-table page contains
+\[
+ \frac{8192}{8}=1024=2^{10}
+\]
+PTEs, so a full level indexes 10 virtual-address bits.  The virtual page
+number has \(64-13=51\) bits.
+
+\begin{enumerate}
+\item[(a)] \emph{How many page-table levels are required?}
+
+\[
+ L=\left\lceil\frac{51}{10}\right\rceil=6.
+\]
+Five levels use 10 bits each and the top level uses the remaining one bit.
+This is a generic full 64-bit virtual address space; the 48-bit canonical
+address restriction of some x86-64 implementations must not be imposed on
+this question.
+
+\item[(b)] \emph{Which virtual-address bits index each level?}
+
+Numbering bits from 63 (most significant) to 0, one valid division is
+\[
+\underbrace{[63]}_{L_1}\;
+\underbrace{[62:53]}_{L_2}\;
+\underbrace{[52:43]}_{L_3}\;
+\underbrace{[42:33]}_{L_4}\;
+\underbrace{[32:23]}_{L_5}\;
+\underbrace{[22:13]}_{L_6}\;
+\underbrace{[12:0]}_{\mbox{page offset}} .
+\]
+
+\item[(c)] \emph{What is the maximum memory occupied by all pages of one
+process's page table?}
+
+For a completely populated 64-bit virtual address space, the numbers of
+page-table pages from the root through the leaf level are
+\[
+1,\quad 2,\quad 2^{11},\quad 2^{21},\quad 2^{31},\quad 2^{41}.
+\]
+For example, there are \(2^{51}\) virtual data pages, and each leaf table
+contains \(2^{10}\) PTEs, giving \(2^{41}\) leaf page-table pages.  Hence
+\[
+\begin{split}
+N_{\rm PT}
+ &= 1+2+2^{11}+2^{21}+2^{31}+2^{41}\\
+ &=2{,}201{,}172{,}838{,}403\ \mbox{page-table pages}.
+\end{split}
+\]
+The maximum memory is therefore
+\[
+N_{\rm PT}\,2^{13}
+=18{,}032{,}007{,}892{,}197{,}376\ \mbox{bytes}
+\mathrel{\simeq}16.0156\ \mbox{PiB}.
+\]
+
+\item[(d)] \emph{The process has accessed 8K (\(8192\)) data pages and none
+has been swapped out.  What is the minimum memory needed for its page table?}
+
+In the best case the virtual pages are packed into the fewest leaf tables.
+Each leaf table maps 1024 data pages, so eight leaf tables suffice.  All
+eight can be children of one \(L_5\) table and can share one table at each
+of \(L_1,L_2,L_3,L_4\).  Thus
+\[
+N_{\min}=8+5=13\ \mbox{page-table pages},
+\]
+and
+\[
+M_{\min}=13(8\ \mbox{KiB})=104\ \mbox{KiB}
+=106{,}496\ \mbox{bytes}.
+\]
+
+\item[(e)] \emph{For those 8192 accessed pages, what is the maximum memory
+needed for all page-table entries in the worst placement?}
+
+Page-table storage is allocated in whole 8-KiB pages, even if only one PTE
+in such a page is valid.  Let \(P=8192\).  At each level, the number of
+distinct table pages is bounded both by \(P\) and by the number of distinct
+VPN prefixes that can reach that level:
+\[
+\begin{array}{c|c|c}
+\mbox{level} & \mbox{maximum possible table pages} &
+              \mbox{pages needed in the worst placement}\\ \hline
+L_1 & 1       & 1\\
+L_2 & 2       & 2\\
+L_3 & 2^{11}  & 2048\\
+L_4 & 2^{21}  & 8192\\
+L_5 & 2^{31}  & 8192\\
+L_6 & 2^{41}  & 8192
+\end{array}
+\]
+These maxima can be attained simultaneously: use both top-level branches,
+spread the pages over all 2048 available 11-bit prefixes, and choose a
+different 21-bit (and hence 31-bit and 41-bit) prefix for every data page.
+Consequently,
+\[
+\begin{split}
+N_{\max}
+ &=1+2+2048+3(8192)\\
+ &=26{,}627\ \mbox{page-table pages},\\
+M_{\max}
+ &=26{,}627(8192)\\
+ &=218{,}128{,}384\ \mbox{bytes}\\
+ &=213{,}016\ \mbox{KiB}
+ \mathrel{\simeq}208.0234\ \mbox{MiB}.
+\end{split}
+\]
+In particular, \(8192\times6\) is not possible because there is only one
+root table, at most two \(L_2\) tables, and at most 2048 \(L_3\) tables.
+\end{enumerate}
+
+\subsection*{Q5. Ticket lock}
+
+\emph{Ten threads correctly use a ticket lock whose \texttt{lock} operation
+atomically fetches and increments \texttt{ticket}, waits for
+\(\texttt{turn}=\texttt{myturn}\), and whose \texttt{unlock} increments
+\texttt{turn}.  Determine whether each given
+\((\texttt{ticket},\texttt{turn})\) pair is possible.}
+
+Ignoring integer wraparound, correct use maintains
+\[
+0\leq \texttt{ticket}-\texttt{turn}\leq 10.
+\]
+The difference is exactly the number of threads that have taken a ticket but
+have not yet completed the corresponding unlock: one may be in the critical
+section and the rest are waiting.
+
+\begin{enumerate}
+\item[(a)] \((0,0)\): \textbf{possible}.  This is the initialized state,
+before any acquisition.
+
+\item[(b)] \((0,1)\): \textbf{impossible}.  It would mean that an unlock had
+advanced \texttt{turn} although no ticket had ever been issued.
+
+\item[(c)] \((1,0)\): \textbf{possible}.  One thread has received ticket 0
+and is either about to enter or is in the critical section; it has not yet
+unlocked.
+
+\item[(d)] \((150,100)\): \textbf{impossible}.  There would be
+\(150-100=50\) outstanding acquisitions, but only ten correctly using
+threads can each have at most one outstanding acquisition.
+
+\item[(e)] \((1005,1000)\): \textbf{possible}.  One thousand acquisitions
+have completed and five of the ten threads currently have outstanding
+tickets.
+\end{enumerate}
+
+\subsection*{Q6. Racy linked-list insertion}
+
+\emph{Three threads insert keys 1, 2, and 3 into an initially empty list,
+without synchronization, using}
+
+\begin{verbatim}
+n->next = head;
+head = n;
+\end{verbatim}
+
+\emph{where allocation always succeeds and is thread-safe.  Give every
+possible reachable list length and shape.}
+
+Under the intended interleaving model, pointer reads and writes are atomic.
+Two or more threads can read the same old value of \texttt{head} in the
+first assignment.  Their later writes to \texttt{head} then overwrite one
+another, making some allocated nodes unreachable.
+
+\begin{itemize}
+\item Length 1:
+\[
+1,\qquad 2,\qquad 3.
+\]
+For example, all three threads can read \texttt{NULL} before any of them
+writes \texttt{head}; whichever writes \texttt{head} last is the only
+reachable node.
+
+\item Length 2 (every ordered pair of distinct keys):
+\[
+\begin{array}{lll}
+1\mathbin{\to}2,&1\mathbin{\to}3,&
+2\mathbin{\to}1,\\
+2\mathbin{\to}3,&3\mathbin{\to}1,&
+3\mathbin{\to}2.
+\end{array}
+\]
+The remaining node was allocated but lost.  For example, threads 2 and 3
+may both prepare a node pointing to \texttt{NULL}; thread 2 publishes its
+node, thread 1 records node 2 as its successor, thread 3 temporarily
+overwrites the head, and thread 1 finally publishes node 1.  The reachable
+list is \(1\to2\).
+
+\item Length 3 (every permutation):
+\[
+\begin{array}{lll}
+1\mathbin{\to}2\mathbin{\to}3,&
+1\mathbin{\to}3\mathbin{\to}2,&
+2\mathbin{\to}1\mathbin{\to}3,\\
+2\mathbin{\to}3\mathbin{\to}1,&
+3\mathbin{\to}1\mathbin{\to}2,&
+3\mathbin{\to}2\mathbin{\to}1.
+\end{array}
+\]
+Each is obtained by a suitable serial ordering (or an equivalent
+interleaving) of the three insertions.
+\end{itemize}
+
+Length 0 is impossible because at least one of the three writes to
+\texttt{head} occurs.  No cycle can be formed: an edge from node \(i\) to
+node \(j\) requires \(j\) to have been published before \(i\)'s first
+assignment; the resulting strict ``published earlier'' order cannot form a
+cycle.  Strictly speaking, unsynchronized conflicting accesses to
+\texttt{head} are a C data race and therefore have undefined behaviour;
+the lists above are the complete outcomes in the sequentially consistent,
+atomic-pointer model intended by the question.
+
+\subsection*{Q7. Synchronizing a one-doctor clinic}
+
+\emph{There is one doctor, an infinite waiting room, and one shared buffer.
+A patient calls \texttt{consultDoctor()} to write consultation information
+and later calls \texttt{noteTreatment()} to read the treatment.  The doctor
+repeatedly calls \texttt{treatPatient()}, which reads the consultation and
+writes the treatment.  Use only semaphores so patients do not overwrite one
+another, the doctor reads only new valid information, and a patient reads
+only a completed treatment.}
+
+Three semaphores suffice:
+\[
+\begin{array}{c|c|l}
+\mbox{name} & \mbox{initial value} & \mbox{purpose}\\ \hline
+\texttt{office} & 1 & \mbox{only one patient may use the shared buffer}\\
+\texttt{patientInfo} & 0 & \mbox{a complete, new consultation is available}\\
+\texttt{treatmentReady} & 0 & \mbox{the doctor has written the treatment}
+\end{array}
+\]
+Here \(P\) is semaphore wait and \(V\) is semaphore signal.
+
+\begin{verbatim}
+Patient()
+{
+    P(office);             /* wait outside; reserve the buffer */
+    consultDoctor();       /* write this patient's information */
+    V(patientInfo);        /* publish it to the doctor */
+
+    P(treatmentReady);     /* wait until doctor writes result */
+    noteTreatment();       /* read this patient's treatment */
+    V(office);             /* next patient may use the buffer */
+}
+
+Doctor()
+{
+    while (1) {
+        P(patientInfo);    /* never read an empty/stale request */
+        treatPatient();    /* read request and write treatment */
+        V(treatmentReady);
+    }
+}
+\end{verbatim}
+
+\texttt{office} is held by a patient for the complete request--response
+exchange, so another patient cannot overwrite either phase of the shared
+buffer.  The two zero-valued semaphores provide the request and response
+handshakes, including the required memory-ordering points.  The semaphore's
+wait queue represents the unbounded waiting room.
+
+\subsection*{Q8. RAID and links}
+
+\begin{enumerate}
+\item[(a)] \emph{What is the steady-state random-write throughput of RAID-4,
+and why?}
+
+A small random write uses read--modify--write:
+read the old data and old parity, compute
+\[
+P_{\rm new}=P_{\rm old}\mathbin{\oplus}D_{\rm old}
+             \mathbin{\oplus}D_{\rm new},
+\]
+and then write the new data and new parity.  Thus every logical write makes
+two accesses (one read and one write) to the single dedicated parity disk.
+That disk is a serialization bottleneck, regardless of how many data disks
+are present.
+
+If one disk can sustain \(R\) random I/O operations per second, the precise
+idealized small-random-write limit is about \(R/2\) logical writes per
+second, because the parity disk performs two I/Os per logical write.  Thus
+the throughput is of the order of one disk, not \(N-1\) disks.  (Caching or
+full-stripe/coalesced writes can change this workload-specific figure.)
+
+\item[(b)] \emph{How does RAID-5 improve random-write performance over
+RAID-4?}
+
+RAID-5 rotates parity blocks across all disks instead of placing all parity
+on one dedicated disk.  A small write still has the four-I/O
+read--modify--write penalty (old data read, old parity read, new data write,
+new parity write), but unrelated writes can update parity blocks on
+different disks.  With \(N\) disks each capable of \(R\) random IOPS, a
+balanced idealized throughput is therefore approximately
+\[
+\frac{NR}{4}
+\]
+logical random writes per second, rather than RAID-4's parity-disk limit of
+approximately \(R/2\).
+
+\item[(c)] \emph{Distinguish hard links from soft (symbolic) links.}
+
+\begin{center}
+\begin{tabular}{p{0.43\linewidth}|p{0.43\linewidth}}
+\textbf{Hard link} & \textbf{Symbolic (soft) link}\\ \hline
+Another directory entry containing the same inode number as the original
+name. & A distinct file whose contents are a pathname to another file.\\
+All hard-linked names are equal names for the same inode; deleting one name
+does not remove the file while another hard link remains. &
+Deleting or moving the target can leave a dangling symbolic link.\\
+Cannot cross file-system boundaries because inode numbers are local to a
+file system. & Can contain a path that crosses file-system boundaries.\\
+Hard links to directories are normally forbidden to preserve a well-formed
+directory tree. & May refer to a directory.\\
+Uses the target inode's metadata and increases its link count. &
+Has its own inode; normal access follows the stored path to the target.
+\end{tabular}
+\end{center}
+\end{enumerate}

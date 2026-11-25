@@ -1,0 +1,11 @@
+error: invalid pointer
+error: invalid pointer
+q NULL
+error: invalid pointer
+q2 NULL
+q3 NULL
+q4 NULL
+nothing above
+region 0 65536
+  32 A 128 10
+  160 F 65376

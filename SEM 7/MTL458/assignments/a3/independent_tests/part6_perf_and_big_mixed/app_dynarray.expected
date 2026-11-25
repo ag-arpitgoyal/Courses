@@ -1,0 +1,8 @@
+pushed 200000 values, capacity 262144, sum 169184455
+sorted=1 min=-499992 max=499999 median=1382 wsum=677739489
+odd values kept 100029, wsum=-79981439
+calloc zeroed=1
+vectors: total len 56208, max len 84, checksum 110431115
+operations counted: 200000
+leak: block 0:32 (48 bytes)
+leak summary: 1 blocks, 48 bytes

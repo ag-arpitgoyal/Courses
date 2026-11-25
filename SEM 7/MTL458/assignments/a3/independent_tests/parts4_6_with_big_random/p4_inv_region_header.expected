@@ -1,0 +1,6 @@
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+region 0 65536
+  32 A 128 10
+  160 F 65376

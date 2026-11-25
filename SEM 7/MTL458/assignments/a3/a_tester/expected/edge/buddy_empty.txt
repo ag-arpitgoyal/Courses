@@ -1,0 +1,2 @@
+my_malloc(0) -> NULL
+my_malloc(1048576 - 15) -> NULL

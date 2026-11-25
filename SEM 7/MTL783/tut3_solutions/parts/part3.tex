@@ -1,0 +1,191 @@
+\begin{question}{21}
+Show that the language
+\[L_1=\{w\in\{0,1\}^*\mid w \text{ is a binary representation of } 2^n \text{ for some } n\ge 0\}\]
+is decidable.
+\end{question}
+\begin{soln}
+In binary, $2^n$ is a $1$ followed by $n$ zeros ($1,10,100,\dots$). With the usual convention of no leading zeros,
+\[
+L_1=\{1,10,100,1000,\dots\}=L(10^*),
+\]
+which is \textbf{regular}. Every regular language is decidable: simulate its DFA (Sipser Thm 4.1).
+
+\begin{center}
+\begin{tikzpicture}[tm,node distance=3cm]
+\node[state,initial] (q0) {$q_0$};
+\node[state,accepting,right=of q0] (q1) {$q_1$};
+\node[state,below=1.8cm of $(q0)!0.5!(q1)$] (d) {$q_{\mathrm{dead}}$};
+\path
+ (q0) edge node {$1$} (q1)
+ (q1) edge[loop above] node {$0$} ()
+ (q0) edge[swap] node {$0$} (d)
+ (q1) edge node {$1$} (d)
+ (d) edge[loop right] node {$0,1$} ();
+\end{tikzpicture}
+\end{center}
+
+Decider: ``On input $w$: run this DFA on $w$; accept iff it ends in $q_1$.'' It halts after $|w|$ steps.
+(If leading zeros are allowed, $L_1=L(0^*10^*)$, again regular, so the answer does not change.)
+\end{soln}
+
+\begin{question}{22}
+Show that the language
+\[L_2=\{\enc{M}\mid M \text{ is a DFA that accepts } w^R \text{ whenever it accepts } w\}\]
+is decidable, where $w^R$ denotes the reverse of $w$.
+\end{question}
+\begin{soln}
+Let $L=L(M)$. The condition says $L\subseteq L^R$.
+
+\textbf{Step 1: the condition means $L=L^R$.} If $L\subseteq L^R$, reverse both sides: $L^R\subseteq (L^R)^R=L$. So $L=L^R$.
+
+\textbf{Step 2: a DFA for $L^R$.} Reverse every arrow of $M$, make the old start state the only accept state, and add a new start state with $\eps$-moves to all old accept states. This NFA $N$ reads a string backwards along a path of $M$, so $L(N)=L^R$. Convert $N$ to a DFA $M^R$ by the subset construction.
+
+\begin{center}
+\begin{tikzpicture}[tm,node distance=2.6cm]
+\node[state,initial] (p) {$p$};
+\node[state,accepting,right=of p] (q) {$q$};
+\path (p) edge node {$1$} (q)
+      (p) edge[loop above] node {$0$} ()
+      (q) edge[loop above] node {$0,1$} ();
+\node[above=1.9cm of $(p)!0.5!(q)$,font=\bfseries\small] {DFA $M$};
+\node[state,initial,right=2.3cm of q] (s) {$s$};
+\node[state,right=of s] (q2) {$q$};
+\node[state,accepting,right=of q2] (p2) {$p$};
+\path (s) edge node {$\eps$} (q2)
+      (q2) edge node {$1$} (p2)
+      (q2) edge[loop above] node {$0,1$} ()
+      (p2) edge[loop above] node {$0$} ();
+\node[above=1.9cm of q2,font=\bfseries\small] {reversed NFA $N$};
+\end{tikzpicture}
+
+{\footnotesize $M$ accepts strings containing a $1$; so does $N$ (this $L$ happens to satisfy $L=L^R$).}
+\end{center}
+
+\textbf{Step 3: decide.}
+$T=$ ``On input $\enc{M}$: build $M^R$ as above; run the $\mathit{EQ}_{\mathrm{DFA}}$ decider (Thm 4.5) on $\enc{M,M^R}$; accept iff it accepts.''
+Every step is a finite construction or a decider, so $T$ halts, and it accepts iff $L(M)=L(M)^R$, i.e.\ iff $\enc M\in L_2$.
+\end{soln}
+
+\begin{question}{23}
+For languages $L_1,L_2$, define $L_1\oplus L_2=\{w\mid (w\in L_1 \text{ and } w\notin L_2) \text{ or } (w\notin L_1 \text{ and } w\in L_2)\}$. True or false: if $L_1$ and $L_2$ are decidable, then $L_1\oplus L_2$ is decidable. Justify.
+\end{question}
+\begin{soln}
+\textbf{True.} Let $M_1,M_2$ decide $L_1,L_2$.
+
+$M=$ ``On input $w$: run $M_1$ on $w$ and run $M_2$ on $w$ (both halt). Accept iff exactly one of them accepted.''
+
+$M$ always halts because $M_1$ and $M_2$ do, and it accepts exactly the strings in exactly one of $L_1,L_2$, i.e.\ $L_1\oplus L_2$.
+(Equivalently, $L_1\oplus L_2=(L_1\cap\comp{L_2})\cup(\comp{L_1}\cap L_2)$, and decidable languages are closed under $\cap,\cup$ and complement.)
+\end{soln}
+
+\begin{question}{24}
+Let $A$ be a language that is Turing-recognizable but not decidable. Is the language $\comp A$ Turing-recognizable? Is $\comp A$ Turing-decidable? Justify your answers.
+\end{question}
+\begin{soln}
+\textbf{$\comp A$ is not Turing-recognizable.} Recall Thm 4.22: a language is decidable iff both it and its complement are recognizable. (Run the two recognizers in parallel; on every input exactly one of them accepts.) If $\comp A$ were recognizable, then $A$ and $\comp A$ would both be recognizable, so $A$ would be decidable, which is a contradiction.
+
+\textbf{$\comp A$ is not decidable.} Every decidable language is recognizable, and $\comp A$ is not recognizable. (Alternatively: if $\comp A$ were decidable, then so would be $A=\comp{\comp A}$, by swapping accept and reject.)
+
+Example: $A=\Atm$; $\comp{\Atm}$ is not recognizable (Cor 4.23).
+\end{soln}
+
+\begin{question}{25}
+True or false: all unary languages $L\subseteq\{1\}^*$ are Turing-recognizable. Justify.
+\end{question}
+\begin{soln}
+\textbf{False.}
+
+\textbf{Counting argument.} There are only countably many TMs (Q2), so only countably many recognizable languages. But the unary languages are all subsets of the countably infinite set $\{1\}^*=\{\eps,1,11,\dots\}$, and there are uncountably many such subsets (as many as subsets of $\mathbb N$, by Cantor). So some unary language is not recognized by any TM.
+
+\textbf{An explicit one (diagonalization).} List all TMs as $M_0,M_1,M_2,\dots$ and let
+\[
+D=\{1^i\mid M_i \text{ does not accept } 1^i\}.
+\]
+If some $M_j$ recognized $D$, then $1^j\in D\iff M_j$ does not accept $1^j\iff 1^j\notin L(M_j)=D$, which is a contradiction. So $D$ is a unary language that is not Turing-recognizable.
+\end{soln}
+
+\begin{question}{26}
+Show that the language
+\[L_3=\{\enc M\mid M \text{ is a DFA that accepts some string with more 1's than 0's}\}\]
+is decidable.
+\end{question}
+\begin{soln}
+Let $C=\{w\mid w \text{ has more 1's than 0's}\}$. We must decide whether $L(M)\cap C\neq\emptyset$.
+
+\textbf{Idea.} $C$ is context-free but not regular, so we cannot build a DFA for $L(M)\cap C$. But \emph{a CFL intersected with a regular language is context-free}, and emptiness of CFLs is decidable (Thm 4.8).
+
+\textbf{A PDA $P$ for $C$.} Use the stack as a counter of the difference $\#1-\#0$: the stack holds only $1$'s (if more 1's so far) or only $0$'s (if more 0's so far). On reading a symbol, pop it if the top is the opposite symbol, otherwise push it (symbols other than $0,1$, if any, are ignored). At the end of the input, accept iff the top of the stack is a $1$ (nondeterministically guess the end and check the top). So $L(P)=C$.
+
+\textbf{Product with $M$.} Build a PDA $P'$ whose state is a pair (state of $P$, state of $M$). On each input symbol $P'$ moves $P$ (using the stack) and $M$ (in the finite control) together. $P'$ accepts iff both accept. Then $L(P')=L(M)\cap C$. This is a finite construction.
+
+$T=$ ``On input $\enc M$:
+\begin{enumerate}
+\item Build $P'$ as above, and convert it to an equivalent CFG $G$ (Thm 2.20).
+\item Run the $E_{\mathrm{CFG}}$ decider on $\enc G$. If it says $L(G)=\emptyset$, \emph{reject}; otherwise \emph{accept}.''
+\end{enumerate}
+All steps halt, and $T$ accepts iff $L(M)\cap C\neq\emptyset$. Hence $L_3$ is decidable.
+
+(For reference, a CFG for $C$ is $S\to E1E\mid E1S$, with $E\to \eps\mid 0E1E\mid 1E0E$ generating the strings with equally many 0's and 1's.)
+\end{soln}
+
+\begin{question}{27}
+Show that the language
+\[\mathit{SUBSET}_{\mathrm{DFA}}=\{\enc{A,B}\mid A \text{ and } B \text{ are DFAs and } L(A)\subseteq L(B)\}\]
+is decidable.
+\end{question}
+\begin{soln}
+\textbf{Key fact.} $L(A)\subseteq L(B)\iff$ no string is accepted by $A$ and rejected by $B$ $\iff L(A)\cap\comp{L(B)}=\emptyset$.
+
+$T=$ ``On input $\enc{A,B}$:
+\begin{enumerate}
+\item Build a DFA $\bar B$ for $\comp{L(B)}$ (swap accept and non-accept states of $B$).
+\item Build the product DFA $C$ of $A$ and $\bar B$ (states are pairs, accept iff both components accept), so $L(C)=L(A)\cap\comp{L(B)}$.
+\item Run the $E_{\mathrm{DFA}}$ decider (Thm 4.4) on $\enc C$. Accept iff it accepts.''
+\end{enumerate}
+All steps are finite constructions or deciders, so $T$ always halts, and it accepts iff $L(A)\cap\comp{L(B)}=\emptyset$ iff $L(A)\subseteq L(B)$. (If $A,B$ have different alphabets, first extend both to the union alphabet with a dead state.)
+\end{soln}
+
+\begin{question}{28}
+Consider the language $A=\{\enc M\mid M \text{ is a Turing machine and } L(M)=\Sigma^*\}$. Is $A$ decidable or not? Justify your statement.
+\end{question}
+\begin{soln}
+\textbf{$A$ ($=\mathit{ALL}_{\mathrm{TM}}$) is undecidable.} We reduce $\Atm$ to it: $\Atm\redm A$.
+
+Given $\enc{M,w}$, construct the machine
+\[
+M_w=\text{``On any input $x$: run $M$ on $w$; if it accepts, accept.''}
+\]
+(Note that $M_w$ ignores its input.)
+\begin{itemize}
+\item If $M$ accepts $w$: $M_w$ accepts every $x$, so $L(M_w)=\Sigma^*$ and $\enc{M_w}\in A$.
+\item If $M$ does not accept $w$: $M_w$ accepts nothing, so $L(M_w)=\emptyset\neq\Sigma^*$ and $\enc{M_w}\notin A$.
+\end{itemize}
+The map $\enc{M,w}\mapsto\enc{M_w}$ is computable (we only write down $M_w$; we never run it). Hence $\Atm\redm A$. Since $\Atm$ is undecidable, so is $A$.
+
+\textbf{Even stronger:} the same function shows $\comp\Atm\redm\comp A$, so $\comp A$ is not recognizable; and Q34 shows $\Etm\redm A$, so $A$ is not recognizable either. Thus neither $A$ nor $\comp A$ is Turing-recognizable.
+(Rice's theorem also gives undecidability directly: ``$L(M)=\Sigma^*$'' is a nontrivial property of $L(M)$.)
+\end{soln}
+
+\begin{question}{29}
+Define the language $\mathit{SELF}_{\mathrm{ACC}}=\{\enc M\mid M \text{ is a TM that accepts its own description } \enc M\}$. Prove that $\mathit{SELF}_{\mathrm{ACC}}$ is Turing-recognizable but undecidable.
+\end{question}
+\begin{soln}
+\textbf{Recognizable.} $R=$ ``On input $\enc M$: simulate $M$ on $\enc M$ (with a universal TM). If it accepts, accept.''
+$R$ accepts exactly when $M$ accepts $\enc M$ (it may loop otherwise, which is allowed for a recognizer).
+
+\textbf{Undecidable (diagonalization).} Suppose a decider $H$ for $\mathit{SELF}_{\mathrm{ACC}}$ exists. Build
+\[
+D=\text{``On input } \enc M\text{: run } H \text{ on } \enc M \text{; if } H \text{ accepts, \emph{reject}; if } H \text{ rejects, \emph{accept}.''}
+\]
+$D$ always halts, because $H$ does, and for every TM $M$:
+\[
+D \text{ accepts } \enc M \iff H \text{ rejects } \enc M \iff M \text{ does not accept } \enc M .
+\]
+Now feed $D$ its own description, taking $M=D$:
+\[
+D \text{ accepts } \enc D \iff D \text{ does not accept } \enc D ,
+\]
+which is impossible. So no such $H$ exists, and $\mathit{SELF}_{\mathrm{ACC}}$ is undecidable.
+
+(Consequently $\comp{\mathit{SELF}_{\mathrm{ACC}}}$ is not Turing-recognizable, by Thm 4.22.)
+\end{soln}

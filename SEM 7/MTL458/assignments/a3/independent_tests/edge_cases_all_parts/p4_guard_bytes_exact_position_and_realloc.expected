@@ -1,0 +1,7 @@
+guard_init_ok=1
+error: overflow detected (block 0:32)
+guard_grow_ok=1
+guard_shrink_ok=1
+error: overflow detected (block 0:32)
+region 0 65536
+  32 F 65504

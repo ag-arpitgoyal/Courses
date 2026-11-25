@@ -1,0 +1,10 @@
+error: overflow detected (block 0:160)
+error: write after free (block 0:32)
+error: overflow detected (block 0:288)
+error: write after free (block 0:160)
+region 0 65536
+  32 F 256
+  288 D 128 10
+  416 A 128 10
+  544 A 352 300
+  896 F 64640

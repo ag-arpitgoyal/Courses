@@ -1,0 +1,24 @@
+region 0 65536
+  32 D 128 10
+  160 D 128 15
+  288 D 128 20
+  416 A 128 25
+  544 F 64992
+error: double free (block 0:160)
+error: double free (block 0:160)
+error: write after free (block 0:32)
+region 0 65536
+  32 F 128
+  160 D 128 15
+  288 D 128 20
+  416 D 128 25
+  544 F 64992
+error: write after free (block 0:288)
+region 0 65536
+  32 A 128 10
+  160 F 256
+  416 D 128 25
+  544 F 64992
+region 0 65536
+  32 A 128 10
+  160 F 65376

@@ -1,0 +1,143 @@
+\section{Pushdown automata}
+
+\subsection{Why a stack?}
+The language $A=\set{0^n1^n:n\geq 0}$ is not regular, so
+no DFA recognizes it. The \emph{minimum extra memory} that does is a stack:
+inspect the top, push, or pop.
+
+Informal algorithm for $0^n1^n$:
+\begin{itemize}
+  \item while reading $0$s, push a marker;
+  \item when $1$s begin, pop one marker per $1$;
+  \item accept if the input ends with the stack empty (apart from a bottom
+        marker).
+\end{itemize}
+A PDA has finitely many states but an unbounded stack. We allow
+nondeterminism. Unlike finite automata, deterministic and nondeterministic
+PDAs are \emph{not} equal in power. Nondeterministic PDAs are equivalent to
+CFGs. Inherently ambiguous languages require nondeterminism; the converse is
+false.
+
+\subsection{Formal definition}
+A (nondeterministic) PDA is a $6$-tuple.
+
+\begin{definition}[PDA]
+A \emph{pushdown automaton} is
+\[
+  P=(Q,\Sigma,\Gamma,\transition,q_0,F)
+\]
+where
+\begin{enumerate}
+  \item $Q$ is a finite set of states;
+  \item $\Sigma$ is a finite input alphabet;
+  \item $\Gamma$ is a finite stack alphabet;
+  \item $\transition:Q\times\Sigma_\eps\times\Gamma_\eps\to\powerset{Q\times\Gamma_\eps}$
+        is the transition function, with $\Sigma_\eps=\Sigma\cup\set{\eps}$ and
+        $\Gamma_\eps=\Gamma\cup\set{\eps}$;
+  \item $q_0\in Q$ is the start state;
+  \item $F\subseteq Q$ is the set of accept states.
+\end{enumerate}
+\end{definition}
+
+A transition $\bigl(q',b\bigr)\in\transition(q,a,x)$ means: in state $q$, read
+$a$ from the input (or $\eps$: read nothing), pop $x$ from the stack (or
+$x=\eps$: pop nothing), move to $q'$, and push $b$ (or $b=\eps$: push
+nothing). Acceptance is by \emph{some} path: if any copy ends in an accept
+state after consuming the input, the PDA accepts. A copy with no legal move
+dies, as in an NFA.
+
+\begin{definition}[Computation of a PDA]
+Let $P=(Q,\Sigma,\Gamma,\transition,q_0,F)$ and $w\in\Sigma^*$. Write
+$w=w_1\cdots w_m$ with $w_i\in\Sigma_\eps$. Then $P$ accepts $w$ if there are
+states $r_0,\ldots,r_m\in Q$ and strings $s_0,s_1,\ldots,s_m\in\Gamma^*$
+(stack contents, top on the left) such that
+\begin{enumerate}
+  \item $r_0=q_0$ and $s_0=\eps$ (or $s_0=\mathdollar$ if a bottom marker is pushed by
+        an initial $\eps$-move);
+  \item for each $i$, $\bigl(r_{i+1},b\bigr)\in\transition(r_i,w_{i+1},a)$
+        where $s_i=at$ and $s_{i+1}=bt$ for some $a,b\in\Gamma_\eps$ and
+        $t\in\Gamma^*$;
+  \item $r_m\in F$.
+\end{enumerate}
+\end{definition}
+
+\subsection{A PDA for \texorpdfstring{$0^n1^n$}{0n1n}}
+\begin{example}
+Let
+\[
+  Q=\set{q_{\mathrm{start}},q_{\mathrm{loop}},q_{\mathrm{pop}},q_{\mathrm{accept}}},\quad
+  \Sigma=\set{0,1},\quad
+  \Gamma=\set{0,\mathdollar},\quad
+  F=\set{q_{\mathrm{accept}}}.
+\]
+\begin{itemize}
+  \item From $q_{\mathrm{start}}$, $\eps$-move to $q_{\mathrm{loop}}$ pushing
+        $\mathdollar$.
+  \item In $q_{\mathrm{loop}}$ (have not yet seen a $1$): on $0$, push $0$.
+  \item On $1$, pop a $0$ and go to $q_{\mathrm{pop}}$.
+  \item In $q_{\mathrm{pop}}$: on $1$, pop a $0$; on $0$, no move (that copy
+        dies).
+  \item On $\eps$, if the top is $\mathdollar$, pop $\mathdollar$ and go to $q_{\mathrm{accept}}$.
+\end{itemize}
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=34mm]
+  \node[state,initial] (qs) {$q_s$};
+  \node[state,right=of qs] (ql) {$q_\ell$};
+  \node[state,right=of ql] (qp) {$q_p$};
+  \node[state,accepting,below=22mm of qp] (qa) {$q_a$};
+  \path[->]
+    (qs) edge node[align=center,above]{$\eps,\eps$\\$\to\mathdollar$} (ql)
+    (ql) edge[loop above] node[align=center]{$0,\eps$\\$\to 0$} ()
+         edge node[align=center,above]{$1,0$\\$\to\eps$} (qp)
+    (qp) edge[loop above] node[align=center]{$1,0$\\$\to\eps$} ()
+         edge node[align=center,right]{$\eps,\mathdollar$\\$\to\eps$} (qa);
+\end{tikzpicture}
+\end{center}
+A label $a,x\to y$ means ``read $a$, pop $x$, push $y$''. On input $0011$,
+after pushing $\mathdollar$ the stack is $00\mathdollar$ (top on the left);
+each $1$ pops a $0$; a final $\eps$-move pops $\mathdollar$ and accepts.
+\end{example}
+
+\begin{example}[Balanced parentheses]
+Let
+\[
+  L=\set{w\in\set{(,)}^*:w\text{ is balanced}}.
+\]
+Use states $q_s,q_\ell,q_a$, stack alphabet $\set{(,\mathdollar}$, and
+\[
+\begin{aligned}
+  \transition(q_s,\eps,\eps)
+    &=\set{(q_\ell,\mathdollar)},\\
+  \transition(q_\ell,(,\eps)
+    &=\set{(q_\ell,( )},\\
+  \transition(q_\ell,),()
+    &=\set{(q_\ell,\eps)},\\
+  \transition(q_\ell,\eps,\mathdollar)
+    &=\set{(q_a,\eps)}.
+\end{aligned}
+\]
+Push on $($, pop on $)$, and accept by an $\eps$-move that pops the bottom
+marker. Nondeterminism is not required. A copy dies if it tries to pop $($
+when the top is $\mathdollar$, or if it reads $)$ with empty useful stack.
+\end{example}
+
+\subsection{PDAs and CFGs}
+\begin{theorem}
+A language is context-free if and only if some PDA recognizes it.
+\end{theorem}
+
+\begin{proof}[Proof idea]
+($\Rightarrow$) From a CFG, a PDA keeps a sentential form on the stack, top
+symbol being the next to expand. It nondeterministically replaces a variable
+by a right-hand side, and matches terminals against the input.
+
+($\Leftarrow$) From a PDA, a CFG has variables $A_{pq}$ meaning ``stack height
+returns, going from state $p$ to state $q$''. Rules simulate a single PDA
+move that pushes a symbol and later pops it, with an intermediate computation
+in between.
+
+Thus $\cfl=\set{\lang{P}:P\text{ is a PDA}}$.
+\end{proof}
+
+Acceptance by empty stack versus final state is equivalent for nondeterministic
+PDAs: one extra state or marker converts either convention into the other.

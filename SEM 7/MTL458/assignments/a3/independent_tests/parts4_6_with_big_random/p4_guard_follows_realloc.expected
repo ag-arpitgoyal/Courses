@@ -1,0 +1,15 @@
+p==p0 yes
+error: overflow detected (block 0:160)
+region 0 65536
+  32 A 128 5
+  160 F 128
+  288 A 128 10
+  416 F 65120
+error: overflow detected (block 0:32)
+region 0 65536
+  32 F 256
+  288 A 352 300
+  640 F 64896
+error: overflow detected (block 0:288)
+region 0 65536
+  32 F 65504

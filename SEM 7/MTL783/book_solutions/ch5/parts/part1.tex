@@ -1,0 +1,220 @@
+\begin{question}{Exercise 5.1}
+Show that $\mathit{EQ}_{\mathrm{CFG}}$ is undecidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Equivalence of CFGs specializes to ``is $L(G)=\Sigma^*$?'' by comparing $G$ with a grammar for $\Sigma^*$. Reduce $\mathit{ALL}_{\mathrm{CFG}}$ (undecidable by Theorem~5.13) to $\mathit{EQ}_{\mathrm{CFG}}$.
+
+Recall
+\begin{align*}
+\mathit{EQ}_{\mathrm{CFG}}
+&=\{\enc{G,H}\mid \text{$G,H$ are CFGs and $L(G)=L(H)$}\},\\
+\mathit{ALL}_{\mathrm{CFG}}
+&=\{\enc{G}\mid \text{$G$ is a CFG and $L(G)=\Sigma^*$}\}.
+\end{align*}
+Given a CFG $G$ with terminal alphabet $\Sigma$, let $H_\Sigma$ be the CFG with start variable $S$ and rules
+$S\to aS$ for every $a\in\Sigma$, together with $S\to\eps$. Then $L(H_\Sigma)=\Sigma^*$. Define
+\[
+f(\enc{G})=\enc{G,H_\Sigma}.
+\]
+
+\textbf{Correctness.}
+$L(G)=\Sigma^*$ if and only if $L(G)=L(H_\Sigma)$, so
+$\enc{G}\in\mathit{ALL}_{\mathrm{CFG}}$ if and only if $\enc{G,H_\Sigma}\in\mathit{EQ}_{\mathrm{CFG}}$.
+
+\textbf{Computability.} From $\enc{G}$ one can read off $\Sigma$ and write down $\enc{H_\Sigma}$ in finitely many steps, so $f$ is computable. Thus $\mathit{ALL}_{\mathrm{CFG}}\redm\mathit{EQ}_{\mathrm{CFG}}$. Theorem~5.13 and Corollary~5.23 imply that $\mathit{EQ}_{\mathrm{CFG}}$ is undecidable.
+\end{soln}
+
+\begin{question}{Exercise 5.2}
+Show that $\mathit{EQ}_{\mathrm{CFG}}$ is co-Turing-recognizable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $L(G)\ne L(H)$ is witnessed by some string in the symmetric difference; membership in a CFL is decidable, so we can search for such a string.
+
+Let $R$ recognize $\comp{\mathit{EQ}_{\mathrm{CFG}}}$ as follows.
+$R=$ ``On input $\enc{G,H}$, where $G$ and $H$ are CFGs:
+\begin{enumerate}
+\item For each string $s$ in a standard enumeration of $\Sigma^*$, decide whether $s\in L(G)$ and whether $s\in L(H)$, using the decider for $A_{\mathrm{CFG}}$ (Theorem~4.7). If the two answers differ, \emph{accept}.''
+\end{enumerate}
+
+If $L(G)\ne L(H)$, some $s_i$ lies in exactly one of the two languages, so $R$ accepts. If $L(G)=L(H)$, the answers never differ and $R$ loops. Thus $R$ recognizes $\comp{\mathit{EQ}_{\mathrm{CFG}}}$, and $\mathit{EQ}_{\mathrm{CFG}}$ is co-Turing-recognizable.
+\end{soln}
+
+\begin{question}{Exercise 5.3}
+Find a match in the following instance of the Post Correspondence Problem.
+\[
+\left\{
+\begin{bmatrix} \mathrm{ab}\\ \mathrm{abab}\end{bmatrix},\;
+\begin{bmatrix} \mathrm{b}\\ \mathrm{a}\end{bmatrix},\;
+\begin{bmatrix} \mathrm{aba}\\ \mathrm{b}\end{bmatrix},\;
+\begin{bmatrix} \mathrm{aa}\\ \mathrm{a}\end{bmatrix}
+\right\}
+\]
+\end{question}
+\begin{soln}
+Number the tiles $u_1,u_2,u_3,u_4$ in the given order. The sequence $u_4,u_4,u_2,u_1$ is a match:
+\begin{center}
+\begin{tabular}{@{}c|cccc|c@{}}
+ & $u_4$ & $u_4$ & $u_2$ & $u_1$ & concatenation \\
+\midrule
+top    & aa & aa & b & ab   & aaaabab \\
+bottom & a  & a  & a & abab & aaaabab \\
+\end{tabular}
+\end{center}
+Explicitly,
+\begin{align*}
+\text{top: }& \mathrm{aa}\cdot\mathrm{aa}\cdot\mathrm{b}\cdot\mathrm{ab}=\mathrm{aaaabab},\\
+\text{bottom: }& \mathrm{a}\cdot\mathrm{a}\cdot\mathrm{a}\cdot\mathrm{abab}=\mathrm{aaaabab}.
+\end{align*}
+\end{soln}
+
+\begin{question}{Exercise 5.4}
+If $A\redm B$ and $B$ is a regular language, does that imply that $A$ is a regular language? Why or why not?
+\end{question}
+\begin{soln}
+\textbf{No.} Mapping reductions preserve decidability (Theorem~5.22), not regularity: the reducing function may be an arbitrary computable map, not a homomorphism.
+
+\textbf{Counterexample.} Let $A=\{0^n1^n\mid n\ge 0\}$, which is not regular, and let $B=\{1\}$, which is regular. Define
+\[
+f(w)=\begin{cases}
+1 & \text{if }w\in A,\\
+0 & \text{if }w\notin A.
+\end{cases}
+\]
+The language $A$ is decidable, so $f$ is computable, and $w\in A$ if and only if $f(w)\in B$. Thus $A\redm B$ even though $A$ is not regular.
+\end{soln}
+
+\begin{question}{Exercise 5.5}
+Show that $\Atm$ is not mapping reducible to $\Etm$. In other words, show that no computable function reduces $\Atm$ to $\Etm$. (Hint: Use a proof by contradiction, and facts you already know about $\Atm$ and $\Etm$.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} A reduction $\Atm\redm\Etm$ would yield $\comp{\Atm}\redm\comp{\Etm}$, but $\comp{\Etm}$ is recognizable while $\comp{\Atm}$ is not.
+
+Suppose for a contradiction that $\Atm\redm\Etm$ via a computable function $f$. By definition of mapping reducibility, $w\in\Atm$ if and only if $f(w)\in\Etm$, hence $w\in\comp{\Atm}$ if and only if $f(w)\in\comp{\Etm}$. The same $f$ is therefore a mapping reduction $\comp{\Atm}\redm\comp{\Etm}$.
+
+The language $\comp{\Etm}=\{\enc{M}\mid L(M)\ne\emptyset\}$ is Turing-recognizable (Exercise~4.5): dovetail $M$ on all strings and accept if any simulation accepts. Theorem~5.28 would then imply that $\comp{\Atm}$ is Turing-recognizable. This contradicts Corollary~4.23. Hence no such $f$ exists.
+\end{soln}
+
+\begin{question}{Exercise 5.6}
+Show that $\redm$ is a transitive relation.
+\end{question}
+\begin{soln}
+Suppose $A\redm B$ and $B\redm C$. Then there are computable functions $f$ and $g$ such that $x\in A$ if and only if $f(x)\in B$, and $y\in B$ if and only if $g(y)\in C$. Let $h(x)=g(f(x))$.
+
+A TM computes $h$ as follows: on input $x$, simulate a TM for $f$ to obtain $y=f(x)$, then simulate a TM for $g$ on $y$. Thus $h$ is computable. Moreover $x\in A$ if and only if $h(x)\in C$, so $A\redm C$ via $h$.
+\end{soln}
+
+\begin{question}{Exercise 5.7}
+Show that if $A$ is Turing-recognizable and $A\redm\comp{A}$, then $A$ is decidable.
+\end{question}
+\begin{soln}
+Suppose $A\redm\comp{A}$. The same mapping reduction gives $\comp{A}\redm A$. Because $A$ is Turing-recognizable, Theorem~5.28 implies that $\comp{A}$ is Turing-recognizable. Theorem~4.22 then implies that $A$ is decidable.
+\end{soln}
+
+\begin{question}{Exercise 5.8}
+In the proof of Theorem~5.15, we modified the Turing machine $M$ so that it never tries to move its head off the left-hand end of the tape. Suppose that we did not make this modification to $M$. Modify the PCP construction to handle this case.
+\end{question}
+\begin{soln}
+\textbf{Problem.} If $\delta(q,a)=(r,b,L)$ and the head is on the leftmost cell, the head stays put: configuration $q\,a\cdots$ becomes $r\,b\cdots$. The Part~3 dominos $\dom{cqa}{rcb}$ need a symbol $c$ to the left of the head, so they cannot handle this.
+
+\textbf{Idea.} When the head is at the left end, the symbol to its left in the match string is the separator $\#$. So use $\#$ as the ``wall''. Add, for every $q,r\in Q$ and $a,b\in\Gamma$ with $\delta(q,a)=(r,b,L)$, the domino
+\[
+\dom{\#qa}{\#rb}.
+\]
+
+\textbf{Why it fits the construction.} In the proof of Theorem~5.15, just after the top has copied configuration $C_{i-1}$ (but not yet the following $\#$), the unmatched part of the bottom is exactly $\#C_i$. If $C_i=q\,a\cdots$ with the head on the left end, the new domino consumes $\#qa$ on top and writes $\#rb$ on the bottom: the $\#$ closes $C_i$ and $rb$ begins $C_{i+1}$, which is the stay-put move. The remaining symbols of $C_i$ are then copied by the usual dominos.
+
+\textbf{The first move.} With the original first domino $\dom{\#}{\#q_0w_1\cdots w_n\#}$, the unmatched part is $q_0w_1\cdots w_n\#$: the $\#$ in front of $q_0$ is already used, so the new domino cannot fire on the first step. Replace the first domino by
+\[
+\dom{\#}{\#\#q_0w_1w_2\cdots w_n}.
+\]
+Now the unmatched part is $\#q_0w_1\cdots w_n=\#C_0$, which is exactly the form ``$\#C_i$'' above, so the first move (left-end or not) is handled like every other one. (The final $\#$ of $C_0$ is no longer in this domino; it is produced by the $\dom{\#}{\#}$ or $\dom{\#qa}{\#rb}$ domino that ends the copy of $C_0$, as for every later configuration.) The rest of the construction, including the final dominos, is unchanged.
+\end{soln}
+
+\begin{question}{Problem 5.9}
+Let $T=\{\enc{M}\mid \text{$M$ is a TM that accepts $w^R$ whenever it accepts $w$}\}$. Show that $T$ is undecidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Reduce $\Atm$ to $T$ by building a machine whose language is $\{01,10\}$ if $M$ accepts $w$, and $\{01\}$ otherwise. The first language is closed under reversal; the second is not.
+
+Define a computable $f$ by $f(\enc{M,w})=\enc{N}$, where
+$N=$ ``On input $x$:
+\begin{enumerate}
+\item If $x=01$, \emph{accept}.
+\item If $x=10$, run $M$ on $w$ and \emph{accept} if $M$ accepts.
+\item If $x\notin\{01,10\}$, \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.}
+If $\enc{M,w}\in\Atm$, then $M$ accepts $w$, so $L(N)=\{01,10\}$. This language is closed under reversal, hence $\enc{N}\in T$.
+If $\enc{M,w}\notin\Atm$, then $N$ never accepts $10$, so $L(N)=\{01\}$. Then $N$ accepts $01$ but not $01^R=10$, hence $\enc{N}\notin T$.
+
+\textbf{Computability.} The description $\enc{N}$ is obtained from $\enc{M,w}$ by adding a finite wrapper that checks $x$ against $\{01,10\}$ and hardcodes $w$, so $f$ is computable. Thus $\Atm\redm T$, and $T$ is undecidable by Corollary~5.23.
+\end{soln}
+
+\begin{question}{Problem 5.10}
+Consider the problem of determining whether a two-tape Turing machine ever writes a nonblank symbol on its second tape when it is run on input $w$. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+Let $B$ be the language of encodings $\enc{M,w}$ where $M$ is a two-tape TM that writes a nonblank symbol on its second tape when run on $w$.
+
+\textbf{Idea.} Reduce $\Atm$ to $B$: simulate $M$ on tape~1 and write on tape~2 only if that simulation accepts.
+
+Define $f(\enc{M,w})=\enc{T,w}$, where $T$ is the two-tape TM
+$T=$ ``On input $x$:
+\begin{enumerate}
+\item Simulate $M$ on $x$ using the first tape.
+\item If the simulation shows that $M$ accepts, write a nonblank symbol on the second tape.''
+\end{enumerate}
+
+\textbf{Correctness.}
+$T$ on input $w$ writes a nonblank on tape~2 if and only if $M$ accepts $w$. Thus $\enc{M,w}\in\Atm$ if and only if $\enc{T,w}\in B$.
+
+\textbf{Computability.} From $\enc{M}$ one can write down the two-tape simulator $T$ (tape~2 is used only in the accept action), so $f$ is computable. Hence $\Atm\redm B$, and $B$ is undecidable by Corollary~5.23.
+\end{soln}
+
+\begin{question}{Problem 5.11}
+Consider the problem of determining whether a two-tape Turing machine ever writes a nonblank symbol on its second tape during the course of its computation on any input string. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+Let $C$ be the language of encodings $\enc{M}$ where $M$ is a two-tape TM that writes a nonblank symbol on its second tape on some input.
+
+\textbf{Idea.} Reduce $\Atm$ to $C$ by hardcoding $w$: the constructed machine ignores its input and writes on tape~2 if and only if $M$ accepts that fixed $w$.
+
+Define $f(\enc{M,w})=\enc{T_w}$, where
+$T_w=$ ``On any input:
+\begin{enumerate}
+\item Simulate $M$ on $w$ using the first tape.
+\item If the simulation shows that $M$ accepts, write a nonblank symbol on the second tape.''
+\end{enumerate}
+
+\textbf{Correctness.}
+If $M$ accepts $w$, then $T_w$ writes a nonblank on tape~2 on every input, so $\enc{T_w}\in C$.
+If $M$ does not accept $w$, the simulation never reaches stage~2, so $T_w$ never writes a nonblank on tape~2, hence $\enc{T_w}\notin C$.
+Thus $\enc{M,w}\in\Atm$ if and only if $\enc{T_w}\in C$.
+
+\textbf{Computability.} Hardcoding $M$ and $w$ into $T_w$ is computable, so $f$ is computable. Hence $\Atm\redm C$, and $C$ is undecidable by Corollary~5.23.
+\end{soln}
+
+\begin{question}{Problem 5.12}
+Consider the problem of determining whether a single-tape Turing machine ever writes a blank symbol over a nonblank symbol during the course of its computation on any input string. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+Let $D$ be the language of encodings $\enc{M}$ where $M$ is a single-tape TM that writes $\blank$ over a nonblank symbol on some input.
+
+\textbf{Idea.} Reduce $\Atm$ to $D$. Simulate $M$ on $w$ while never using the real blank as a write; only if that simulation accepts do we overwrite a nonblank with $\blank$.
+
+Let $\blank'$ be a fresh nonblank symbol. Define $f(\enc{M,w})=\enc{M'}$, where
+$M'=$ ``On any input $x$:
+\begin{enumerate}
+\item Overwrite every symbol of $x$ with the proxy blank $\blank'$ (nonblank writes).
+\item Write $w$ on the tape, then simulate $M$ on $w$, treating $\blank'$ as $M$'s blank. Whenever $M$ would write $\blank$, write $\blank'$ instead.
+\item If $M$ accepts, write $1$ on a cell and then write $\blank$ over that $1$.''
+\end{enumerate}
+
+\textbf{Correctness.}
+If $M$ accepts $w$, then on every input $M'$ reaches stage~3 and writes $\blank$ over the nonblank $1$, so $\enc{M'}\in D$.
+If $M$ does not accept $w$, stage~3 never runs. Stages~1--2 never write $\blank$ at all, so $M'$ never writes $\blank$ over a nonblank, hence $\enc{M'}\notin D$.
+Thus $\enc{M,w}\in\Atm$ if and only if $\enc{M'}\in D$.
+
+\textbf{Computability.} The description of $M'$ is obtained from $\enc{M,w}$ by a finite change of tape alphabet and a wrapper, so $f$ is computable. Hence $\Atm\redm D$, and $D$ is undecidable by Corollary~5.23.
+\end{soln}

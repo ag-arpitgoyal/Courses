@@ -1,0 +1,22 @@
+61 61 61 61 61 61 61 61 61 61
+de de de de de de de de de de
+region 0 65536
+  32 D 128 10
+  160 A 128 10
+  288 A 144 100
+  432 F 65104
+error: write after free (block 0:32)
+region 0 65536
+  32 F 128
+  160 D 128 10
+  288 D 144 100
+  432 A 352 300
+  784 A 2048 2000
+  2832 F 62704
+error: double free (block 0:32)
+error: double free (block 0:288)
+region 0 65536
+  32 F 400
+  432 A 352 300
+  784 A 2048 2000
+  2832 F 62704

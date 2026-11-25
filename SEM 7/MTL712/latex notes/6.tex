@@ -1,0 +1,1822 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[
+  left=1.05in,
+  right=1.05in,
+  top=1in,
+  bottom=1in,
+  headheight=14pt
+]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+% Start a new page unless at least #1 of vertical space remains.
+\makeatletter
+\newcommand{\needspace}[1]{\par\penalty-100\begingroup
+  \setlength{\dimen@}{#1}%
+  \vskip\z@\@plus\dimen@\penalty-100\vskip\z@\@plus-\dimen@
+  \vskip\dimen@\penalty9999\vskip-\dimen@\vskip\z@skip
+  \endgroup}
+\makeatother
+\pretocmd{\section}{\needspace{12\baselineskip}}{}{}
+\pretocmd{\subsection}{\needspace{8\baselineskip}}{}{}
+
+\linespread{1.25}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em plus 0.25em minus 0.1em}
+\setlength{\abovedisplayskip}{1.3em plus 0.3em minus 0.2em}
+\setlength{\belowdisplayskip}{1.3em plus 0.3em minus 0.2em}
+\setlength{\abovedisplayshortskip}{1em plus 0.2em}
+\setlength{\belowdisplayshortskip}{1.1em plus 0.2em}
+\setlength{\jot}{10pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\numberwithin{equation}{section}
+
+\newtheoremstyle{spacedplain}
+  {18pt}{18pt}{\itshape}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spaceddefinition}
+  {18pt}{18pt}{\normalfont}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spacedremark}
+  {18pt}{18pt}{\normalfont}{}{\itshape}{.}{0.5em}{}
+
+\theoremstyle{spacedplain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{proposition}[theorem]{Proposition}
+
+\theoremstyle{spaceddefinition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{example}[theorem]{Example}
+
+\theoremstyle{spacedremark}
+\newtheorem{remark}[theorem]{Remark}
+
+\setlist[itemize]{leftmargin=*,itemsep=7pt,topsep=8pt,parsep=3pt}
+\setlist[enumerate]{leftmargin=*,itemsep=7pt,topsep=8pt,parsep=3pt}
+
+% Plain black frame, used only for the most important results.
+\newtcolorbox{keybox}{
+  enhanced,
+  colback=white,colframe=black,
+  boxrule=0.6pt,sharp corners,
+  left=10pt,right=10pt,top=4pt,bottom=6pt,
+  before skip=16pt,after skip=16pt
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Lectures 35--40 and Hyperbolic Equations}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% Run-in headings inside proofs and sections, set on their own line.
+\newcommand{\step}[1]{\par\needspace{6\baselineskip}\addvspace{0.6em}\noindent\textbf{#1}\par\nobreak}
+% Marks material that was not worked out in the lecture itself.
+\newcommand{\note}[1]{\par\needspace{5\baselineskip}\addvspace{0.4em}\noindent\textit{(#1)}\par\nobreak}
+\newcommand{\lecinfo}[1]{\noindent\textit{#1}\par}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+
+\title{\textbf{MTL712: Computational Methods for Differential\\Equations}\\[6pt]
+\large Lectures 35--40: Matrix Stability, Elliptic Equations,\\
+ADI Iterations and Hyperbolic Equations}
+\author{\normalsize Typeset lecture notes}
+\date{\normalsize November 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+{\linespread{1.0}\selectfont\setlength{\parskip}{0pt}\tableofcontents}
+
+%=====================================================================
+\section{Recap of Lecture 35}
+%=====================================================================
+
+\lecinfo{Lecture 35 is typeset in full in the previous notes; only the
+results needed below are collected here.}
+
+\step{Peaceman--Rachford ADI for \(u_t=u_{x_1x_1}+u_{x_2x_2}\)}
+With \(r=k/h^2\), the two-dimensional Crank--Nicolson scheme
+\[
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)
+   \bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n
+\]
+is split into two steps, each implicit in one direction only:
+\begin{align*}
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}
+  &=\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}.
+\end{align*}
+
+\step{Richardson's three-level scheme}
+For \(u_t=u_{xx}\), central differences in time and space give
+\[
+  U_m^{n+1}=2r\,\delta_x^2U_m^n+U_m^{n-1}.
+\]
+Writing it as a two-level system for \(W=[U,\;V]^T\) with
+\(V^n=U^{n-1}\), the amplification matrix is
+\(\begin{bmatrix}-8r\sin^2\frac{\beta h}2&1\\ 1&0\end{bmatrix}\); one
+of its eigenvalues has modulus greater than \(1\) for every \(r>0\), so
+the scheme is \emph{unconditionally unstable}.
+
+\step{Du Fort--Frankel scheme}
+Replacing \(U_m^n\) in Richardson's scheme by
+\(\frac12(U_m^{n+1}+U_m^{n-1})\) gives
+\begin{equation}\label{eq:dff}
+  U_m^{n+1}
+  =\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+   +\frac{1-2r}{1+2r}\,U_m^{n-1}.
+\end{equation}
+Its stability is proved in Section~\ref{sec:dff}.
+
+%=====================================================================
+\section{Eigenvalues of Block Matrices}
+%=====================================================================
+
+\lecinfo{Lecture 36, 2 November 2026.}
+
+\begin{keybox}
+\begin{theorem}\label{thm:block}
+Let
+\[
+  A=\begin{bmatrix}
+    A_{11}&A_{12}&\cdots&A_{1m}\\
+    A_{21}&A_{22}&\cdots&A_{2m}\\
+    \vdots&&\ddots&\vdots\\
+    A_{m1}&A_{m2}&\cdots&A_{mm}
+  \end{bmatrix},
+\]
+where each \(A_{ij}\) is an \(n\times n\) matrix, and suppose all the
+matrices \(A_{ij}\) have a common set of \(n\) linearly independent
+eigenvectors \(v_1,\dots,v_n\).  Then the eigenvalues of \(A\) are
+given by the eigenvalues of the \(m\times m\) matrices
+\[
+  \Lambda^{(k)}=
+  \begin{bmatrix}
+    \lambda_{11}^{(k)}&\lambda_{12}^{(k)}&\cdots&\lambda_{1m}^{(k)}\\
+    \vdots&&\ddots&\vdots\\
+    \lambda_{m1}^{(k)}&\lambda_{m2}^{(k)}&\cdots&\lambda_{mm}^{(k)}
+  \end{bmatrix},
+  \qquad k=1,2,\dots,n,
+\]
+where \(\lambda_{ij}^{(k)}\) is the eigenvalue of \(A_{ij}\)
+corresponding to the \(k\)th common eigenvector \(v_k\).
+\end{theorem}
+\end{keybox}
+
+\begin{proof}
+Let \(v_k\) be an eigenvector common to all the submatrices
+\(A_{ij}\), with corresponding eigenvalues
+\(\lambda_{ij}^{(k)}\).  For simplicity take \(m=2\), i.e.\
+\(i,j=1,2\), and write \(v\) for \(v_k\) and \(\lambda_{ij}\) for
+\(\lambda_{ij}^{(k)}\).  Then
+\[
+  A_{11}v=\lambda_{11}v,\quad A_{12}v=\lambda_{12}v,\quad
+  A_{21}v=\lambda_{21}v,\quad A_{22}v=\lambda_{22}v .
+\]
+Multiply these equations by non-zero constants \(\alpha_1,\alpha_2\)
+(the first column by \(\alpha_1\), the second by \(\alpha_2\)) and
+write them as
+\begin{equation}\label{eq:bl1}
+  \begin{bmatrix}A_{11}&A_{12}\\ A_{21}&A_{22}\end{bmatrix}
+  \begin{bmatrix}\alpha_1v\\ \alpha_2v\end{bmatrix}
+  =\begin{bmatrix}(\lambda_{11}\alpha_1+\lambda_{12}\alpha_2)v\\
+     (\lambda_{21}\alpha_1+\lambda_{22}\alpha_2)v\end{bmatrix}.
+\end{equation}
+Assume that \(A\) has an eigenvalue \(\mu\) corresponding to the
+eigenvector \(\begin{bmatrix}\alpha_1v\\ \alpha_2v\end{bmatrix}\), so
+that
+\begin{equation}\label{eq:bl2}
+  \begin{bmatrix}A_{11}&A_{12}\\ A_{21}&A_{22}\end{bmatrix}
+  \begin{bmatrix}\alpha_1v\\ \alpha_2v\end{bmatrix}
+  =\mu\begin{bmatrix}\alpha_1v\\ \alpha_2v\end{bmatrix}.
+\end{equation}
+Comparing the right-hand sides of \eqref{eq:bl1} and \eqref{eq:bl2},
+\begin{align*}
+  \lambda_{11}\alpha_1+\lambda_{12}\alpha_2&=\mu\alpha_1,\\
+  \lambda_{21}\alpha_1+\lambda_{22}\alpha_2&=\mu\alpha_2,
+\end{align*}
+that is,
+\begin{align*}
+  (\lambda_{11}-\mu)\alpha_1+\lambda_{12}\alpha_2&=0,\\
+  \lambda_{21}\alpha_1+(\lambda_{22}-\mu)\alpha_2&=0.
+\end{align*}
+These two equations have a non-trivial solution for
+\(\alpha_1,\alpha_2\) if and only if
+\[
+  \det\begin{bmatrix}\lambda_{11}-\mu&\lambda_{12}\\
+    \lambda_{21}&\lambda_{22}-\mu\end{bmatrix}=0,
+\]
+i.e.\ if and only if \(\mu\) is an eigenvalue of
+\(\begin{bmatrix}\lambda_{11}&\lambda_{12}\\
+\lambda_{21}&\lambda_{22}\end{bmatrix}\).
+\end{proof}
+
+\begin{remark}
+Each \(\Lambda^{(k)}\) has \(m\) eigenvalues, and \(k\) runs over
+\(n\) eigenvectors, so this gives all \(mn\) eigenvalues of \(A\).
+The argument for general \(m\) is identical, with \(m\) constants
+\(\alpha_1,\dots,\alpha_m\).
+\end{remark}
+
+%=====================================================================
+\section{Stability of the Du Fort--Frankel Scheme by the Matrix Method}
+\label{sec:dff}
+%=====================================================================
+
+\lecinfo{Lecture 36, continued.}
+
+Consider
+\[
+  \pd ut=\pdd ux,\qquad 0<x<1,\quad t>0,
+\]
+for a fixed mesh length \(h\) with \(Nh=1\), and \(u\) known on the
+boundary \(x=0\), \(x=1\) for \(t>0\).  The Du Fort--Frankel scheme
+\eqref{eq:dff} with \(r=k/h^2\) is
+\[
+  U_m^{n+1}=\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+  +\frac{1-2r}{1+2r}\,U_m^{n-1},
+  \qquad m=1,\dots,N-1.
+\]
+
+\step{Matrix form}
+For known boundary values these equations are
+\begin{equation}\label{eq:dffmat}
+  U^{n+1}=\frac{2r}{1+2r}\,AU^n+\frac{1-2r}{1+2r}\,U^{n-1}+f_n,
+\end{equation}
+where \(U^n=[U_1^n,\dots,U_{N-1}^n]^T\),
+\[
+  A=\begin{bmatrix}
+    0&1&&&\\
+    1&0&1&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&1&0&1\\
+    &&&1&0
+  \end{bmatrix}_{(N-1)\times(N-1)},
+  \qquad
+  f_n=\frac{2r}{1+2r}
+  \begin{bmatrix}U_0^n\\ 0\\ \vdots\\ 0\\ U_N^n\end{bmatrix}.
+\]
+
+\step{Reduction to a two-level scheme}
+Define \(V^n:=U^{n-1}\).  Then \eqref{eq:dffmat} becomes
+\[
+  U^{n+1}=\frac{2r}{1+2r}\,AU^n+\frac{1-2r}{1+2r}\,V^n+f_n,
+  \qquad
+  V^{n+1}=U^n .
+\]
+Introduce \(W=\begin{bmatrix}U\\ V\end{bmatrix}\).  Then
+\[
+  W^{n+1}=BW^n+g^n,
+  \qquad
+  B=\begin{bmatrix}
+    \dfrac{2r}{1+2r}A&\dfrac{1-2r}{1+2r}I\\[8pt]
+    I&0
+  \end{bmatrix},
+  \qquad
+  g^n=\begin{bmatrix}f_n\\ 0\end{bmatrix},
+\]
+where every block of \(B\) is \((N-1)\times(N-1)\).  This technique
+has reduced a three-level difference scheme to a two-level one.
+
+\begin{keybox}
+The equations are stable if each eigenvalue of \(B\) has modulus
+\(\le1\).
+\end{keybox}
+
+\step{Eigenvalues of \(B\)}
+The eigenvalues of \(A\) are the \(N-1\) distinct numbers
+\[
+  \lambda_k=2\cos\frac{k\pi}N,\qquad k=1,2,\dots,N-1,
+\]
+so \(A\) possesses a set of \(N-1\) linearly independent eigenvectors
+\(v_k\).  The same \(v_k\) are eigenvectors of \(I\) (eigenvalue
+\(1\)) and of \(0\) (eigenvalue \(0\)).  Hence, by
+Theorem~\ref{thm:block}, the eigenvalues \(\lambda\) of \(B\) are the
+eigenvalues of
+\[
+  \begin{bmatrix}
+    \dfrac{2r}{1+2r}\lambda_k&\dfrac{1-2r}{1+2r}\\[8pt]
+    1&0
+  \end{bmatrix},
+  \qquad k=1,2,\dots,N-1.
+\]
+So
+\[
+  \det\begin{bmatrix}
+    \dfrac{2r}{1+2r}\lambda_k-\lambda&\dfrac{1-2r}{1+2r}\\[8pt]
+    1&-\lambda
+  \end{bmatrix}=0
+  \quad\Longrightarrow\quad
+  \lambda^2-\frac{2r\lambda_k}{1+2r}\,\lambda-\frac{1-2r}{1+2r}=0 .
+\]
+Therefore
+\[
+  \lambda
+  =\frac12\left[\frac{2r\lambda_k}{1+2r}
+   \pm\left(\frac{4r^2\lambda_k^2}{(1+2r)^2}
+   +\frac{4(1-2r)}{1+2r}\right)^{1/2}\right]
+  =\frac{r\lambda_k\pm\bigl(r^2\lambda_k^2+1-4r^2\bigr)^{1/2}}{1+2r},
+\]
+that is,
+\begin{equation}\label{eq:dfflam}
+  \lambda=\frac{r\lambda_k\pm\bigl(1+(\lambda_k^2-4)r^2\bigr)^{1/2}}{1+2r}.
+\end{equation}
+Substituting \(\lambda_k=2\cos\frac{k\pi}N\) and using
+\(4\cos^2\theta-4=-4\sin^2\theta\),
+\[
+  \lambda=\frac{2r\cos\frac{k\pi}N
+  \pm\bigl(1-4r^2\sin^2\frac{k\pi}N\bigr)^{1/2}}{1+2r},
+  \qquad k=1,2,\dots,N-1.
+\]
+
+\step{Case I: \(0\le1-4r^2\sin^2\frac{k\pi}N<1\)}
+Both roots are real, and since \(|\cos\frac{k\pi}N|<1\),
+\[
+  |\lambda|<\frac{2r+1}{2r+1}=1 .
+\]
+
+\step{Case II: \(1-4r^2\sin^2\frac{k\pi}N<0\)}
+The roots are complex conjugates, and
+\[
+  |\lambda|
+  =\frac{\bigl(4r^2\cos^2\frac{k\pi}N+4r^2\sin^2\frac{k\pi}N-1\bigr)^{1/2}}{1+2r}
+  =\frac{(4r^2-1)^{1/2}}{1+2r}
+  =\left(\frac{4r^2-1}{4r^2+4r+1}\right)^{1/2}<1 .
+\]
+
+\begin{keybox}
+\begin{theorem}
+For a fixed mesh size, the Du Fort--Frankel scheme is unconditionally
+stable for \(r>0\).
+\end{theorem}
+\end{keybox}
+
+%=====================================================================
+\section{Elliptic Equations}
+%=====================================================================
+
+\lecinfo{Lecture 37, 3 November 2026.}
+
+Consider the second-order equation
+\begin{equation}\label{eq:gen2}
+  a(x_1,x_2)\pdd u{x_1}+2b(x_1,x_2)\frac{\partial^2u}{\partial x_1\partial x_2}
+  +c(x_1,x_2)\pdd u{x_2}
+  =d\Bigl(x_1,x_2,u,\pd u{x_1},\pd u{x_2}\Bigr),
+\end{equation}
+for \((x_1,x_2)\in R\), a bounded region in the \((x_1,x_2)\) plane
+with boundary \(\partial R\).  It is \emph{elliptic} if
+\[
+  b^2-ac<0 .
+\]
+
+\subsection{Boundary value problems}
+
+There are three distinct problems involving \eqref{eq:gen2},
+depending on the boundary condition.
+
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{First BVP, or Dirichlet problem.}  The solution of
+    \eqref{eq:gen2} takes prescribed values \(u(x_1,x_2)\) on the
+    boundary \(\partial R\).
+  \item \textbf{Second BVP, or Neumann problem.}
+    \[
+      \pd un=f(x_1,x_2)\quad\text{on }\partial R,
+    \]
+    where \(\partial/\partial n\) denotes differentiation along the
+    normal to \(\partial R\) directed away from the interior of \(R\).
+  \item \textbf{Third BVP, or Robin problem.}
+    \[
+      \alpha(x_1,x_2)\,u+\beta(x_1,x_2)\pd un=\gamma(x_1,x_2)
+      \quad\text{on }\partial R,
+    \]
+    where \(\alpha(x_1,x_2)>0\) and \(\beta(x_1,x_2)>0\) for
+    \((x_1,x_2)\in\partial R\).
+\end{enumerate}
+
+With \(a=1\), \(b=0\), \(c=1\) in \eqref{eq:gen2} we obtain
+\[
+  \pdd u{x_1}+\pdd u{x_2}=0\quad\text{(Laplace's equation)},
+  \qquad
+  \pdd u{x_1}+\pdd u{x_2}=f(x_1,x_2)\quad\text{(Poisson's equation)}.
+\]
+
+\subsection{The five-point formula}
+
+Consider Laplace's equation
+\[
+  \pdd u{x_1}+\pdd u{x_2}=0
+  \quad\text{on the unit square }
+  R=[0,1]\times[0,1],
+  \qquad u=g\ \text{on }\partial R .
+\]
+Use a square mesh \(x_{1,l}=lh\), \(x_{2,m}=mh\) with \(Nh=1\), so
+\(x_{1,l+1}-x_{1,l}=x_{2,m+1}-x_{2,m}=h\).  There are \((N-1)^2\)
+interior grid points.
+
+\step{Taylor series}
+\begin{align*}
+  u_{l\pm1,m}&=u_{l,m}\pm h\pd{u_{l,m}}{x_1}
+    +\frac{h^2}{2!}\pdd{u_{l,m}}{x_1}
+    \pm\frac{h^3}{3!}\frac{\partial^3u_{l,m}}{\partial x_1^3}
+    +\frac{h^4}{4!}\frac{\partial^4u_{l,m}}{\partial x_1^4}\pm\cdots,\\
+  u_{l,m\pm1}&=u_{l,m}\pm h\pd{u_{l,m}}{x_2}
+    +\frac{h^2}{2!}\pdd{u_{l,m}}{x_2}
+    \pm\frac{h^3}{3!}\frac{\partial^3u_{l,m}}{\partial x_2^3}
+    +\frac{h^4}{4!}\frac{\partial^4u_{l,m}}{\partial x_2^4}\pm\cdots.
+\end{align*}
+Adding the four expansions, the odd terms cancel:
+\[
+  u_{l+1,m}+u_{l-1,m}+u_{l,m+1}+u_{l,m-1}-4u_{l,m}
+  =h^2\Bigl(\pdd{}{x_1}+\pdd{}{x_2}\Bigr)u_{l,m}
+  +\frac{h^4}{12}\Bigl(\frac{\partial^4}{\partial x_1^4}
+  +\frac{\partial^4}{\partial x_2^4}\Bigr)u_{l,m}+\cdots.
+\]
+So we can approximate
+\[
+  \Bigl(\pdd{}{x_1}+\pdd{}{x_2}\Bigr)u_{l,m}
+  \approx\frac{u_{l+1,m}+u_{l-1,m}-4u_{l,m}+u_{l,m+1}+u_{l,m-1}}{h^2}.
+\]
+This gives a five-point analogue of the Laplacian, with local
+truncation error
+\[
+  \frac{h^2}{12}\Bigl(\frac{\partial^4}{\partial x_1^4}
+  +\frac{\partial^4}{\partial x_2^4}\Bigr)u_{l,m}+\cdots
+\]
+(the principal error term).
+
+\begin{keybox}
+\begin{definition}[Five-point formula]
+The five-point finite difference replacement of Laplace's equation is
+\[
+  U_{l-1,m}+U_{l+1,m}-4U_{l,m}+U_{l,m+1}+U_{l,m-1}=0,
+\]
+a second-order approximation of the Laplacian, with
+\(\mathrm{LTE}=O(h^2)\).
+\end{definition}
+\end{keybox}
+
+\subsection{Matrix form}
+
+Writing the five-point difference equation at all \((N-1)^2\) interior
+grid points leads to a system
+\[
+  AU=b,
+\]
+where \(A\) is a block tridiagonal matrix of order \((N-1)^2\):
+\[
+  A=\begin{bmatrix}
+    B&I&&\\
+    I&B&I&\\
+    &\ddots&\ddots&\ddots\\
+    &&I&B
+  \end{bmatrix},
+  \qquad
+  B=\begin{bmatrix}
+    -4&1&&\\
+    1&-4&1&\\
+    &\ddots&\ddots&\ddots\\
+    &&1&-4
+  \end{bmatrix}_{(N-1)\times(N-1)},
+\]
+\(I\) is the identity matrix of order \(N-1\), and the unknown vector
+is the \((N-1)^2\times1\) vector
+\[
+  U=[U_{1,1},U_{1,2},\dots,U_{1,N-1},U_{2,1},\dots,U_{2,N-1},
+  \dots,U_{N-1,1},\dots,U_{N-1,N-1}]^T .
+\]
+The \((N-1)^2\times1\) vector \(b\) is known; it arises from the known
+boundary values.
+
+\begin{remark}
+If we instead order \(U\) as
+\([U_{1,1},U_{2,1},U_{3,1},\dots,U_{N-1,1},\dots,U_{N-1,N-1}]^T\), the
+matrix has the same structure, since the five-point formula treats
+\(x_1\) and \(x_2\) symmetrically.  Multiplying the equations by
+\(-1\), \(A\) becomes \(\operatorname{tridiag}(-I,B,-I)\) with
+\(B=\operatorname{tridiag}(-1,4,-1)\).
+\end{remark}
+
+\begin{exercise}\label{ex:eigA}
+Show that the eigenvalues of \(A\) are
+\[
+  \lambda_{ij}=-4\Bigl(\sin^2\frac{i\pi}{2N}+\sin^2\frac{j\pi}{2N}\Bigr),
+  \qquad 1\le i,j\le N-1,
+\]
+and hence \(|A|\ne0\).
+\end{exercise}
+
+\note{This was an exercise; solution not done in lecture.}
+
+\begin{proof}[Solution]
+The tridiagonal matrix \(\operatorname{tridiag}(1,0,1)\) of order
+\(N-1\) has eigenvalues \(2\cos\frac{j\pi}N\) with eigenvectors
+\(v_j=\bigl[\sin\frac{j\pi}N,\sin\frac{2j\pi}N,\dots,
+\sin\frac{(N-1)j\pi}N\bigr]^T\).  Since \(B=-4I+\operatorname{tridiag}(1,0,1)\),
+the blocks \(B\) and \(I\) share the eigenvectors \(v_i\), with
+eigenvalues
+\[
+  \beta_i=-4+2\cos\frac{i\pi}N\quad\text{for }B,
+  \qquad 1\quad\text{for }I.
+\]
+By Theorem~\ref{thm:block}, the eigenvalues of \(A\) are the
+eigenvalues of the \((N-1)\times(N-1)\) matrices
+\[
+  \operatorname{tridiag}(1,\beta_i,1)=\beta_iI+\operatorname{tridiag}(1,0,1),
+\]
+namely \(\beta_i+2\cos\frac{j\pi}N\).  Thus
+\[
+  \lambda_{ij}=-4+2\cos\frac{i\pi}N+2\cos\frac{j\pi}N .
+\]
+Using \(2\cos\theta-2=-4\sin^2\frac\theta2\),
+\[
+  \lambda_{ij}=-4\sin^2\frac{i\pi}{2N}-4\sin^2\frac{j\pi}{2N}.
+\]
+For \(1\le i,j\le N-1\) every \(\lambda_{ij}<0\), so no eigenvalue is
+zero and \(|A|\ne0\): the system \(AU=b\) has a unique solution.
+\end{proof}
+
+\subsection{Rectangular mesh}
+
+\begin{exercise}\label{ex:rect}
+For \(\pdd u{x_1}+\pdd u{x_2}=0\) on a rectangle with step lengths
+\(h_1\) and \(h_2\) in the \(x_1\) and \(x_2\) directions
+respectively, derive the five-point difference replacement at the grid
+point \((lh_1,mh_2)\):
+\[
+  \theta^{-1}\bigl(U_{l+1,m}+U_{l-1,m}\bigr)
+  +\theta\bigl(U_{l,m+1}+U_{l,m-1}\bigr)
+  -2\bigl(\theta+\theta^{-1}\bigr)U_{l,m}=0,
+  \qquad
+  \theta=\frac{h_1}{h_2}\ \text{(the mesh ratio)}.
+\]
+Show that the local truncation error of this formula is
+\[
+  \mathrm{LTE}=\frac1{12}\Bigl(h_1^2\frac{\partial^4u}{\partial x_1^4}
+  +h_2^2\frac{\partial^4u}{\partial x_2^4}\Bigr)+\cdots.
+\]
+\end{exercise}
+
+\note{This was an exercise; solution not done in lecture.}
+
+\begin{proof}[Solution]
+\step{Derivation}
+Taylor expansion in \(x_1\) with step \(h_1\) gives
+\[
+  u_{l+1,m}+u_{l-1,m}-2u_{l,m}
+  =h_1^2\pdd u{x_1}+\frac{h_1^4}{12}\frac{\partial^4u}{\partial x_1^4}
+  +O(h_1^6),
+\]
+and similarly in \(x_2\) with step \(h_2\):
+\[
+  u_{l,m+1}+u_{l,m-1}-2u_{l,m}
+  =h_2^2\pdd u{x_2}+\frac{h_2^4}{12}\frac{\partial^4u}{\partial x_2^4}
+  +O(h_2^6).
+\]
+Replacing each second derivative by its central difference, Laplace's
+equation becomes
+\[
+  \frac{U_{l+1,m}-2U_{l,m}+U_{l-1,m}}{h_1^2}
+  +\frac{U_{l,m+1}-2U_{l,m}+U_{l,m-1}}{h_2^2}=0 .
+\]
+Multiplying by \(h_1h_2\) and using \(h_2/h_1=\theta^{-1}\),
+\(h_1/h_2=\theta\),
+\[
+  \theta^{-1}\bigl(U_{l+1,m}-2U_{l,m}+U_{l-1,m}\bigr)
+  +\theta\bigl(U_{l,m+1}-2U_{l,m}+U_{l,m-1}\bigr)=0,
+\]
+which is the required formula after collecting the \(U_{l,m}\) terms.
+
+\step{Local truncation error}
+Substitute the exact solution \(u\) into the left-hand side and divide
+by \(h_1h_2\) (so that the operator approximates
+\(\pdd u{x_1}+\pdd u{x_2}\)):
+\begin{align*}
+  &\frac1{h_1h_2}\Bigl[\theta^{-1}\bigl(u_{l+1,m}+u_{l-1,m}-2u_{l,m}\bigr)
+   +\theta\bigl(u_{l,m+1}+u_{l,m-1}-2u_{l,m}\bigr)\Bigr]\\
+  &\qquad=\frac1{h_1^2}\Bigl(h_1^2\pdd u{x_1}
+     +\frac{h_1^4}{12}\frac{\partial^4u}{\partial x_1^4}\Bigr)
+   +\frac1{h_2^2}\Bigl(h_2^2\pdd u{x_2}
+     +\frac{h_2^4}{12}\frac{\partial^4u}{\partial x_2^4}\Bigr)+\cdots\\
+  &\qquad=\Bigl(\pdd u{x_1}+\pdd u{x_2}\Bigr)
+   +\frac1{12}\Bigl(h_1^2\frac{\partial^4u}{\partial x_1^4}
+   +h_2^2\frac{\partial^4u}{\partial x_2^4}\Bigr)+\cdots.
+\end{align*}
+Since \(u\) satisfies Laplace's equation, the first bracket vanishes,
+leaving
+\[
+  \mathrm{LTE}=\frac1{12}\Bigl(h_1^2\frac{\partial^4u}{\partial x_1^4}
+  +h_2^2\frac{\partial^4u}{\partial x_2^4}\Bigr)+\cdots
+  =O(h_1^2+h_2^2).
+\]
+For \(h_1=h_2=h\) (\(\theta=1\)) this reduces to the five-point formula
+and its error term above.
+\end{proof}
+
+%=====================================================================
+\section{ADI Iteration for Laplace's Equation: Dirichlet Problem}
+%=====================================================================
+
+\lecinfo{Lectures 38--39.}
+
+\subsection{The Peaceman--Rachford method as an iteration}
+
+Consider
+\[
+  \pd ut=\pdd u{x_1}+\pdd u{x_2}
+\]
+with appropriate initial and boundary conditions.  The
+Peaceman--Rachford ADI method is
+\begin{equation}\label{eq:pr}
+\begin{aligned}
+  \bigl(1-\tfrac12\lambda\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}
+  &=\bigl(1+\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac12\lambda\delta_{x_1}^2\bigr)U_{l,m}^{n+1*},
+\end{aligned}
+\end{equation}
+where \(U_{l,m}^{n+1*}=U_{l,m}^{n+1/2}\).  Eliminating
+\(U_{l,m}^{n+1*}\) from \eqref{eq:pr} we get
+\begin{equation}\label{eq:prc}
+  \bigl(1-\tfrac12\lambda\delta_{x_1}^2\bigr)
+  \bigl(1-\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac12\lambda\delta_{x_1}^2\bigr)
+  \bigl(1+\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^n .
+\end{equation}
+
+Treat \eqref{eq:prc} as an iteration scheme, which is assumed to be
+convergent, i.e.\ \(U_{l,m}^{n+1}=U_{l,m}^n=U_{l,m}\) for \(n\)
+sufficiently large.  Then
+\[
+  \bigl(1-\tfrac12\lambda\delta_{x_1}^2\bigr)
+  \bigl(1-\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}
+  =\bigl(1+\tfrac12\lambda\delta_{x_1}^2\bigr)
+  \bigl(1+\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m},
+\]
+that is,
+\[
+  \Bigl(1-\tfrac\lambda2\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)
+  +\tfrac{\lambda^2}4\delta_{x_1}^2\delta_{x_2}^2\Bigr)U_{l,m}
+  =\Bigl(1+\tfrac\lambda2\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)
+  +\tfrac{\lambda^2}4\delta_{x_1}^2\delta_{x_2}^2\Bigr)U_{l,m}.
+\]
+Hence
+\[
+  \lambda\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}=0
+  \quad\Longrightarrow\quad
+  \bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}=0,
+\]
+which is the five-point analogue of Laplace's equation.
+
+\begin{keybox}
+The Peaceman--Rachford ADI method for the heat conduction problem,
+with boundary conditions independent of time, is an iteration method
+for solving Laplace's equation subject to the Dirichlet condition.
+Here \(\lambda\) is no longer a mesh parameter; it is an
+\emph{iteration parameter}.
+\end{keybox}
+
+\subsection{Matrix form}
+
+Let \(Nh=1\) and order the unknowns at the \((N-1)^2\) interior grid
+points with the \(x_1\) index running fastest:
+\[
+  U=[U_{1,1},U_{2,1},\dots,U_{N-1,1},\;U_{1,2},\dots,U_{N-1,2},\;
+  \dots,\;U_{1,N-1},\dots,U_{N-1,N-1}]^T,
+\]
+an \((N-1)^2\times1\) unknown vector.  Let \(H\) and \(V\) be the
+matrices of \(-\delta_{x_1}^2\) and \(-\delta_{x_2}^2\) acting on
+interior values:
+\[
+  H=\begin{bmatrix}C&&\\ &\ddots&\\ &&C\end{bmatrix},
+  \qquad
+  C=\begin{bmatrix}
+    2&-1&&\\
+    -1&2&-1&\\
+    &\ddots&\ddots&\ddots\\
+    &&-1&2
+  \end{bmatrix}_{(N-1)\times(N-1)},
+\]
+so \(H\) is block diagonal of order \((N-1)^2\), and
+\[
+  V=\begin{bmatrix}
+    2J&-J&&\\
+    -J&2J&-J&\\
+    &\ddots&\ddots&\ddots\\
+    &&-J&2J
+  \end{bmatrix},
+\]
+a block tridiagonal matrix, where \(J\) is the identity matrix of
+order \(N-1\).  The vector
+\(K=[K_{1,1},\dots,K_{N-1,1},\dots,K_{1,N-1},\dots,K_{N-1,N-1}]^T\) is
+known; it arises from the boundary values.  The five-point equations at
+all interior points read
+\[
+  (H+V)\,U=K .
+\]
+
+Dividing \eqref{eq:pr} by \(\lambda/2\), the totality of the equations
+at all \((N-1)^2\) interior grid points leads to the matrix--vector
+equations
+\begin{keybox}
+\begin{equation}\label{eq:adimat}
+\begin{aligned}
+  \Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)U^{n+1*}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)U^n+K,\\
+  \Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)U^{n+1}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)U^{n+1*}+K,
+\end{aligned}
+\end{equation}
+\end{keybox}
+where the parameter \(\lambda_{n+1}\) can vary from iteration to
+iteration.
+
+\step{Limit of the iteration}
+Eliminating \(U^{n+1*}\),
+\[
+  U^{n+1*}=\Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)^{-1}
+  \Bigl[\Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)U^n+K\Bigr],
+\]
+\[
+  \Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)U^{n+1}
+  =\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)
+  \Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)^{-1}
+  \Bigl[\Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)U^n+K\Bigr]+K .
+\]
+Multiplying by \(\bigl(\frac2{\lambda_{n+1}}I+H\bigr)\), which commutes
+with \(\bigl(\frac2{\lambda_{n+1}}I-H\bigr)\),
+\begin{align*}
+  \Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)\Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)U^{n+1}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)\Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)U^n\\
+  &\quad+\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)K+\Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)K .
+\end{align*}
+Assuming \(U^{n+1}=U^n=U\) and expanding both products,
+\[
+  \Bigl[\frac4{\lambda_{n+1}^2}I+\frac2{\lambda_{n+1}}(H+V)+HV\Bigr]U
+  =\Bigl[\frac4{\lambda_{n+1}^2}I-\frac2{\lambda_{n+1}}(H+V)+HV\Bigr]U
+  +\frac4{\lambda_{n+1}}K,
+\]
+so
+\[
+  \frac4{\lambda_{n+1}}(H+V)\,U=\frac4{\lambda_{n+1}}K
+  \quad\Longrightarrow\quad
+  (H+V)\,U=K .
+\]
+The limit is the solution of the five-point equations.
+
+\subsection{Convergence}
+
+The iteration scheme \eqref{eq:adimat} can be written as
+\[
+  U^{n+1}=T_{n+1}U^n+g_{n+1},
+\]
+where
+\begin{equation}\label{eq:T}
+  T_{n+1}=\Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)^{-1}
+  \Bigl[\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)
+  \Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)\Bigr]
+\end{equation}
+and
+\[
+  g_{n+1}=\Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)^{-1}
+  \Bigl[\Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)+I\Bigr]K .
+\]
+
+Since the matrices \(H\) and \(V\) commute, they possess a common set
+of orthonormal eigenvectors \(\alpha_{p,q}\), \(1\le p,q\le N-1\),
+with
+\[
+  H\alpha_{p,q}=4\sin^2\frac{p\pi}{2N}\,\alpha_{p,q},
+  \qquad
+  V\alpha_{p,q}=4\sin^2\frac{q\pi}{2N}\,\alpha_{p,q},
+  \qquad 1\le p,q\le N-1 .
+\]
+(The eigenvalues of \(C\) are \(4\sin^2\frac{p\pi}{2N}\).)  From
+\eqref{eq:T},
+\begin{align*}
+  T_{n+1}\alpha_{p,q}
+  &=\frac{\Bigl(\frac2{\lambda_{n+1}}-4\sin^2\frac{p\pi}{2N}\Bigr)
+          \Bigl(\frac2{\lambda_{n+1}}-4\sin^2\frac{q\pi}{2N}\Bigr)}
+         {\Bigl(\frac2{\lambda_{n+1}}+4\sin^2\frac{p\pi}{2N}\Bigr)
+          \Bigl(\frac2{\lambda_{n+1}}+4\sin^2\frac{q\pi}{2N}\Bigr)}
+     \,\alpha_{p,q}\\[4pt]
+  &=\frac{\bigl(1-2\lambda_{n+1}\sin^2\frac{p\pi}{2N}\bigr)
+          \bigl(1-2\lambda_{n+1}\sin^2\frac{q\pi}{2N}\bigr)}
+         {\bigl(1+2\lambda_{n+1}\sin^2\frac{p\pi}{2N}\bigr)
+          \bigl(1+2\lambda_{n+1}\sin^2\frac{q\pi}{2N}\bigr)}
+     \,\alpha_{p,q}.
+\end{align*}
+Let
+\[
+  a=2\lambda_{n+1}\sin^2\frac{p\pi}{2N},
+  \qquad
+  b=2\lambda_{n+1}\sin^2\frac{q\pi}{2N},
+  \qquad a>0,\ b>0 .
+\]
+Then the eigenvalue is
+\[
+  \frac{(1-a)(1-b)}{(1+a)(1+b)}
+  =\frac{1-a-b+ab}{1+a+b+ab}
+  =1-\frac{2(a+b)}{(1+a)(1+b)} .
+\]
+Under the conditions on \(a,b\),
+\[
+  -1<1-\frac{2(a+b)}{(1+a)(1+b)}<1\qquad\forall\,a,b>0 .
+\]
+(The right inequality holds because \(a+b>0\); the left one because
+\(a+b<1+a+b+ab\).)  Hence \(\rho(T_{n+1})<1\) for all \(a,b\), and the
+iteration converges.
+
+\begin{keybox}
+\begin{theorem}
+For every choice of the iteration parameters \(\lambda_{n+1}>0\), the
+Peaceman--Rachford iteration \eqref{eq:adimat} converges to the
+solution of the five-point equations \((H+V)U=K\).
+\end{theorem}
+\end{keybox}
+
+\subsection{A variant: exercise}
+
+\begin{exercise}
+Do the convergence analysis for the scheme
+\begin{align*}
+  \Bigl(\frac1{\lambda_{n+1}}I+H\Bigr)U^{n+1*}
+  &=\Bigl(\frac1{\lambda_{n+1}}I-V\Bigr)U^n+K,\\
+  \Bigl(\frac1{\lambda_{n+1}}I+V\Bigr)U^{n+1}
+  &=\Bigl(\frac1{\lambda_{n+1}}I-H\Bigr)U^{n+1*}+K,
+\end{align*}
+with \(H\) and \(V\) as above.
+\end{exercise}
+
+\note{This was an exercise; solution not done in lecture.}
+
+\begin{proof}[Solution]
+This is \eqref{eq:adimat} with \(2/\lambda_{n+1}\) replaced by
+\(1/\lambda_{n+1}\).  Exactly as before, the fixed point satisfies
+\((H+V)U=K\), and the iteration matrix
+\[
+  T_{n+1}=\Bigl(\frac1{\lambda_{n+1}}I+V\Bigr)^{-1}
+  \Bigl(\frac1{\lambda_{n+1}}I+H\Bigr)^{-1}
+  \Bigl(\frac1{\lambda_{n+1}}I-H\Bigr)\Bigl(\frac1{\lambda_{n+1}}I-V\Bigr)
+\]
+has the eigenvalues
+\[
+  \frac{(1-a)(1-b)}{(1+a)(1+b)},
+  \qquad
+  a=4\lambda_{n+1}\sin^2\frac{p\pi}{2N},\quad
+  b=4\lambda_{n+1}\sin^2\frac{q\pi}{2N},
+\]
+with \(a,b>0\).  The same argument gives modulus \(<1\), so this
+iteration also converges for every \(\lambda_{n+1}>0\).
+\end{proof}
+
+%=====================================================================
+\section{The Douglas--Rachford ADI Method}
+%=====================================================================
+
+\lecinfo{Lecture 39.}
+
+For
+\[
+  \pd ut=\pdd u{x_1}+\pdd u{x_2},
+  \qquad (x_1,x_2,t)\in[0,1]^2\times[0,\infty),
+\]
+with initial and boundary conditions, consider
+\begin{equation}\label{eq:dr}
+  \bigl(1-\lambda\delta_{x_1}^2\bigr)\bigl(1-\lambda\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2\bigr)U_{l,m}^n .
+\end{equation}
+
+\step{As an iteration method}
+Treat \eqref{eq:dr} as an iteration which is convergent:
+\(U_{l,m}^{n+1}\approx U_{l,m}^n\approx U_{l,m}\).  Then
+\[
+  \bigl(1-\lambda\delta_{x_1}^2\bigr)\bigl(1-\lambda\delta_{x_2}^2\bigr)U_{l,m}
+  =\bigl(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2\bigr)U_{l,m},
+\]
+\[
+  \Bigl(1-\lambda\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)
+  +\lambda^2\delta_{x_1}^2\delta_{x_2}^2\Bigr)U
+  =\bigl(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2\bigr)U,
+\]
+so \(\lambda\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U=0\), i.e.\
+\(\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U=0\): again the five-point
+Laplace equation.
+
+\begin{keybox}
+\begin{definition}[Douglas--Rachford ADI, split form]
+\begin{align*}
+  \bigl(1-\lambda\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}
+  &=\bigl(1+\lambda\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\lambda\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=U_{l,m}^{n+1*}-\lambda\delta_{x_2}^2U_{l,m}^n .
+\end{align*}
+\end{definition}
+\end{keybox}
+
+\step{Check}
+From the second equation,
+\(U^{n+1*}=\bigl(1-\lambda\delta_{x_2}^2\bigr)U^{n+1}+\lambda\delta_{x_2}^2U^n\).
+Applying \(\bigl(1-\lambda\delta_{x_1}^2\bigr)\) and using the first
+equation,
+\[
+  \bigl(1-\lambda\delta_{x_1}^2\bigr)\bigl(1-\lambda\delta_{x_2}^2\bigr)U^{n+1}
+  =\bigl(1+\lambda\delta_{x_2}^2\bigr)U^n
+   -\lambda\delta_{x_2}^2\bigl(1-\lambda\delta_{x_1}^2\bigr)U^n
+  =\bigl(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2\bigr)U^n,
+\]
+which is \eqref{eq:dr}.
+
+%=====================================================================
+\section{ADI Iteration for the Neumann Problem}
+%=====================================================================
+
+\lecinfo{Lectures 39--40.}
+
+\subsection{The problem and its discretization}
+
+Consider
+\[
+  \pdd u{x_1}+\pdd u{x_2}=0,\qquad 0\le x_1,x_2\le1,
+\]
+\[
+  \pd un=g(x_1,x_2),\qquad (x_1,x_2)\in\partial R,
+\]
+where \(n\) is the outwardly directed normal.  On the four sides,
+\begin{align*}
+  -\pd u{x_1}&=g(0,x_2)\ \text{along }x_1=0,
+  &\pd u{x_1}&=g(1,x_2)\ \text{along }x_1=1,
+  &&0\le x_2\le1,\\
+  -\pd u{x_2}&=g(x_1,0)\ \text{along }x_2=0,
+  &\pd u{x_2}&=g(x_1,1)\ \text{along }x_2=1,
+  &&0\le x_1\le1,
+\end{align*}
+where \(\partial u/\partial x_1\) and \(\partial u/\partial x_2\) are
+taken in the increasing directions of \(x_1\) and \(x_2\).  Take
+\(Nh=1\).  Since \(u\) is not known on the boundary, \emph{all}
+\((N+1)^2\) grid points \((l,m)\), \(0\le l,m\le N\), are unknowns.
+
+\step{Fictitious points}
+Apply the five-point formula at a boundary point, using fictitious
+points outside the square.  At the corner \((0,0)\):
+\[
+  \frac{u_{1,0}+u_{-1,0}+u_{0,1}+u_{0,-1}-4u_{0,0}}{h^2}=0 .
+\]
+The boundary condition along \(x_1=0\), by a central difference, gives
+\[
+  -\frac{u_{1,0}-u_{-1,0}}{2h}=g_{0,0}
+  \quad\Longrightarrow\quad
+  u_{-1,0}=2hg_{0,0}+u_{1,0},
+\]
+and along \(x_2=0\),
+\[
+  -\frac{u_{0,1}-u_{0,-1}}{2h}=g_{0,0}
+  \quad\Longrightarrow\quad
+  u_{0,-1}=2hg_{0,0}+u_{0,1}.
+\]
+Substituting,
+\[
+  4u_{0,0}-2u_{1,0}-2u_{0,1}=2h\cdot2g_{0,0}.
+\]
+Similarly, at a non-corner point \((0,m)\) of the side \(x_1=0\),
+\[
+  4u_{0,m}-2u_{1,m}-u_{0,m+1}-u_{0,m-1}=2h\,g_{0,m},
+\]
+and the same holds on the other sides.
+
+\step{The difference system}
+The five-point analogue of the Laplacian,
+\[
+  \pdd u{x_1}+\pdd u{x_2}
+  \approx\frac1{h^2}\bigl(u_{l+1,m}+u_{l-1,m}+u_{l,m+1}+u_{l,m-1}-4u_{l,m}\bigr),
+\]
+together with the boundary relations, at all \((N+1)^2\) grid points
+gives rise to
+\begin{keybox}
+\[
+  AU=2hG,
+\]
+\end{keybox}
+where \(A\) is a block tridiagonal matrix of order \((N+1)^2\):
+\[
+  A=\begin{bmatrix}
+    B&-2I&&&\\
+    -I&B&-I&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&-I&B&-I\\
+    &&&-2I&B
+  \end{bmatrix},
+  \qquad
+  B=\begin{bmatrix}
+    4&-2&&&\\
+    -1&4&-1&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&-1&4&-1\\
+    &&&-2&4
+  \end{bmatrix}_{(N+1)\times(N+1)},
+\]
+with
+\[
+  U=[u_{0,0},u_{1,0},\dots,u_{N,0},\;u_{0,1},\dots,u_{N,1},\;\dots,\;
+  u_{0,N},\dots,u_{N,N}]^T,
+\]
+and
+\[
+  G=[2g_{0,0},g_{1,0},\dots,g_{N-1,0},2g_{N,0},\;g_{0,1},0,\dots,0,g_{N,1},\;
+  \dots,\;2g_{0,N},g_{1,N},\dots,g_{N-1,N},2g_{N,N}]^T .
+\]
+That is, the entry of \(G\) is \(2g\) at the four corners, \(g\) at
+the other boundary points, and \(0\) at interior points.
+
+\begin{remark}
+\note{Added beyond the notes.}
+Every row of \(A\) sums to zero, so \(A\mathbf 1=0\): \(A\) is singular.
+This reflects the fact that the solution of the Neumann problem is
+determined only up to an additive constant.  A solution exists only if
+the data satisfy a compatibility condition, the discrete form of
+\(\oint_{\partial R}g\,ds=0\).
+\end{remark}
+
+\subsection{The Peaceman--Rachford iteration}
+
+Split \(A=X+Y\), where \(X\) and \(Y\) contain the \(x_1\) and \(x_2\)
+differences respectively:
+\[
+  X=\begin{bmatrix}\tilde C&&\\ &\ddots&\\ &&\tilde C\end{bmatrix},
+  \qquad
+  Y=\begin{bmatrix}
+    2I&-2I&&\\
+    -I&2I&-I&\\
+    &\ddots&\ddots&\ddots\\
+    &&-2I&2I
+  \end{bmatrix},
+\]
+where
+\[
+  \tilde C=\begin{bmatrix}
+    2&-2&&\\
+    -1&2&-1&\\
+    &\ddots&\ddots&\ddots\\
+    &&-2&2
+  \end{bmatrix}_{(N+1)\times(N+1)}.
+\]
+The Peaceman--Rachford iteration is then
+\begin{keybox}
+\begin{equation}\label{eq:neuadi}
+\begin{aligned}
+  \Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)U^{n+1*}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-Y\Bigr)U^n+2hG,\\
+  \Bigl(\frac2{\lambda_{n+1}}I+Y\Bigr)U^{n+1}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)U^{n+1*}+2hG .
+\end{aligned}
+\end{equation}
+\end{keybox}
+
+\step{Eliminating \(U^{n+1*}\)}
+\[
+  U^{n+1*}=\Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)^{-1}
+  \Bigl\{\Bigl(\frac2{\lambda_{n+1}}I-Y\Bigr)U^n+2hG\Bigr\},
+\]
+and, since \(\bigl(\frac2{\lambda_{n+1}}I-X\bigr)\) and
+\(\bigl(\frac2{\lambda_{n+1}}I+X\bigr)^{-1}\) commute,
+\begin{equation}\label{eq:neuS}
+\begin{aligned}
+  U^{n+1}
+  &=\Bigl(\frac2{\lambda_{n+1}}I+Y\Bigr)^{-1}
+    \Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)^{-1}
+    \Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)
+    \Bigl(\frac2{\lambda_{n+1}}I-Y\Bigr)U^n\\
+  &\quad+\Bigl(\frac2{\lambda_{n+1}}I+Y\Bigr)^{-1}
+    \Bigl[\Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)^{-1}
+    \Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)+I\Bigr]2hG .
+\end{aligned}
+\end{equation}
+
+\step{Limit of the iteration}
+Put \(U^{n+1}=U^n=U\) (convergence).  Multiplying by
+\(\bigl(\frac2{\lambda_{n+1}}I+X\bigr)\bigl(\frac2{\lambda_{n+1}}I+Y\bigr)\),
+\begin{align*}
+  \Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)\Bigl(\frac2{\lambda_{n+1}}I+Y\Bigr)U
+  &=\Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)\Bigl(\frac2{\lambda_{n+1}}I-Y\Bigr)U\\
+  &\quad+\Bigl[\Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)+\Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)\Bigr]2hG .
+\end{align*}
+Expanding,
+\[
+  \frac4{\lambda_{n+1}^2}U+\frac2{\lambda_{n+1}}(X+Y)U+XYU
+  =\frac4{\lambda_{n+1}^2}U-\frac2{\lambda_{n+1}}(X+Y)U+XYU
+  +\frac4{\lambda_{n+1}}(2hG),
+\]
+so
+\[
+  \frac4{\lambda_{n+1}}(X+Y)U=\frac4{\lambda_{n+1}}\,2hG
+  \quad\Longrightarrow\quad
+  (X+Y)U=2hG,\quad\text{i.e.}\quad AU=2hG .
+\]
+
+\subsection{Convergence}
+
+Equation \eqref{eq:neuS} can be written as
+\[
+  U^{n+1}=S_{n+1}U^n+g_{n+1},
+\]
+where
+\[
+  S_{n+1}=\Bigl(\frac2{\lambda_{n+1}}I+Y\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I+X\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I-X\Bigr)
+  \Bigl(\frac2{\lambda_{n+1}}I-Y\Bigr),
+\]
+and similarly for \(g_{n+1}\).
+
+Since \(XY=YX\), these matrices possess a common set of linearly
+independent eigenvectors \(\beta_{p,q}\), \(0\le p,q\le N\),
+corresponding to
+\[
+  X\beta_{p,q}=4\sin^2\frac{p\pi}{2N}\,\beta_{p,q},
+  \qquad
+  Y\beta_{p,q}=4\sin^2\frac{q\pi}{2N}\,\beta_{p,q}.
+\]
+(The eigenvalues of \(\tilde C\) are \(4\sin^2\frac{p\pi}{2N}\),
+\(p=0,1,\dots,N\), with eigenvectors having components
+\(\cos\frac{lp\pi}N\), \(l=0,\dots,N\).)  Hence
+\[
+  S_{n+1}\beta_{p,q}
+  =\frac{\Bigl(\frac2{\lambda_{n+1}}-4\sin^2\frac{p\pi}{2N}\Bigr)
+         \Bigl(\frac2{\lambda_{n+1}}-4\sin^2\frac{q\pi}{2N}\Bigr)}
+        {\Bigl(\frac2{\lambda_{n+1}}+4\sin^2\frac{p\pi}{2N}\Bigr)
+         \Bigl(\frac2{\lambda_{n+1}}+4\sin^2\frac{q\pi}{2N}\Bigr)}\,\beta_{p,q}
+  =\frac{(1-a)(1-b)}{(1+a)(1+b)}\,\beta_{p,q},
+\]
+where
+\[
+  a=2\lambda_{n+1}\sin^2\frac{p\pi}{2N},
+  \qquad
+  b=2\lambda_{n+1}\sin^2\frac{q\pi}{2N}.
+\]
+As in the Dirichlet case, for \(a,b\ge0\) not both zero, the modulus
+is less than \(1\): convergence.
+
+\begin{remark}
+\note{Added beyond the notes.}
+For \(p=q=0\) we get \(a=b=0\) and the eigenvalue \(1\); the
+eigenvector \(\beta_{0,0}\) is the constant vector \(\mathbf 1\), the
+null vector of \(A\).  So the iteration converges to a solution of
+\(AU=2hG\); the additive constant in the limit is inherited from the
+initial guess, as expected for the Neumann problem.
+\end{remark}
+
+%=====================================================================
+\section{ADI Iteration for the Robin Problem}
+%=====================================================================
+
+\lecinfo{Lecture 40, 13 November 2026.}
+
+Consider
+\[
+  \pdd u{x_1}+\pdd u{x_2}=0,\qquad 0\le x_1,x_2\le1,
+\]
+subject to
+\begin{align*}
+  \pd u{x_1}-p_1u&=f_0(x_2)\quad\text{on }x_1=0,
+  &\pd u{x_1}+q_1u&=f_1(x_2)\quad\text{on }x_1=1,\\
+  \pd u{x_2}-p_2u&=g_0(x_1)\quad\text{on }x_2=0,
+  &\pd u{x_2}+q_2u&=g_1(x_1)\quad\text{on }x_2=1,
+\end{align*}
+with \(p_1,q_1,p_2,q_2>0\) and \(Nh=1\).  As for the Neumann problem,
+all \((N+1)^2\) grid points are unknowns.  The difference system is
+\[
+  AU=hG,\qquad A=H_1+V_1,
+\]
+with \(H_1=\operatorname{diag}(E,\dots,E)\) block diagonal of order
+\((N+1)^2\), and the Peaceman--Rachford iteration is
+\begin{align*}
+  \Bigl(\frac2{\lambda_{n+1}}I+H_1\Bigr)U^{n+1*}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-V_1\Bigr)U^n+hG,\\
+  \Bigl(\frac2{\lambda_{n+1}}I+V_1\Bigr)U^{n+1}
+  &=\Bigl(\frac2{\lambda_{n+1}}I-H_1\Bigr)U^{n+1*}+hG,
+\end{align*}
+where the steps are
+\[
+  \bigl(1-\tfrac12\lambda\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}
+  =\bigl(1+\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^n,
+  \qquad
+  \bigl(1-\tfrac12\lambda\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac12\lambda\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}.
+\]
+
+\note{The matrices \(E\), \(V_1\), the vector \(G\) and the
+convergence argument were left incomplete in lecture; they are
+completed below.}
+
+\subsection{\texorpdfstring{The matrices \(E\), \(V_1\) and the vector \(G\)}{The matrices E, V1 and the vector G}}
+
+\step{Fictitious points}
+At a point \((0,m)\) on \(x_1=0\), the central difference
+\[
+  \frac{u_{1,m}-u_{-1,m}}{2h}-p_1u_{0,m}=f_{0,m}
+  \quad\Longrightarrow\quad
+  u_{-1,m}=u_{1,m}-2hp_1u_{0,m}-2hf_{0,m}.
+\]
+So the \(x_1\)-part of the five-point formula (multiplied by \(-1\))
+becomes
+\[
+  2u_{0,m}-u_{1,m}-u_{-1,m}=2(1+hp_1)\,u_{0,m}-2u_{1,m}+2hf_{0,m}.
+\]
+At a point \((N,m)\) on \(x_1=1\),
+\[
+  \frac{u_{N+1,m}-u_{N-1,m}}{2h}+q_1u_{N,m}=f_{1,m}
+  \quad\Longrightarrow\quad
+  u_{N+1,m}=u_{N-1,m}-2hq_1u_{N,m}+2hf_{1,m},
+\]
+\[
+  2u_{N,m}-u_{N+1,m}-u_{N-1,m}=-2u_{N-1,m}+2(1+hq_1)\,u_{N,m}-2hf_{1,m}.
+\]
+The sides \(x_2=0\) and \(x_2=1\) are treated in the same way, with
+\(p_2,q_2,g_0,g_1\).
+
+\step{The matrices}
+Ordering \(U\) with the \(x_1\) index running fastest, as for the
+Neumann problem,
+\begin{keybox}
+\[
+  E=\begin{bmatrix}
+    2(1+hp_1)&-2&&&\\
+    -1&2&-1&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&-1&2&-1\\
+    &&&-2&2(1+hq_1)
+  \end{bmatrix}_{(N+1)\times(N+1)},
+\]
+\[
+  V_1=\begin{bmatrix}
+    2(1+hp_2)I&-2I&&&\\
+    -I&2I&-I&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&-I&2I&-I\\
+    &&&-2I&2(1+hq_2)I
+  \end{bmatrix}_{(N+1)^2\times(N+1)^2},
+\]
+\end{keybox}
+where \(I\) is the identity of order \(N+1\).  The entry of \(G\) at
+the grid point \((l,m)\) is
+\[
+  G_{l,m}=2\bigl(-f_{0,m}[l=0]+f_{1,m}[l=N]-g_{0,l}[m=0]+g_{1,l}[m=N]\bigr),
+\]
+where \([\,\cdot\,]\) is \(1\) if the condition holds and \(0\)
+otherwise.  So \(G_{l,m}=0\) at interior points, and a corner receives
+contributions from both of its sides.
+
+\step{Limit of the iteration}
+Exactly as for the Neumann problem, putting \(U^{n+1}=U^n=U\) gives
+\[
+  \frac4{\lambda_{n+1}}(H_1+V_1)U=\frac4{\lambda_{n+1}}hG
+  \quad\Longrightarrow\quad
+  (H_1+V_1)\,U=hG .
+\]
+
+\subsection{Convergence}
+
+\(H_1=\operatorname{diag}(E,\dots,E)\) acts along \(x_1\) and \(V_1\)
+along \(x_2\), so \(H_1V_1=V_1H_1\).  Let \(E\phi_p=\mu_p\phi_p\), and
+let \(E_2\psi_q=\nu_q\psi_q\), where \(E_2\) is the
+\((N+1)\times(N+1)\) analogue of \(E\) for the \(x_2\) direction
+(with \(p_2,q_2\) in place of \(p_1,q_1\)).  Then the vectors
+\(\beta_{p,q}\) with components
+\((\beta_{p,q})_{l,m}=(\phi_p)_l\,(\psi_q)_m\) satisfy
+\[
+  H_1\beta_{p,q}=\mu_p\beta_{p,q},
+  \qquad
+  V_1\beta_{p,q}=\nu_q\beta_{p,q}.
+\]
+
+\step{The eigenvalues are positive}
+Let \(W=\operatorname{diag}(\tfrac12,1,\dots,1,\tfrac12)\).  Then
+\[
+  WE=\begin{bmatrix}
+    1+hp_1&-1&&\\
+    -1&2&-1&\\
+    &\ddots&\ddots&\ddots\\
+    &&-1&1+hq_1
+  \end{bmatrix}
+\]
+is symmetric, and for \(x\ne0\)
+\[
+  x^T(WE)x=hp_1x_0^2+hq_1x_N^2+\sum_{l=0}^{N-1}(x_{l+1}-x_l)^2>0,
+\]
+because if the sum vanishes then \(x\) is constant and
+\(hp_1x_0^2>0\).  So \(WE\) is symmetric positive definite.  Since
+\(E=W^{-1}(WE)\) is similar to
+\(W^{-1/2}(WE)W^{-1/2}\), also symmetric positive definite, the
+eigenvalues \(\mu_p\) of \(E\) are real and positive, and \(E\) has a
+complete set of eigenvectors.  The same holds for \(\nu_q\).
+
+\step{Spectral radius}
+The iteration matrix
+\[
+  S_{n+1}=\Bigl(\frac2{\lambda_{n+1}}I+V_1\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I+H_1\Bigr)^{-1}
+  \Bigl(\frac2{\lambda_{n+1}}I-H_1\Bigr)\Bigl(\frac2{\lambda_{n+1}}I-V_1\Bigr)
+\]
+has the eigenvalues
+\[
+  \frac{\bigl(\frac2{\lambda_{n+1}}-\mu_p\bigr)\bigl(\frac2{\lambda_{n+1}}-\nu_q\bigr)}
+       {\bigl(\frac2{\lambda_{n+1}}+\mu_p\bigr)\bigl(\frac2{\lambda_{n+1}}+\nu_q\bigr)}
+  =\frac{(1-a)(1-b)}{(1+a)(1+b)},
+  \qquad
+  a=\frac{\lambda_{n+1}\mu_p}2>0,\quad b=\frac{\lambda_{n+1}\nu_q}2>0 .
+\]
+Each factor \(\bigl|\frac{1-a}{1+a}\bigr|<1\) for \(a>0\), so
+\(\rho(S_{n+1})<1\) and the iteration converges for every
+\(\lambda_{n+1}>0\).
+
+\begin{remark}
+Unlike the Neumann problem, all eigenvalues \(\mu_p+\nu_q\) of
+\(A=H_1+V_1\) are positive, so \(A\) is nonsingular and the Robin
+problem has a unique discrete solution.  There is no closed form for
+\(\mu_p\) here; it depends on \(hp_1\) and \(hq_1\).
+\end{remark}
+
+%=====================================================================
+\section{Hyperbolic Equations: The Wave Equation}
+%=====================================================================
+
+\lecinfo{Tablet notes, 16 November 2026.}
+
+Consider the wave equation
+\begin{equation}\label{eq:wave}
+  \pdd ut=\pdd ux,\qquad 0<x<1,\ t>0,
+\end{equation}
+subject to
+\[
+  \text{IC: } u(x,0)=f(x),\quad \pd{u}{t}(x,0)=g(x);
+  \qquad
+  \text{BC: } u(0,t)=u(1,t)=0,\ t>0,
+\]
+on \([0,1]\times[0,\infty)\).
+
+\subsection{The explicit scheme}
+
+Use the difference approximations
+\[
+  \pdd ut=\frac1{k^2}\delta_t^2u+O(k^2),
+  \qquad
+  \pdd ux=\frac1{h^2}\delta_x^2u+O(h^2).
+\]
+Applying them to \eqref{eq:wave} at \((mh,nk)\),
+\[
+  \frac1{k^2}\delta_t^2U_m^n=\frac1{h^2}\delta_x^2U_m^n,
+\]
+that is,
+\[
+  \frac1{k^2}\bigl[U_m^{n+1}-2U_m^n+U_m^{n-1}\bigr]
+  =\frac1{h^2}\bigl[U_{m+1}^n-2U_m^n+U_{m-1}^n\bigr].
+\]
+
+\begin{keybox}
+\begin{definition}[Explicit scheme for the wave equation]
+With \(r=k/h\),
+\begin{equation}\label{eq:waveexp}
+  U_m^{n+1}=2(1-r^2)\,U_m^n+r^2\bigl[U_{m+1}^n+U_{m-1}^n\bigr]-U_m^{n-1}.
+\end{equation}
+This is an explicit three-level formula.
+\end{definition}
+\end{keybox}
+
+\begin{remark}
+A three-level scheme is the minimum here, because the equation is
+second order in \(t\).
+\end{remark}
+
+\step{Starting the computation}
+To start the computation we need the data on two lines, \(t=0\) and
+\(t=k\).  At \(t=0\), \(U_m^0=f_m\).  At \(t=k\), use a suitable
+approximation to the initial condition on \(u_t\):
+\[
+  \pd{U_m^0}t=\frac1{2k}\bigl(U_m^1-U_m^{-1}\bigr)+O(k^2)=g_m
+  \quad\Longrightarrow\quad
+  U_m^{-1}=U_m^1-2k\,g_m .
+\]
+The extraneous values \(U_m^{-1}\) introduced by \eqref{eq:waveexp}
+for \(n=0\) are removed using this relation.  Putting \(n=0\) in
+\eqref{eq:waveexp},
+\[
+  U_m^1=2(1-r^2)f_m+r^2(f_{m+1}+f_{m-1})-U_m^1+2kg_m,
+\]
+\begin{keybox}
+\[
+  U_m^1=(1-r^2)f_m+\frac{r^2}2\bigl(f_{m+1}+f_{m-1}\bigr)+k\,g_m .
+\]
+\end{keybox}
+
+\begin{exercise}
+Show that the LTE of \eqref{eq:waveexp} is \(O(k^2+h^2)\).
+\end{exercise}
+
+\note{This was an exercise; solution not done in lecture.}
+
+\begin{proof}[Solution]
+For the exact solution,
+\[
+  \delta_t^2u=k^2u_{tt}+\frac{k^4}{12}u_{tttt}+O(k^6),
+  \qquad
+  \delta_x^2u=h^2u_{xx}+\frac{h^4}{12}u_{xxxx}+O(h^6).
+\]
+So
+\[
+  \frac{\delta_t^2u}{k^2}-\frac{\delta_x^2u}{h^2}
+  =\bigl(u_{tt}-u_{xx}\bigr)+\frac1{12}\bigl(k^2u_{tttt}-h^2u_{xxxx}\bigr)+\cdots
+  =\frac1{12}\bigl(k^2u_{tttt}-h^2u_{xxxx}\bigr)+\cdots,
+\]
+which is \(O(k^2+h^2)\).  Since \(u_{tttt}=u_{xxxx}\) for the wave
+equation, the leading term is \(\frac{h^2}{12}(r^2-1)u_{xxxx}\); it
+vanishes when \(r=1\).
+\end{proof}
+
+\begin{definition}[Consistency]
+A difference approximation \eqref{eq:waveexp} for a hyperbolic
+equation is consistent if
+\[
+  \frac{\text{truncation error}}{k^2}\to0\quad\text{as }h,k\to0,
+\]
+where the truncation error is that of the scheme written as in
+\eqref{eq:waveexp} (i.e.\ multiplied through by \(k^2\)).
+\end{definition}
+
+\subsection{Stability: the CFL condition}
+
+\begin{exercise}
+Show that the von Neumann stability analysis gives the condition
+\(r\le1\) for stability of \eqref{eq:waveexp}.
+\end{exercise}
+
+\note{This was an exercise; solution not done in lecture.}
+
+\begin{proof}[Solution]
+Put \(U_m^n=\xi^ne^{i\beta mh}\).  Since
+\(\delta_x^2e^{i\beta mh}=-4\sin^2\frac{\beta h}2\,e^{i\beta mh}\),
+the scheme gives, with \(s=\sin^2\frac{\beta h}2\in[0,1]\),
+\[
+  \xi-2+\xi^{-1}=-4r^2s
+  \quad\Longrightarrow\quad
+  \xi^2-2\bigl(1-2r^2s\bigr)\xi+1=0 .
+\]
+The product of the two roots is \(1\).  If the roots are real and
+distinct, one of them has modulus \(>1\).  So we need complex (or
+equal) roots, i.e.\
+\[
+  \bigl|1-2r^2s\bigr|\le1
+  \iff 0\le r^2s\le1 .
+\]
+Then \(|\xi_1|=|\xi_2|=1\).  This must hold for all \(s\in[0,1]\),
+so \(r^2\le1\), i.e.\ \(r\le1\).
+\end{proof}
+
+\begin{keybox}
+The stability condition \(r=k/h\le1\) for the explicit formula
+\eqref{eq:waveexp} is known as the \emph{CFL (Courant--Friedrichs--Lewy)
+condition}.
+\end{keybox}
+
+\subsection{Implicit schemes}
+
+If we replace \(U_m^n\) on the right-hand side of
+\(\frac1{k^2}\delta_t^2U_m^n=\frac1{h^2}\delta_x^2U_m^n\) by the
+weighted sum
+\[
+  \theta U_m^{n+1}+(1-2\theta)U_m^n+\theta U_m^{n-1},
+\]
+we get
+\begin{keybox}
+\begin{equation}\label{eq:waveimp}
+  \delta_t^2U_m^n=r^2\delta_x^2\bigl[\theta U_m^{n+1}+(1-2\theta)U_m^n
+  +\theta U_m^{n-1}\bigr],
+  \qquad 0\le\theta\le1 .
+\end{equation}
+\end{keybox}
+The difference scheme is of order \(O(k^2+h^2)\).
+
+\step{Stability condition}
+\begin{enumerate}[label=(\roman*)]
+  \item \(\theta\ge\frac14\) gives unconditional stability.
+  \item \(0\le\theta<\frac14\) gives conditional stability:
+    \(0<r^2\le\dfrac1{1-4\theta}\).
+\end{enumerate}
+
+\note{Proof not done in lecture.}
+
+\begin{proof}
+With \(U_m^n=\xi^ne^{i\beta mh}\) and \(s=\sin^2\frac{\beta h}2\),
+\[
+  \xi-2+\xi^{-1}=-4r^2s\bigl[\theta\xi+(1-2\theta)+\theta\xi^{-1}\bigr],
+\]
+i.e.\
+\[
+  \bigl(1+4r^2s\theta\bigr)\xi^2-2\bigl(1-2r^2s(1-2\theta)\bigr)\xi
+  +\bigl(1+4r^2s\theta\bigr)=0 .
+\]
+Again the product of the roots is \(1\), so stability requires
+\(|1-2r^2s(1-2\theta)|\le1+4r^2s\theta\).  The inequality
+\(1-2r^2s(1-2\theta)\le1+4r^2s\theta\) always holds.  The other one,
+\(-1+2r^2s(1-2\theta)\le1+4r^2s\theta\), is
+\[
+  r^2s(1-4\theta)\le1 .
+\]
+If \(\theta\ge\frac14\) this holds for all \(r\).  If
+\(\theta<\frac14\), it must hold for \(s=1\), giving
+\(r^2\le1/(1-4\theta)\).  (For \(\theta=0\) this is the CFL condition
+\(r\le1\).)
+\end{proof}
+
+\step{The case \(\theta=\frac14\)}
+Since
+\(\frac14U^{n+1}+\frac12U^n+\frac14U^{n-1}=U^n+\frac14\delta_t^2U^n\),
+the value \(\theta=\frac14\) gives the von Neumann scheme
+\[
+  \bigl(1-\tfrac14r^2\delta_x^2\bigr)\delta_t^2U_m^n=r^2\delta_x^2U_m^n .
+\]
+
+\subsection{Two space dimensions}
+
+Consider
+\begin{equation}\label{eq:wave2}
+  \pdd ut=\pdd u{x_1}+\pdd u{x_2},
+\end{equation}
+\[
+  \text{IC: } u(x_1,x_2,0)=f(x_1,x_2),\quad
+  \pd{u}{t}(x_1,x_2,0)=g(x_1,x_2),\qquad 0\le x_1,x_2\le1,
+\]
+\[
+  \text{BC: } u=0\ \text{on the boundary of the unit square},\ t>0 .
+\]
+
+\step{An explicit scheme}
+\[
+  \delta_t^2U_{l,m}^n=r^2\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}^n,
+\]
+or
+\begin{keybox}
+\[
+  U_{l,m}^{n+1}=2(1-2r^2)\,U_{l,m}^n
+  +r^2\bigl(U_{l-1,m}^n+U_{l,m-1}^n+U_{l,m+1}^n+U_{l+1,m}^n\bigr)
+  -U_{l,m}^{n-1}.
+\]
+\end{keybox}
+\begin{itemize}
+  \item Order of the method: \(O(k^2+h^2)\).
+  \item Stability: \(0<r\le\dfrac1{\sqrt2}\).
+\end{itemize}
+
+\note{Derivation of the stability condition not done in lecture.}
+With \(U_{l,m}^n=\xi^ne^{i(\beta_1l+\beta_2m)h}\),
+\(s_1=\sin^2\frac{\beta_1h}2\), \(s_2=\sin^2\frac{\beta_2h}2\),
+\[
+  \xi^2-2\bigl(1-2r^2(s_1+s_2)\bigr)\xi+1=0,
+\]
+and, as in one dimension, stability requires
+\(r^2(s_1+s_2)\le1\) for all \(s_1,s_2\in[0,1]\), i.e.\
+\(2r^2\le1\), \(r\le1/\sqrt2\).
+
+\step{Implicit scheme}
+Generalizing the implicit scheme \eqref{eq:waveimp} to
+\eqref{eq:wave2},
+\[
+  \delta_t^2U_{l,m}^n=r^2\Bigl[\theta\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  +(1-2\theta)\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}^n
+  +\theta\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}^{n-1}\Bigr],
+\]
+or
+\begin{keybox}
+\[
+  \Bigl[1-\theta r^2\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)\Bigr]\delta_t^2U_{l,m}^n
+  =r^2\bigl(\delta_{x_1}^2+\delta_{x_2}^2\bigr)U_{l,m}^n .
+\]
+\end{keybox}
+Stability:
+\begin{enumerate}[label=(\roman*)]
+  \item \(\theta\ge\frac14\): unconditionally stable.
+  \item \(0\le\theta<\frac14\): conditionally stable,
+    \(r^2\le\dfrac1{2(1-4\theta)}\).
+\end{enumerate}
+(The proof is the one-dimensional one with \(s\) replaced by
+\(s_1+s_2\le2\).)  An ADI method can be developed for this scheme.
+
+%=====================================================================
+\section{The Heat Equation: Comparison of Methods}
+%=====================================================================
+
+\begin{example}\label{ex:heat}
+Solve the heat conduction equation
+\[
+  \pd ut=\pdd ux,
+  \qquad
+  u(x,0)=\sin\pi x,\ 0\le x\le1,
+  \qquad
+  u(0,t)=u(1,t)=0,
+\]
+by
+\begin{enumerate}[label=(\roman*)]
+  \item the Crank--Nicolson scheme,
+  \item the explicit method (Schmidt method),
+  \item the Du Fort--Frankel method,
+  \item the Douglas method.
+\end{enumerate}
+\end{example}
+
+\subsection{The four schemes in one dimension}
+
+With \(r=k/h^2\):
+\begin{align*}
+  \text{(i) Crank--Nicolson:}\quad
+  &\bigl(1-\tfrac r2\delta_x^2\bigr)U_m^{n+1}=\bigl(1+\tfrac r2\delta_x^2\bigr)U_m^n,\\
+  \text{(ii) Explicit (Schmidt):}\quad
+  &U_m^{n+1}=\bigl(1+r\delta_x^2\bigr)U_m^n,\\
+  \text{(iii) Du Fort--Frankel:}\quad
+  &(1+2r)U_m^{n+1}=2r\bigl(U_{m+1}^n+U_{m-1}^n\bigr)+(1-2r)U_m^{n-1},\\
+  \text{(iv) Douglas:}\quad
+  &\Bigl[1-\tfrac12\bigl(r-\tfrac16\bigr)\delta_x^2\Bigr]U_m^{n+1}
+   =\Bigl[1+\tfrac12\bigl(r+\tfrac16\bigr)\delta_x^2\Bigr]U_m^n .
+\end{align*}
+
+\begin{remark}
+\note{Added beyond the notes.}
+For comparison, the standard properties of these schemes are:
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lll}
+\toprule
+Scheme & Truncation error & Stability\\
+\midrule
+Explicit (Schmidt) & \(O(k+h^2)\) & \(r\le\frac12\)\\
+Crank--Nicolson & \(O(k^2+h^2)\) & unconditional\\
+Du Fort--Frankel & \(O(k^2+h^2+k^2/h^2)\) & unconditional\\
+Douglas & \(O(k^2+h^4)\) & unconditional\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Du Fort--Frankel is consistent only if \(k/h\to0\).  For the Douglas
+scheme, with \(s=\sin^2\frac{\beta h}2\), the amplification factor is
+\(\xi=\dfrac{1-2(r+\frac16)s}{1+2(r-\frac16)s}\); one checks
+\(-1\le\xi\le1\) for all \(r>0\).
+\end{remark}
+
+\subsection{The corresponding schemes in two dimensions}
+
+For \(u_t=u_{x_1x_1}+u_{x_2x_2}\):
+
+\step{Crank--Nicolson (factored) and its split, Peaceman--Rachford ADI}
+\[
+  \bigl(1-\tfrac r2\delta_{x_1}^2\bigr)\bigl(1-\tfrac r2\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac r2\delta_{x_1}^2\bigr)\bigl(1+\tfrac r2\delta_{x_2}^2\bigr)U_{l,m}^n,
+\]
+\begin{align*}
+  \bigl(1-\tfrac r2\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}
+  &=\bigl(1+\tfrac r2\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-\tfrac r2\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  &=\bigl(1+\tfrac r2\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}.
+\end{align*}
+
+\step{Douglas--Rachford ADI}
+\begin{align*}
+  \bigl(1-r\delta_{x_1}^2\bigr)U_{l,m}^{n+1*}&=\bigl(1+r\delta_{x_2}^2\bigr)U_{l,m}^n,\\
+  \bigl(1-r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}&=U_{l,m}^{n+1*}-r\delta_{x_2}^2U_{l,m}^n .
+\end{align*}
+
+\step{Douglas (high-order) scheme and its ADI split}
+\[
+  \Bigl(1-\tfrac12\bigl(r-\tfrac16\bigr)\delta_{x_1}^2\Bigr)
+  \Bigl(1-\tfrac12\bigl(r-\tfrac16\bigr)\delta_{x_2}^2\Bigr)U_{l,m}^{n+1}
+  =\Bigl(1+\tfrac12\bigl(r+\tfrac16\bigr)\delta_{x_1}^2\Bigr)
+  \Bigl(1+\tfrac12\bigl(r+\tfrac16\bigr)\delta_{x_2}^2\Bigr)U_{l,m}^n,
+\]
+\begin{keybox}
+\begin{align*}
+  \Bigl(1-\tfrac12\bigl(r-\tfrac16\bigr)\delta_{x_1}^2\Bigr)U_{l,m}^{n+1*}
+  &=\Bigl(1+\tfrac12\bigl(r+\tfrac16\bigr)\delta_{x_2}^2\Bigr)U_{l,m}^n,\\
+  \Bigl(1-\tfrac12\bigl(r-\tfrac16\bigr)\delta_{x_2}^2\Bigr)U_{l,m}^{n+1}
+  &=\Bigl(1+\tfrac12\bigl(r+\tfrac16\bigr)\delta_{x_1}^2\Bigr)U_{l,m}^{n+1*}.
+\end{align*}
+\end{keybox}
+Eliminating \(U^{n+1*}\) (the operators commute) recovers the factored
+Douglas scheme, exactly as for Peaceman--Rachford.  This split is
+also known as the Mitchell--Fairweather scheme; in the notes it is
+labelled ``Douglas--Rachford ADI''.
+
+\subsection{Worked numerical illustration}
+
+\note{This numerical example was added beyond the notes.}
+
+Take \(h=\frac14\) and \(k=\frac1{64}\), so \(r=k/h^2=\frac14\).
+The interior points are \(x=\frac14,\frac12,\frac34\), and
+\[
+  U^0=\bigl[\sin\tfrac\pi4,\ \sin\tfrac\pi2,\ \sin\tfrac{3\pi}4\bigr]
+  =[0.707107,\ 1,\ 0.707107].
+\]
+The exact solution is \(u(x,t)=e^{-\pi^2t}\sin\pi x\).
+
+\step{Key observation}
+The grid vector \(\sin(\pi x_m)\) is an eigenvector of \(\delta_x^2\)
+(with zero boundary values):
+\[
+  \delta_x^2\sin(\pi x_m)=-4\sin^2\frac{\pi h}2\,\sin(\pi x_m)
+  =-4s\,\sin(\pi x_m),
+  \qquad s=\sin^2\frac\pi8=0.146447 .
+\]
+Hence every two-level scheme gives \(U_m^n=\xi^n\sin(\pi x_m)\), with
+\(\xi\) its amplification factor for this mode, and by symmetry
+\(U_1^n=U_3^n\).  Here \(4rs=s=0.146447\).
+
+\step{(ii) Explicit}
+\[
+  \xi=1-4rs=0.853553,
+\]
+\[
+  U^1=[0.603553,\ 0.853553,\ 0.603553],\qquad
+  U^2=[0.515165,\ 0.728553,\ 0.515165].
+\]
+
+\step{(i) Crank--Nicolson, solved directly}
+With \(U_1=U_3=a\), \(U_2=b\), the system
+\(-\frac r2U_{m-1}^{1}+(1+r)U_m^1-\frac r2U_{m+1}^1
+=\frac r2U_{m-1}^0+(1-r)U_m^0+\frac r2U_{m+1}^0\) reads
+\begin{align*}
+  1.25a-0.125b&=0.75(0.707107)+0.125(1)=0.655330,\\
+  -0.25a+1.25b&=0.75(1)+0.125(2\times0.707107)=0.926777 .
+\end{align*}
+The determinant is \(1.25^2-0.125\times0.25=1.53125\), so
+\begin{align*}
+  a&=\frac{1.25(0.655330)+0.125(0.926777)}{1.53125}=0.610619,\\
+  b&=\frac{1.25(0.926777)+0.25(0.655330)}{1.53125}=0.863545 .
+\end{align*}
+This agrees with \(\xi=\frac{1-2rs}{1+2rs}=0.863545\).  A second step
+gives \(U^2=[0.527297,\ 0.745710,\ 0.527297]\).
+
+\step{(iv) Douglas}
+Here \(\frac12(r-\frac16)=\frac1{24}\) and
+\(\frac12(r+\frac16)=\frac5{24}\), so
+\[
+  \xi=\frac{1-4\cdot\frac5{24}s}{1+4\cdot\frac1{24}s}
+  =\frac{0.877961}{1.024408}=0.857044,
+\]
+\[
+  U^1=[0.606021,\ 0.857043,\ 0.606021],\qquad
+  U^2=[0.519386,\ 0.734522,\ 0.519386].
+\]
+
+\step{(iii) Du Fort--Frankel}
+It is a three-level scheme, so \(U^1\) must come from a two-level
+scheme; take the explicit \(U^1\).  With \(r=\frac14\):
+\(1.5\,U_m^2=0.5\bigl(U_{m+1}^1+U_{m-1}^1\bigr)+0.5\,U_m^0\).  At
+\(x=\frac12\):
+\[
+  U_2^2=\frac{0.5(0.603553+0.603553)+0.5(1)}{1.5}=0.735702,
+\]
+and at \(x=\frac14\):
+\(U_1^2=\frac{0.5(0+0.853553)+0.5(0.707107)}{1.5}=0.520220\).
+
+\needspace{16\baselineskip}
+\step{Comparison at \(x=\frac12\), \(t=2k=\frac1{32}\)}
+The exact value is \(e^{-\pi^2/32}=0.734603\).
+
+\begin{center}
+\renewcommand{\arraystretch}{1.4}
+\begin{tabular}{lcc}
+\toprule
+Method & \(U\bigl(\tfrac12,\tfrac1{32}\bigr)\) & Error\\
+\midrule
+Explicit & \(0.728553\) & \(6.0\times10^{-3}\)\\
+Crank--Nicolson & \(0.745710\) & \(1.1\times10^{-2}\)\\
+Du Fort--Frankel & \(0.735702\) & \(1.1\times10^{-3}\)\\
+Douglas & \(0.734522\) & \(8.1\times10^{-5}\)\\
+Exact & \(0.734603\) & --\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The Douglas scheme, of order \(O(k^2+h^4)\), is by far the most
+accurate on this coarse mesh.  Crank--Nicolson is less accurate than
+the explicit scheme here: both have an \(O(h^2)\) spatial error, and
+at \(r=\frac14\) the explicit scheme's time error partly cancels its
+space error, while for Crank--Nicolson the two errors add.
+
+\end{document}

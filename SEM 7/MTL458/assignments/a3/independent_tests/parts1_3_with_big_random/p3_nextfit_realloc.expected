@@ -1,0 +1,36 @@
+realloc slot 5 100: same
+realloc slot 3 50: same
+region 0 65536
+  32 A 128 10
+  160 A 128 10
+  288 A 128 10
+  416 A 128 50
+  544 F 128
+  672 A 144 100
+  816 F 64720
+realloc slot 1 200: moved
+region 0 65536
+  32 A 128 10
+  160 F 128
+  288 A 128 10
+  416 A 128 50
+  544 F 128
+  672 A 144 100
+  816 A 240 200
+  1056 A 128 10
+  1184 F 64352
+calloc slot 9: zeroed
+realloc slot 11 10: new
+region 0 65536
+  32 A 128 10
+  160 A 128 10
+  288 A 128 10
+  416 A 128 50
+  544 A 128 10
+  672 A 144 100
+  816 A 240 200
+  1056 A 128 10
+  1184 F 64352
+bytes slot 1: 4e 62 69
+bytes slot 5: ea 74 f1
+bytes slot 9: 7b bc f0

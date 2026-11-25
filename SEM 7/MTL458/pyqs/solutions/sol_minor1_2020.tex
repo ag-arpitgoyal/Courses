@@ -1,0 +1,455 @@
+\section{Minor Examination, 2020--21 (Semester 2)}
+
+\subsection*{Q1. Process API}
+
+\subsubsection*{(i) Child and parent after \texttt{fork()}}
+\textbf{Question.} Explain the key difference between a child process generated
+by the \texttt{fork()} function in C, and its parent. \hfill [2 points]
+
+\textbf{Solution.}
+Immediately after a successful \texttt{fork()}, the child is a nearly identical
+copy of the parent: it has the same code and an initially identical memory
+image, open-file descriptors, and register state.  The important differences
+are:
+\begin{itemize}
+  \item they are different processes and therefore have different process IDs;
+  \item \texttt{fork()} returns \(0\) in the child but returns the child's PID
+        in the parent; and
+  \item they have separate virtual address spaces.  Modern systems usually
+        implement the initial copy using copy-on-write, but a later write by
+        one process does not alter the other process's private memory.
+\end{itemize}
+Thus the return value is what normally lets the two processes follow different
+branches after the fork.
+
+\subsubsection*{(ii) Output of the fork/exec/wait program}
+\textbf{Question.} Predict the output of following C program. Assume that
+function \texttt{mywc()} takes a filename as parameter and writes the number of
+words in it (integer) in standard output followed by filename. Justify your
+answer. \hfill [3 points]
+\begin{verbatim}
+int main(int argc, char *argv[])
+{
+        printf("First: %d \n", (int) getpid());
+        int rc = fork();
+        if (rc == 0) {
+                printf("Second: (pid:%d)\n", (int) getpid());
+                char *myargs[3];
+                myargs[0] = strdup("mywc");
+                myargs[1] = strdup("abc.c");
+                myargs[2] = NULL;
+                execvp(myargs[0], myargs);
+                printf("Second: %d"\n, (int) getpid());
+        } else {
+                wait(NULL);
+                printf("First: %d\n Second:%d\n", rc, (int) getpid());
+        }
+return 0;
+}
+\end{verbatim}
+
+\textbf{Solution.}
+Strictly, the program as printed does not compile: in
+\begin{verbatim}
+printf("Second: %d"\n, (int) getpid());
+\end{verbatim}
+\verb|\n| lies outside the string literal. Thus the literal answer for the
+printed program is a compiler diagnostic and no run-time output.
+
+For the evidently intended line
+\begin{verbatim}
+printf("Second: %d\n", (int) getpid());
+\end{verbatim}
+let \(P\) be the parent's PID, \(C\) the child's PID, and \(W\) the integer word
+count printed by \texttt{mywc} for \texttt{abc.c}. Assuming terminal
+line-buffered output, if \texttt{execvp()} succeeds, the output is
+\begin{verbatim}
+First: P
+Second: (pid:C)
+W abc.c
+First: C
+ Second:P
+\end{verbatim}
+Here the last two numbers are not reversed accidentally: in the parent,
+\texttt{rc} is the child's PID \(C\), whereas \texttt{getpid()} returns the
+parent's PID \(P\).  The parent's \texttt{wait(NULL)} ensures that these last
+two lines occur only after the child (and hence \texttt{mywc}) terminates.
+The successful \texttt{execvp()} replaces the child's process image, so the
+post-exec \texttt{printf()} is not executed.
+
+If the corrected program's \texttt{execvp()} fails, there is no
+\texttt{mywc} output and execution continues at the next statement in the
+child:
+\begin{verbatim}
+First: P
+Second: (pid:C)
+Second: C
+First: C
+ Second:P
+\end{verbatim}
+If standard output is redirected and fully buffered, inherited user-space
+buffers can change what is observed; the ordering above is the ordinary
+terminal-output interpretation intended by the question.
+
+\subsubsection*{(iii) Number of processes generated}
+\textbf{Question.} How many new processes the following snippet will generate?
+Why? \hfill [2 points]
+\begin{verbatim}
+for (i = 0; i < n; i++)
+    fork();
+\end{verbatim}
+
+\textbf{Solution.}
+Assuming all calls succeed, after each iteration every currently existing
+process executes the next
+\texttt{fork()}, so the population doubles.  Starting with one process, after
+\(n\) iterations there are
+\[
+  2^n \quad\hbox{total processes}.
+\]
+Therefore the loop generates \(\fbox{\(2^n-1\)}\) new processes.  Equivalently,
+the repeated forks form a binary process tree with \(2^n\) processes at the
+end.
+
+\subsection*{Q2. Multilevel Feedback Queue (MLFQ)}
+
+\subsubsection*{(a) Approximating SJF}
+\textbf{Question.} Explain how MLFQ approximates SJF without knowing how long
+the jobs are going to run? \hfill [2 points]
+
+\textbf{Solution.}
+MLFQ infers a job's likely behavior from its observed CPU use.  New jobs begin
+at high priority, normally with a short time slice.  A job that repeatedly
+uses its complete allotment appears CPU-bound and is demoted to lower-priority
+queues with longer slices.  A job that quickly yields or blocks for I/O
+appears interactive or short and remains at high priority.  Thus short and
+interactive jobs receive service before long CPU-bound jobs, approximating
+SJF without requiring their lengths in advance.  Periodic priority boosts
+prevent starvation and allow behavior changes to be recognized.
+
+\subsubsection*{(b) Schedule with a 50 ms priority boost}
+\textbf{Question.} Assume an MLFQ implementation with following parameters,
+and that the context switch is instantaneous.
+\begin{enumerate}
+  \item[(a)] Number of queues: 4,
+  \item[(b)] timer interrupt: 10ms,
+  \item[(c)] Time slices for different queues (assume to be same as the time
+        allotted for a process for that queue): 1st: 10ms, 2nd: 20ms,
+        3rd: 30ms, 4th: 40ms,
+  \item[(d)] Priority boost every 50ms.
+\end{enumerate}
+Describe with the help of a diagram (similar to ones done in class) which
+processes get to run on the CPU at different times in the first 100 seconds in
+the following scenario.
+\begin{itemize}
+  \item Process A enters at \(t=0\)ms and runs for 8ms before requesting for
+        I/O, which takes 5ms to complete.
+  \item Process B enters at \(t=30\)ms and needs to run for 100ms, and does not
+        perform any I/O.
+\end{itemize}
+\hfill [4 points]
+
+\textbf{Solution.}
+The paper says ``first 100 seconds,'' but all arrivals, bursts, slices, and
+boost periods are in milliseconds.  The dimensionally consistent intended
+horizon is the first \(100\) ms.
+
+The statement says when A's first I/O completes but does not say whether A
+terminates, repeats the same CPU/I/O cycle, or has some other next CPU burst.
+Consequently it does not determine a unique schedule.  One common classroom
+interpretation is that A repeatedly runs for 8ms and then performs I/O for
+5ms, and that voluntarily yielding before the end of a slice gives it a fresh
+slice at the same priority.  With that convention, and with no
+equal-priority arrival preemption, the \(0\)--\(100\)ms timeline is:
+\[
+\begin{array}{c|rrrrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!13&13\!-\!21&21\!-\!26&26\!-\!34&34\!-\!44
+&44\!-\!52&52\!-\!62\\ \hline
+\text{CPU}
+&A&\text{idle}&A&\text{idle}&A&B(Q_1)&A&B(Q_1)
+\end{array}
+\]
+\[
+\begin{array}{c|rrrrrr}
+\text{interval (ms)}
+&62\!-\!70&70\!-\!75&75\!-\!83&83\!-\!88&88\!-\!96&96\!-\!100\\ \hline
+\text{CPU}
+&A&B(Q_2)&A&B(Q_2)&A&B(Q_2)
+\end{array}
+\]
+At \(t=50\) the boost moves the waiting B from \(Q_2\) to \(Q_1\); A is
+already running in \(Q_1\), so it continues until blocking at \(t=52\).  At
+\(t=100\), B is boosted to \(Q_1\).  By then B has received \(34\)ms of its
+\(100\)ms demand.
+
+Under OSTEP's later anti-gaming Rule 4, CPU use is instead accumulated across
+I/O until the level allotment is exhausted. Because the question says the
+slice and allotment are equal, A then has only 2ms left in \(Q_1\) after its
+first I/O and is demoted after using those 2ms. Assuming a boost puts the
+already-waiting A before the interrupted B, the repeated-burst timeline is:
+\[
+\begin{array}{c|rrrrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!13&13\!-\!15&15\!-\!21&21\!-\!26&26\!-\!30
+&30\!-\!40&40\!-\!44\\ \hline
+\text{CPU}
+&A(Q_1)&\text{idle}&A(Q_1)&A(Q_2)&\text{idle}&A(Q_2)
+&B(Q_1)&A(Q_2)
+\end{array}
+\]
+\[
+\begin{array}{c|rrrrrrr}
+\text{interval (ms)}
+&44\!-\!50&50\!-\!58&58\!-\!68&68\!-\!70&70\!-\!90&90\!-\!96
+&96\!-\!100\\ \hline
+\text{CPU}
+&B(Q_2)&A(Q_1)&B(Q_1)&A(Q_1)&B(Q_2)&A(Q_2)&B(Q_3)
+\end{array}
+\]
+This is the OSTEP cumulative-allotment answer; B has received 50ms by
+\(t=100\)ms.
+
+If instead A has only the one stated CPU burst and terminates after its I/O,
+the also-consistent timeline is
+\[
+\begin{array}{c|rrrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!30&30\!-\!40&40\!-\!50&50\!-\!60&60\!-\!80&80\!-\!100\\
+\hline
+\text{CPU}
+&A&\text{idle}&B(Q_1)&B(Q_2)&B(Q_1)&B(Q_2)&B(Q_3).
+\end{array}
+\]
+Here B has received \(70\)ms by \(t=100\)ms.  If ``100 seconds'' is read
+literally, a complete schedule after \(100\)ms still depends on the missing
+post-I/O behavior of A; B eventually completes and the remaining interval is
+otherwise idle in the one-burst interpretation.
+
+\subsubsection*{(c) Schedule with no priority boost}
+\textbf{Question.} Modify the diagram in above part to show what would happen
+if there was no priority boost? \hfill [2 points]
+
+\textbf{Solution.}
+Under the repeated-burst, fresh-slice-on-I/O interpretation above:
+\[
+\begin{array}{c|rrrrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!13&13\!-\!21&21\!-\!26&26\!-\!34&34\!-\!44
+&44\!-\!52&52\!-\!57\\ \hline
+\text{CPU}
+&A&\text{idle}&A&\text{idle}&A&B(Q_1)&A&B(Q_2)
+\end{array}
+\]
+\[
+\begin{array}{c|rrrrrrr}
+\text{interval (ms)}
+&57\!-\!65&65\!-\!70&70\!-\!78&78\!-\!83&83\!-\!91&91\!-\!96
+&96\!-\!100\\ \hline
+\text{CPU}
+&A&B(Q_2)&A&B(Q_2)&A&B(Q_2)&A
+\end{array}
+\]
+B accumulates its \(20\)ms \(Q_2\) allotment over four 5ms runs and is demoted
+to \(Q_3\) at \(t=96\).
+
+With OSTEP cumulative allotments, the no-boost repeated-burst timeline is
+\[
+\begin{array}{c|rrrrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!13&13\!-\!15&15\!-\!21&21\!-\!26&26\!-\!30
+&30\!-\!40&40\!-\!44\\ \hline
+\text{CPU}
+&A(Q_1)&\text{idle}&A(Q_1)&A(Q_2)&\text{idle}&A(Q_2)
+&B(Q_1)&A(Q_2)
+\end{array}
+\]
+\[
+\begin{array}{c|rrr}
+\text{interval (ms)}&44\!-\!64&64\!-\!70&70\!-\!100\\ \hline
+\text{CPU}&B(Q_2)&A(Q_2)&B(Q_3).
+\end{array}
+\]
+At \(t=70\), A has exhausted its cumulative \(Q_2\) allotment and joins
+\(Q_3\) behind B; B runs through the horizon.
+
+Under the one-burst/termination interpretation for A, the timeline is
+\[
+\begin{array}{c|rrrrrr}
+\text{interval (ms)}
+&0\!-\!8&8\!-\!30&30\!-\!40&40\!-\!60&60\!-\!90&90\!-\!100\\ \hline
+\text{CPU}
+&A&\text{idle}&B(Q_1)&B(Q_2)&B(Q_3)&B(Q_4).
+\end{array}
+\]
+B then continues in \(Q_4\) and finishes at \(t=130\)ms.
+
+\subsection*{Q3. Memory Virtualization}
+
+\subsubsection*{(a) Multiple segments versus one base--bounds slot}
+\textbf{Question.} Explain the advantages of segmentation using multiple
+base-bounds pairs of registers over slotting approach with one pair of
+base-bounds registers. \hfill [3 points]
+
+\textbf{Solution.}
+\begin{itemize}
+  \item Code, heap, and stack can be placed independently in physical memory;
+        physical memory need not contain one large contiguous slot for the
+        whole virtual address space.
+  \item The unused virtual gap between a growing heap and a growing stack need
+        not consume physical memory, improving utilization.
+  \item Heap and stack can grow independently (and in opposite directions),
+        subject to relocation and available space.
+  \item Each segment can have separate protection and sharing properties; for
+        example, code may be read-only and shared while stack data is private.
+\end{itemize}
+
+\subsubsection*{(b) Address translation and instruction execution}
+\textbf{Question.} Take an example of segmentation approach where the virtual
+memory is 16KB (14 bits address space), and the base-bounds registers are as
+following.
+\begin{center}
+\begin{tabular}{c|c|c|c}
+\textbf{Segment} & \textbf{Base} & \textbf{Size (max 4K)}
+& \textbf{Grows positive?}\\ \hline
+Code\(_{00}\)  & 32K & 2K & 1\\
+Heap\(_{01}\)  & 34k & 3K & 1\\
+Stack\(_{11}\) & 44K & 2K & 0
+\end{tabular}
+\end{center}
+Explain the address translations that happen while executing the following
+instructions starting from the fetch at location 100 in virtual memory of the
+process. Assume that the \texttt{ebx} register holds the the address 13K,
+which in the process's virtual memory has an integer variable stored in it with
+value 1234. Assume that the \texttt{ecx} register holds the the address 15K
+which has number 2345 stored in it. The first two bits of the virtual address
+determine the segment.
+\begin{itemize}
+  \item 100: Load the content of the address stored in \texttt{ebx} to
+        \texttt{eax}.
+  \item 104: Increment \texttt{eax} by 105.
+  \item 107: Copy the content of \texttt{eax} into the address that is stored
+        in \texttt{ebx}.
+  \item 111: Load the content of the address stored in \texttt{ecx} to
+        \texttt{eax}.
+\end{itemize}
+\hfill [4 points]
+
+\textbf{Solution.}
+The two selector bits leave a 12-bit raw offset \(r\), with
+\(0\leq r<4\)KB.  In OSTEP's grow-negative convention the stack offset is
+interpreted as a signed displacement
+\[
+ d=r-4\text{KB},
+\]
+and translation is \(\mathrm{PA}=\mathrm{base}+d\).  A stack access is valid
+only when \(-\mathrm{size}\leq d<0\).  This subtraction of 4KB is essential;
+using \(44\text{K}-r\) would reverse which of 13K and 15K is in the 2K stack.
+
+The instruction addresses all select code (\(00\)); if reached, their fetch
+translations are
+\[
+\begin{array}{c|c}
+\text{instruction VA} & \text{instruction-fetch PA}\\ \hline
+100 & 32\text{K}+100=32868\\
+104 & 32\text{K}+104=32872\\
+107 & 32\text{K}+107=32875\\
+111 & 32\text{K}+111=32879
+\end{array}
+\]
+where \(1\)K \(=1024\) bytes.  In the actual execution, however, only the
+first fetch occurs:
+\[
+13\text{K}=11\,0100\,0000\,0000_2,\qquad
+r=1\text{K},\qquad d=1\text{K}-4\text{K}=-3\text{K}.
+\]
+Because \(-3\text{K}<-2\text{K}\), the load through \texttt{ebx} violates the
+stack bound and raises a \textbf{segmentation fault}.  Thus \texttt{eax} is not
+loaded with 1234, and the instructions at 104, 107, and 111 are not executed.
+The statement that a variable exists at virtual address 13K is inconsistent
+with the printed 2K grow-negative stack segment.
+
+For completeness, the separately considered \texttt{ecx} address would be
+valid:
+\[
+15\text{K}=11\,1100\,0000\,0000_2,\qquad
+r=3\text{K},\qquad d=-1\text{K},
+\]
+so it translates to \(44\text{K}-1\text{K}=43\text{K}=44032\) and would load
+2345 if the instruction at 111 were reached.  Selector \(10\), absent from the
+table, is invalid.
+
+\subsection*{Q4. Free-Space Management}
+
+\subsubsection*{(a) How \texttt{free()} obtains the allocation size}
+\textbf{Question.} We saw that the \texttt{free()} call does not take any size
+parameter. How does it know how much of memory it needs to free?
+\hfill [2 points]
+
+\textbf{Solution.}
+An allocator stores hidden metadata in a header immediately before (or
+otherwise associated with) each allocated payload.  The header records at
+least the block size and may also contain a magic value, allocation status,
+or links.  If \(p\) is the payload pointer returned by \texttt{malloc()},
+\texttt{free(p)} moves backward by the known header size, reads the block
+size, and returns that entire block to the free list, possibly coalescing it
+with adjacent free blocks.
+
+\subsubsection*{(b) First-fit, best-fit, and worst-fit}
+\textbf{Question.} Suppose free-list for a process looks like following. Here
+we care only about the size, so the addresses are not mentioned.
+\[
+  \mbox{head}\longrightarrow 15\mbox{KB}\longrightarrow10\mbox{KB}
+  \longrightarrow40\mbox{KB}\longrightarrow8\mbox{KB}
+  \longrightarrow\mathrm{NULL}.
+\]
+Suppose a request for 10KB of memory comes, followed by another request of
+6KB. Explain how the free-list would look like after the first and the second
+request for Best-Fit, Worst-Fit and First-Fit strategies. List one disadvantage
+of each of these strategies. \hfill [6 points]
+
+\textbf{Solution.}
+Assume allocation is from the selected block and any remainder replaces that
+block at the same free-list position; allocator-header and alignment overheads
+are omitted.
+
+\paragraph{First-fit.}
+The first \(10\)-KB request uses the first sufficiently large block, namely
+the \(15\)-KB block, leaving \(5\) KB:
+\[
+  \fbox{\(5\longrightarrow10\longrightarrow40\longrightarrow8\)}.
+\]
+For the \(6\)-KB request, \(5\) KB is too small, so the next \(10\)-KB block is
+used and leaves \(4\) KB:
+\[
+  \fbox{\(5\longrightarrow4\longrightarrow40\longrightarrow8\)}.
+\]
+\emph{Disadvantage:} it can accumulate small fragments near the front of the
+list, increasing fragmentation and future search time.
+
+\paragraph{Best-fit.}
+The first request uses the exact \(10\)-KB block:
+\[
+  \fbox{\(15\longrightarrow40\longrightarrow8\)}.
+\]
+For the second request, the smallest sufficient block is \(8\) KB, leaving
+\(2\) KB:
+\[
+  \fbox{\(15\longrightarrow40\longrightarrow2\)}.
+\]
+\emph{Disadvantage:} it generally scans the whole list and tends to create
+tiny unusable remainders (splinters).
+
+\paragraph{Worst-fit.}
+The first request uses the largest block, \(40\) KB, leaving \(30\) KB:
+\[
+  \fbox{\(15\longrightarrow10\longrightarrow30\longrightarrow8\)}.
+\]
+The second request again uses the largest block, now \(30\) KB, leaving
+\(24\) KB:
+\[
+  \fbox{\(15\longrightarrow10\longrightarrow24\longrightarrow8\)}.
+\]
+\emph{Disadvantage:} it requires a full-list search (unless extra data
+structures are maintained) and repeatedly consumes the largest blocks, which
+can make later large requests impossible.

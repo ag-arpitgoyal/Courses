@@ -1,0 +1,14 @@
+error: double free (block 0:32)
+error: double free (block 0:288)
+error: double free (block 0:32)
+q NULL
+error: double free (block 0:288)
+q NULL
+error: double free (block 0:32)
+q NULL
+region 0 65536
+  32 F 128
+  160 A 128 10
+  288 F 65248
+leak: block 0:160 (10 bytes)
+leak summary: 1 blocks, 10 bytes

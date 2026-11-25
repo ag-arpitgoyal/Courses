@@ -1,0 +1,12 @@
+built: count=9600 walked=9600 sum=481706043 wsum=3359014982 corrupt=0 first: 72142 35957 21534 57826 41752 65984 15151 99075
+no multiples of 3: count=6429 walked=6429 sum=324528930 wsum=2286392293 corrupt=0 first: 72142 35957 57826 41752 65984 15151 39073 61832
+reversed: count=6429 walked=6429 sum=324528930 wsum=2277098376 corrupt=0 first: 59771 21989 13096 38947 10324 4733 7598 83147
+sorted: count=6429 walked=6429 sum=324528930 wsum=2271000963 corrupt=0 first: 5 52 116 116 148 161 164 169
+grown payloads: 635
+after growth: count=6429 walked=6429 sum=324528930 wsum=2271000963 corrupt=0 first: 5 52 116 116 148 161 164 169
+emptied: count=0 walked=0 sum=0 wsum=0 corrupt=0 first:
+mode=list on b
+leak: block 0:32 (100 bytes)
+leak: block 0:176 (10 bytes)
+leak: block 0:304 (1000 bytes)
+leak summary: 3 blocks, 1110 bytes

@@ -1,0 +1,45 @@
+realloc slot 0 420: same
+realloc slot 0 300: same
+region 0 65536
+  32 A 352 300
+  384 F 192
+  576 A 128 10
+  704 A 544 500
+  1248 A 128 10
+  1376 F 64160
+realloc slot 0 200: same
+realloc slot 0 88: same
+region 0 65536
+  32 A 128 88
+  160 F 416
+  576 A 128 10
+  704 A 544 500
+  1248 A 128 10
+  1376 F 64160
+realloc slot 0 1: same
+realloc slot 0 88: same
+realloc slot 1 80: same
+realloc slot 3 50: same
+realloc slot 2 104: same
+region 0 65536
+  32 A 128 88
+  160 F 416
+  576 A 128 80
+  704 A 144 104
+  848 F 400
+  1248 A 128 50
+  1376 F 64160
+realloc slot 3 10: same
+realloc slot 4 63000: same
+region 0 65536
+  32 A 128 88
+  160 F 416
+  576 A 128 80
+  704 A 144 104
+  848 F 400
+  1248 A 128 10
+  1376 A 63040 63000
+  64416 F 1120
+bytes slot 0: a7 e3 12
+bytes slot 2: f5 99 30
+bytes slot 4: c9 a2 6f

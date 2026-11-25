@@ -1,0 +1,186 @@
+\begin{question}{30}
+Show that $\redm$ is a transitive relation. If $A\redm B$ and $B$ is a regular language, does that imply that $A$ is a regular language? Why or why not?
+\end{question}
+\begin{soln}
+Recall: $A\redm B$ means there is a computable $f$ with $w\in A\iff f(w)\in B$ for all $w$.
+
+\textbf{Transitivity.} Let $A\redm B$ via $f$ and $B\redm C$ via $g$. Then $h=g\circ f$ is computable (run the machine for $f$, then the machine for $g$ on its output), and
+\[
+w\in A\iff f(w)\in B\iff g(f(w))\in C .
+\]
+So $A\redm C$ via $h$.
+
+\textbf{No, $A$ need not be regular.} A reduction is allowed to do any computation, so it can solve $A$ itself. Take $A=\{0^n1^n\mid n\ge0\}$ (decidable, not regular) and $B=\{0\}$ (regular), with
+\[
+f(w)=\begin{cases}0 & w\in A\\ 1 & w\notin A.\end{cases}
+\]
+$f$ is computable, because $A$ is decidable, and $w\in A\iff f(w)=0\iff f(w)\in B$. So $A\redm B$ with $B$ regular but $A$ not regular.
+
+(In general, $A\redm B$ only transfers \emph{decidability} and \emph{recognizability}, not regularity.)
+\end{soln}
+
+\begin{question}{31}
+Does $A\redm B$ imply $\comp A\redm\comp B$? Justify your answer.
+\end{question}
+\begin{soln}
+\textbf{Yes, with the same function.} If $w\in A\iff f(w)\in B$, then negating both sides gives
+\[
+w\notin A\iff f(w)\notin B,\qquad\text{i.e.}\qquad w\in\comp A\iff f(w)\in\comp B .
+\]
+So the same computable $f$ reduces $\comp A$ to $\comp B$.
+(Useful consequence: if $A\redm B$ and $\comp A$ is not recognizable, then $\comp B$ is not recognizable.)
+\end{soln}
+
+\begin{question}{32}
+Use a mapping reduction from $\Etm$ to $\mathit{SUBSET}_{\mathrm{TM}}$ (where $\mathit{SUBSET}_{\mathrm{TM}}=\{\enc{M_1,M_2}\mid M_1,M_2 \text{ are TMs and } L(M_1)\subseteq L(M_2)\}$) to show that the language is undecidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} ``$L(M)$ is empty'' is the same as ``$L(M)\subseteq\emptyset$''.
+
+Let $M_\emptyset$ be a fixed TM that rejects every input, so $L(M_\emptyset)=\emptyset$. Define
+\[
+f(\enc M)=\enc{M,M_\emptyset}.
+\]
+$f$ is computable (just append a fixed string). And
+\[
+\enc M\in\Etm\iff L(M)=\emptyset\iff L(M)\subseteq\emptyset=L(M_\emptyset)\iff\enc{M,M_\emptyset}\in\mathit{SUBSET}_{\mathrm{TM}}.
+\]
+So $\Etm\redm\mathit{SUBSET}_{\mathrm{TM}}$. Since $\Etm$ is undecidable (Thm 5.2), $\mathit{SUBSET}_{\mathrm{TM}}$ is undecidable.
+\end{soln}
+
+\begin{question}{33}
+Let $\mathit{FINITE}_{\mathrm{TM}}=\{\enc M\mid L(M) \text{ is finite}\}$. Use a mapping reduction from $\Etm$ to $\mathit{FINITE}_{\mathrm{TM}}$ to show that $\mathit{FINITE}_{\mathrm{TM}}$ is undecidable. Clearly describe the mapping and prove its correctness.
+\end{question}
+\begin{soln}
+\textbf{Why $f(\enc M)=\enc M$ does not work:} a finite \emph{nonempty} language is in $\mathit{FINITE}_{\mathrm{TM}}$ but not in $\Etm$. We need a machine whose language is either empty or infinite: \emph{all or nothing}.
+
+\textbf{The mapping.} $f(\enc M)=\enc{M'}$ where
+$M'=$ ``On input $x$ (ignored):\\
+\hspace*{1.5em}for $i=1,2,3,\dots$: run $M$ for $i$ steps on each of $s_1,\dots,s_i$; if any accepts, \emph{accept}.''
+
+
+Here $s_1,s_2,\dots$ lists all strings in order of length. This ``dovetailing'' is needed because running $M$ on $s_1$ to completion could loop forever.
+
+\textbf{Correctness.}
+\begin{itemize}
+\item If $L(M)=\emptyset$: no simulation ever accepts, so $M'$ accepts nothing. $L(M')=\emptyset$, which is finite.
+\item If $L(M)\neq\emptyset$: say $M$ accepts $s_j$ in $t$ steps. On \emph{every} input, round $i=\max(j,t)$ finds this, so $M'$ accepts. $L(M')=\Sigma^*$, which is infinite.
+\end{itemize}
+Thus $\enc M\in\Etm\iff L(M')$ is finite $\iff f(\enc M)\in\mathit{FINITE}_{\mathrm{TM}}$. $f$ is computable: it only writes down the description of $M'$, without running anything. So $\Etm\redm\mathit{FINITE}_{\mathrm{TM}}$, and $\mathit{FINITE}_{\mathrm{TM}}$ is undecidable.
+\end{soln}
+
+\begin{question}{34}
+Let $\mathit{ALL}_{\mathrm{TM}}=\{\enc M\mid L(M)=\Sigma^*\}$. Use a mapping reduction from $\Etm$ to $\mathit{ALL}_{\mathrm{TM}}$ to show that $\mathit{ALL}_{\mathrm{TM}}$ is undecidable. Clearly describe the mapping and prove its correctness.
+\end{question}
+\begin{soln}
+\textbf{Idea.} We want $M'$ with $L(M')=\Sigma^*$ exactly when $L(M)=\emptyset$. $M'$ cannot wait to see that $M$ accepts nothing (that would take forever), so instead it uses the \emph{length of its input as a time budget}: it accepts $x$ unless it can find, within that budget, a string that $M$ accepts.
+
+\textbf{The mapping.} $f(\enc M)=\enc{M'}$ where
+$M'=$ ``On input $x$, with $n=|x|$:\\
+\hspace*{1.5em}run $M$ for $n$ steps on each of $s_1,\dots,s_n$. If any of them accepts, \emph{reject}; otherwise \emph{accept}.''
+
+
+($M'$ always halts, after at most $n^2$ simulated steps.)
+
+\textbf{Correctness.}
+\begin{itemize}
+\item If $L(M)=\emptyset$: no simulation ever accepts, so $M'$ accepts every $x$. $L(M')=\Sigma^*$.
+\item If $L(M)\neq\emptyset$: say $M$ accepts $s_j$ within $t$ steps. Then every $x$ with $|x|\ge\max(j,t)$ is rejected, and such $x$ exist. $L(M')\neq\Sigma^*$.
+\end{itemize}
+So $\enc M\in\Etm\iff\enc{M'}\in\mathit{ALL}_{\mathrm{TM}}$, and $f$ is computable (it only builds $M'$). Hence $\Etm\redm\mathit{ALL}_{\mathrm{TM}}$, and $\mathit{ALL}_{\mathrm{TM}}$ is undecidable.
+
+(Bonus: $\comp\Etm$ is recognizable and $\Etm$ is not, so this reduction also shows that $\mathit{ALL}_{\mathrm{TM}}$ is not Turing-recognizable.)
+\end{soln}
+
+\begin{question}{35}
+Show that if $A$ is Turing-recognizable and $A\redm\comp A$, then $A$ is decidable.
+\end{question}
+\begin{soln}
+Let $f$ reduce $A$ to $\comp A$. By Q31, the same $f$ reduces $\comp A$ to $\comp{\comp A}=A$:
+\[
+w\in\comp A\iff f(w)\in A .
+\]
+So $\comp A$ is recognizable: ``On $w$, compute $f(w)$ and run the recognizer of $A$ on it.'' (If $B\redm A$ and $A$ is recognizable, so is $B$; Thm 5.28.)
+
+Now $A$ and $\comp A$ are both recognizable, so $A$ is decidable (Thm 4.22).
+\end{soln}
+
+\begin{question}{36}
+Show that the language
+\[L_4=\{\enc M\mid M \text{ is a TM that accepts } w^R \text{ whenever it accepts } w\}\]
+is undecidable, where $w^R$ denotes the reverse of $w$.
+\end{question}
+\begin{soln}
+$\enc M\in L_4\iff L(M)$ is closed under reversal. We reduce $\Atm\redm L_4$.
+
+\textbf{Idea.} Build $M'$ whose language is the ``bad'' set $\{01\}$ (not closed, since $10$ is missing), plus $10$ if and only if $M$ accepts $w$, which would repair it.
+
+Given $\enc{M,w}$, let $f(\enc{M,w})=\enc{M'}$ where
+$M'=$ ``On input $x$:
+\begin{enumerate}
+\item If $x=01$, \emph{accept}.
+\item If $x=10$, run $M$ on $w$; if it accepts, \emph{accept}.
+\item Otherwise \emph{reject}.''
+\end{enumerate}
+\begin{itemize}
+\item $M$ accepts $w$ $\Rightarrow$ $L(M')=\{01,10\}$, which is closed under reversal: $\enc{M'}\in L_4$.
+\item $M$ does not accept $w$ $\Rightarrow$ $L(M')=\{01\}$; $01$ is accepted but $10$ is not: $\enc{M'}\notin L_4$.
+\end{itemize}
+$f$ is computable, so $\Atm\redm L_4$, and $L_4$ is undecidable.
+
+(Compare Q22: for DFAs the same property is decidable. The difference is that we can test equality of DFAs, but not of TMs.)
+\end{soln}
+
+\begin{question}{37}
+Give an example of an undecidable language $L$ such that $L\redm\comp L$. Prove your answer.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Glue a hard language and its complement together, tagged by a first bit; flipping the bit swaps the two halves. Let
+\[
+L=\{0w\mid w\in\Atm\}\ \cup\ \{1w\mid w\notin\Atm\}.
+\]
+
+\textbf{$L$ is undecidable:} $w\mapsto 0w$ gives $w\in\Atm\iff 0w\in L$, so $\Atm\redm L$.
+
+\textbf{$L\redm\comp L$:} let $f$ flip the first bit, $f(0w)=1w$ and $f(1w)=0w$, and set $f(\eps)=1$. Check all cases:
+\begin{itemize}
+\item $0w\in L\iff w\in\Atm\iff 1w\notin L\iff f(0w)\in\comp L$.
+\item $1w\in L\iff w\notin\Atm\iff 0w\notin L\iff f(1w)\in\comp L$.
+\item $\eps\notin L$, and $f(\eps)=1=1\eps\in L$ (as $\eps\notin\Atm$), so $f(\eps)\notin\comp L$. Both sides are false. \checkmark
+\end{itemize}
+$f$ is clearly computable, so $L\redm\comp L$.
+
+(Consistency with Q35: there, ``$A$ recognizable and $A\redm\comp A$'' forced decidability. Here $L$ is not recognizable, since $\comp\Atm\redm L$ via $w\mapsto 1w$, so there is no contradiction.)
+\end{soln}
+
+\begin{question}{38}
+A useless state in a Turing machine is one that is never entered on any input string. Consider the problem of determining whether a Turing machine has any useless states. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+\[
+\mathit{USELESS}_{\mathrm{TM}}=\{\enc M\mid M \text{ is a TM with at least one useless state}\}.
+\]
+(Rice's theorem does \emph{not} apply: this is a property of the machine, not of its language.)
+
+\textbf{Reduction $\Etm\redm\mathit{USELESS}_{\mathrm{TM}}$.}
+\emph{Observation:} $q_{\mathrm{accept}}$ is useless in $M$ $\iff$ $M$ accepts nothing $\iff L(M)=\emptyset$.
+So it is enough to transform $M$ into an equivalent $M'$ in which \emph{every state other than $q_{\mathrm{accept}}$ is definitely entered on some input}. Then the only state that could be useless is $q_{\mathrm{accept}}$.
+
+\textbf{Construction of $M'$.} Let $u_1,\dots,u_t$ be the states of $M$ other than $q_{\mathrm{accept}}$. Add a new input symbol $\#$ and a new tape symbol $\$$.
+\begin{enumerate}
+\item \emph{Normal inputs} (not starting with $\#$): $M'$ behaves exactly like $M$. (A new start state steps right and back left, then enters $q_0$; the tape is unchanged.)
+\item \emph{Tour inputs} $\#^j$: $M'$ counts the $\#$'s using new states $c_1,\dots,c_t$, writes $\$$ on the first blank, and enters state $u_j$ with the head on that $\$$.
+\item For every state $u$ of $M$, add the transition $\delta'(u,\$)=(q_{\mathrm{reject}},\$,R)$, and likewise on $\#$. Since $M$ never sees $\$$ or $\#$, this does not change the runs on normal inputs.
+\end{enumerate}
+
+\textbf{Correctness.}
+\begin{itemize}
+\item Every state other than $q_{\mathrm{accept}}$ is entered: the new states and all $u_j$ (including $q_{\mathrm{reject}}$) by the tour inputs, and the new start state on every input.
+\item The tour runs reject immediately after entering $u_j$, so they never reach $q_{\mathrm{accept}}$. Hence $q_{\mathrm{accept}}$ is entered on some input $\iff$ $M$ accepts some normal input $\iff L(M)\neq\emptyset$. (An input $w\#z$ that $M'$ accepts never lets the head reach the $\#$, so $M$ accepts $w$ as well.)
+\end{itemize}
+Therefore
+\[
+\enc M\in\Etm\iff L(M)=\emptyset\iff q_{\mathrm{accept}} \text{ is useless in } M' \iff \enc{M'}\in\mathit{USELESS}_{\mathrm{TM}} .
+\]
+Building $M'$ only rewrites the table of $M$ (it does not run $M$), so $f(\enc M)=\enc{M'}$ is computable. Hence $\Etm\redm\mathit{USELESS}_{\mathrm{TM}}$, and $\mathit{USELESS}_{\mathrm{TM}}$ is undecidable.
+\end{soln}

@@ -1,0 +1,95 @@
+\section{Foundations: alphabets, strings, and computation}
+
+\subsection{What is computation?}
+A computation is the process by which an abstract machine reads an input
+string, updates a finite (or unbounded) internal configuration, and eventually
+answers accept or reject. The course studies three models of
+increasing memory:
+\begin{enumerate}
+  \item \textbf{Finite automata} --- finite memory, encoded entirely in the
+        current state.
+  \item \textbf{Pushdown automata} --- finite control plus a stack.
+  \item \textbf{Turing machines} --- unbounded tape memory.
+\end{enumerate}
+Finite automata correspond to regular languages; pushdown automata to
+context-free languages; Turing machines to the recursively enumerable languages.
+The first two models occupy these notes; Turing machines come later in the
+course.
+
+\subsection{Alphabets, strings, and languages}
+\begin{definition}[Alphabet and strings]
+An \emph{alphabet} $\Sigma$ is a finite nonempty set of symbols. A
+\emph{string} over $\Sigma$ is a finite sequence of symbols from $\Sigma$.
+The empty string is $\eps$, and $|\eps|=0$. Write $|w|$ for the length of
+$w$. Concatenation of $u$ and $v$ is written $uv$.
+\end{definition}
+
+The set of all strings over $\Sigma$ is $\Sigma^*$. Formally
+\[
+  \Sigma^0=\set{\eps},\qquad
+  \Sigma^{n+1}=\set{wa:w\in\Sigma^n,\,a\in\Sigma},\qquad
+  \Sigma^*=\bigcup_{n\geq 0}\Sigma^n.
+\]
+Write $\Sigma^+=\Sigma^*\setminus\set{\eps}$ for the nonempty strings.
+
+\begin{definition}[Language]
+A \emph{language} over $\Sigma$ is any subset $L\subseteq\Sigma^*$.
+\end{definition}
+
+Two equivalent viewpoints appear throughout the notes.
+\begin{itemize}
+  \item A machine $M$ that takes strings over $\Sigma$ as input defines
+        \[
+          \lang{M}=\set{w\in\Sigma^*:M\text{ accepts }w}.
+        \]
+  \item A function $f:\Sigma^*\to\set{0,1}$ defines
+        \[
+          L_f=\set{w\in\Sigma^*:f(w)=1}.
+        \]
+\end{itemize}
+Recognition is the special case of computing a Boolean function on strings.
+
+\subsection{First look at finite automata}
+A finite automaton is drawn as a \emph{state diagram}:
+\begin{itemize}
+  \item circles are states;
+  \item a double circle is an accept state;
+  \item arrows are transitions, labelled by input symbols;
+  \item an incoming arrow with no source marks the start state;
+  \item the output of a completed run is accept/reject
+        (equivalently yes/no).
+\end{itemize}
+
+\begin{example}[The machine $M_1$]
+Let $\Sigma=\set{0,1}$ and let $M_1$ have states $\set{q_1,q_2,q_3}$, start
+state $q_1$, and sole accept state $q_2$.
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=30mm]
+  \node[state,initial] (q1) {$q_1$};
+  \node[state,accepting,right=of q1] (q2) {$q_2$};
+  \node[state,below=of q2] (q3) {$q_3$};
+  \path[->]
+    (q1) edge[loop above] node{$0$} ()
+         edge node[above]{$1$} (q2)
+    (q2) edge[loop above] node{$1$} ()
+         edge node[right]{$0$} (q3)
+    (q3) edge[bend left=18] node[below left]{$0,1$} (q2);
+\end{tikzpicture}
+\end{center}
+$M_1$ accepts precisely those strings that contain at
+least one $1$, after which an even number of $0$s occur. Equivalently: after
+the last $1$, the number of trailing $0$s is even (including the case of no
+trailing $0$s, i.e.\ strings that end in $1$).
+
+Sample runs:
+\[
+\begin{array}{c|ccccc}
+\text{input} & 1 & 01 & 11 & 010 & 0100\\
+\hline
+\text{end state} & q_2 & q_2 & q_2 & q_3 & q_2\\
+\text{result} & \text{accept} & \text{accept} & \text{accept} & \text{reject} & \text{accept}
+\end{array}
+\]
+The diagram determines a unique language: all $w$ such that
+$\transition^*(q_1,w)=q_2$.
+\end{example}

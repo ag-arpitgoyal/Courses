@@ -1,0 +1,8 @@
+r=NULL
+error: overflow detected (block 0:32)
+r=NULL
+check a ok
+region 0 65536
+  32 A 128 30
+  160 A 128 30
+  288 F 65248

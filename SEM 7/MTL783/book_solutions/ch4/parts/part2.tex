@@ -1,0 +1,366 @@
+\begin{question}{Problem 4.17}
+Prove that $\mathit{EQ}_{\mathrm{DFA}}$ is decidable by testing the two DFAs on all strings up to a certain size. Calculate a size that works.
+\end{question}
+\begin{soln}
+\textbf{Idea.} If two DFAs disagree, they disagree on some string no longer than the number of states of their product (a shortest distinguishing path cannot repeat a product-state). Test every string up to that length with the decider for $A_{\mathrm{DFA}}$.
+
+Let $A=(Q_A,\Sigma,\delta_A,q_A,F_A)$ and $B=(Q_B,\Sigma,\delta_B,q_B,F_B)$ have $n=|Q_A|$ and $m=|Q_B|$ states. Form the product DFA
+\[
+C=(Q_A\times Q_B,\;\Sigma,\;\delta,\;(q_A,q_B),\;F)
+\]
+where $\delta((p,r),a)=(\delta_A(p,a),\delta_B(r,a))$ and
+\[
+F=\bigl\{(p,r)\mid (p\in F_A)\oplus(r\in F_B)\bigr\}
+\]
+(symmetric difference of the accept sets). Then $L(C)=\emptyset$ iff $L(A)=L(B)$. If $L(C)\neq\emptyset$, a shortest $w\in L(C)$ cannot repeat a state of $C$ (a cycle could be cut out, yielding a shorter accepted string). So $|w|\le nm-1$.
+
+$M=$ ``On input $\enc{A,B}$, where $A$ and $B$ are DFAs:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}. Let $n$ and $m$ be the numbers of states.
+\item For every string $w\in\Sigma^*$ with $|w|\le nm-1$, run the $A_{\mathrm{DFA}}$ decider of Theorem~4.1 on $\enc{A,w}$ and on $\enc{B,w}$.
+\item If some $w$ is accepted by exactly one of $A,B$, \emph{reject}; otherwise \emph{accept}.''
+\end{enumerate}
+
+\textbf{Correctness.} If $L(A)\neq L(B)$ then some string of length at most $nm-1$ distinguishes them, and $M$ rejects. If $L(A)=L(B)$ then they agree on every string, so $M$ accepts. The loop is finite ($\lvert\Sigma^{\le nm-1}\rvert<\infty$) and Theorem~4.1 always halts, so $M$ is a decider. The size that works is $nm-1$.
+\end{soln}
+
+\begin{question}{Problem 4.18 $\bigstar$}
+Let $C$ be a language. Prove that $C$ is Turing-recognizable iff a decidable language $D$ exists such that
+\[
+C=\{x\mid \exists y\ (\enc{x,y}\in D)\}.
+\]
+\end{question}
+\begin{soln}
+\textbf{Idea.} A recognizer that eventually accepts $x$ does so in some finite number of steps $t$; the pair $\enc{x,1^t}$ is a decidable certificate. Conversely, search for a certificate with a decider for $D$.
+
+($\Rightarrow$) Let $N$ recognize $C$. Define
+\[
+D=\{\enc{x,1^t}\mid N\text{ accepts }x\text{ within }t\text{ steps}\}.
+\]
+$D$ is decidable: on $\enc{x,1^t}$, simulate $N$ on $x$ for at most $t$ steps and accept iff $N$ has accepted. If $x\in C$ then $N$ accepts $x$ in some $t$ steps, so $\enc{x,1^t}\in D$. If $x\notin C$ then no $t$ works. Ill-formed second components may be rejected, which does not add extra $x$'s.
+
+($\Leftarrow$) Suppose such a decidable $D$ exists, decided by $M_D$. The following recognizer $R$ recognizes $C$.
+
+$R=$ ``On input $x$:
+\begin{enumerate}
+\item Let $s_1,s_2,\dots$ be the standard list of all strings.
+\item For $i=1,2,3,\dots$, run $M_D$ on $\enc{x,s_i}$. If $M_D$ accepts, \emph{accept}.''
+\end{enumerate}
+If $x\in C$ then some $y$ has $\enc{x,y}\in D$, so $R$ eventually tries that $y$ and accepts. If $x\notin C$ then $M_D$ rejects every $\enc{x,s_i}$ and $R$ loops. Thus $C$ is Turing-recognizable.
+\end{soln}
+
+\begin{question}{Problem 4.19 $\bigstar$}
+Prove that the class of decidable languages is not closed under homomorphism.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Pad an $A_{\mathrm{TM}}$ instance with a step-budget. Checking ``$M$ accepts $w$ in at most $t$ steps'' is decidable; erasing the budget with a homomorphism recovers $\Atm$, which is undecidable (Theorem~4.11).
+
+Let $\Sigma=\{0,1,\#\}$. Define
+\[
+A=\{\enc{M,w}\#1^t \mid M\text{ is a TM that accepts }w\text{ within }t\text{ steps}\}.
+\]
+$A$ is decidable: on input $x$, check that $x=\enc{M,w}\#1^t$ for a TM $M$ and integer $t\ge 0$; if not, reject. Simulate $M$ on $w$ for at most $t$ steps and accept iff $M$ has accepted. The simulation is bounded, so this is a decider.
+
+Let $h\colon\Sigma^*\to\{0,1\}^*$ be the homomorphism $h(0)=0$, $h(1)=1$, $h(\#)=\eps$. Then
+\[
+h(A)=\{\enc{M,w}\mid M\text{ accepts }w\}=\Atm.
+\]
+If $M$ accepts $w$ in $t$ steps then $\enc{M,w}\#1^t\in A$, so $\enc{M,w}\in h(A)$. If $M$ does not accept $w$, no $t$ works. Theorem~4.11 says $\Atm$ is undecidable, so $h(A)$ is not decidable. Thus the decidable languages are not closed under homomorphism.
+\end{soln}
+
+\begin{question}{Problem 4.20}
+Let $A$ and $B$ be two disjoint languages. Say that language $C$ \emph{separates} $A$ and $B$ if $A\subseteq C$ and $B\subseteq\comp{C}$. Show that any two disjoint co-Turing-recognizable languages are separable by some decidable language.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Because $A\cap B=\emptyset$, every string lies in $\comp{A}$ or $\comp{B}$ (or both). Run the two recognizers in parallel; the first to accept tells us which side of the separator to put the string on. At least one always accepts, so the procedure is a decider.
+
+Let $A$ and $B$ be disjoint and co-Turing-recognizable, so $\comp{A}$ and $\comp{B}$ are Turing-recognizable. Let $R_A$ recognize $\comp{A}$ and $R_B$ recognize $\comp{B}$. Then $\comp{A}\cup\comp{B}=\comp{A\cap B}=\Sigma^*$. Define $C$ to be the language decided by $M$ below.
+
+$M=$ ``On input $w$:
+\begin{enumerate}
+\item Run $R_A$ and $R_B$ on $w$ in parallel (one step of each, alternately).
+\item If $R_B$ accepts, \emph{accept} (put $w$ in $C$). If $R_A$ accepts, \emph{reject} (put $w$ in $\comp{C}$). If both would accept at the same step, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Why $M$ always halts.} For every $w$, at least one of $R_A,R_B$ accepts, because $w\in\comp{A}\cup\comp{B}$. So $M$ is a decider and $C$ is decidable.
+
+\textbf{Why $C$ separates $A$ and $B$.}
+\begin{itemize}
+\item If $w\in A$, then $w\notin\comp{A}$ (so $R_A$ never accepts) and $w\in\comp{B}$ (since $A\cap B=\emptyset$), so $R_B$ accepts. Thus $M$ accepts and $w\in C$.
+\item If $w\in B$, then $R_A$ accepts and $R_B$ never accepts, so $M$ rejects and $w\in\comp{C}$.
+\end{itemize}
+Hence $A\subseteq C$ and $B\subseteq\comp{C}$.
+\end{soln}
+
+\begin{question}{Problem 4.21}
+Let $S$ be the language of encodings $\enc{M}$ where $M$ is a DFA that accepts $w^{\mathrm{R}}$ whenever it accepts $w$. Show that $S$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} The condition is $L(M)\subseteq L(M)^{\mathrm{R}}$, equivalently $L(M)\cap\comp{L(M)^{\mathrm{R}}}=\emptyset$. Reverse $M$ and test emptiness of the intersection with Theorem~4.4.
+
+(The condition is in fact equivalent to $L(M)=L(M)^{\mathrm{R}}$: if $w\in L(M)$ then $w^{\mathrm{R}}\in L(M)$, and applying the same rule to $w^{\mathrm{R}}$ gives $w\in L(M)$ whenever $w^{\mathrm{R}}\in L(M)$.)
+
+$D=$ ``On input $\enc{M}$, where $M$ is a DFA:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item Construct an NFA $N$ for $L(M)^{\mathrm{R}}$ by reversing the arrows of $M$, swapping the start state with the accept states (new start with $\eps$-edges into the old accept states if there are several), then convert $N$ to a DFA $M^{\mathrm{R}}$ by Theorem~1.39.
+\item Complement $M^{\mathrm{R}}$ by swapping accept and non-accept states, obtaining a DFA $C$ for $\comp{L(M)^{\mathrm{R}}}$.
+\item Build a DFA $P$ for $L(M)\cap L(C)$ by the product construction.
+\item Run the $E_{\mathrm{DFA}}$ decider $T$ of Theorem~4.4 on $\enc{P}$. If $T$ accepts, \emph{accept}; if $T$ rejects, \emph{reject}.''
+\end{enumerate}
+
+$L(P)=\emptyset$ iff $L(M)\subseteq L(M)^{\mathrm{R}}$ iff $\enc{M}\in S$. Each construction is an algorithm, and $T$ always halts, so $D$ decides $S$.
+\end{soln}
+
+\begin{question}{Problem 4.22}
+Let $\mathit{PREFIX\text{-}FREE}_{\mathrm{REX}}$ be the encodings $\enc{R}$ where $R$ is a regular expression and $L(R)$ is prefix-free.
+Show that $\mathit{PREFIX\text{-}FREE}_{\mathrm{REX}}$ is decidable. Why does a similar approach fail to show that $\mathit{PREFIX\text{-}FREE}_{\mathrm{CFG}}$ is decidable?
+\end{question}
+\begin{soln}
+A language $L$ is \emph{prefix-free} if no string in $L$ is a proper prefix of another string in $L$. Equivalently, $L\cap L\Sigma^+=\emptyset$.
+
+\textbf{Idea.} For a regular $L$, both $L$ and $L\Sigma^+$ are regular, so the intersection is regular and emptiness is decidable (Theorem~4.4). The same intersection of two CFLs need not be a CFL, so we cannot feed it to $E_{\mathrm{CFG}}$.
+
+$D=$ ``On input $\enc{R}$, where $R$ is a regular expression:
+\begin{enumerate}
+\item Convert $R$ to an equivalent DFA $A$ (Theorems~1.54 and~1.39).
+\item Construct a DFA $B$ for $L(A)\,\Sigma^+$: from each accept state of $A$, take a copy that has already read one extra symbol in $\Sigma$ and then any string (product of $A$ with a 3-state DFA for $\Sigma^+$).
+\item Construct a DFA $C$ for $L(A)\cap L(B)$ (product).
+\item Run the $E_{\mathrm{DFA}}$ decider $T$ of Theorem~4.4 on $\enc{C}$. If $T$ accepts, \emph{accept}; if $T$ rejects, \emph{reject}.''
+\end{enumerate}
+$L(C)=\emptyset$ iff $L(R)$ is prefix-free. (If $\eps\in L(R)$ then $L(R)\Sigma^+=\Sigma^+$ whenever $L(R)$ contains a nonempty string, and $T$ rejects unless $L(R)\subseteq\{\eps\}$; the language $\{\eps\}$ is prefix-free, and $L(R)\cap L(R)\Sigma^+=\emptyset$ in that case.)
+
+\textbf{Why the same idea fails for CFGs.} If $G$ is a CFG then $L(G)\Sigma^+$ is still a CFL (concatenation), but $L(G)\cap L(G)\Sigma^+$ is an intersection of two CFLs, which need not be context-free (Exercise~2.2 / the discussion after Theorem~4.8). There is then no CFG to which we may apply the $E_{\mathrm{CFG}}$ decider of Theorem~4.8. (The regular case used closure of regular languages under complement, concatenation, and intersection, which CFLs lack.)
+\end{soln}
+
+\begin{question}{Problem 4.23 $\bigstar$}
+Say that an NFA is \emph{ambiguous} if it accepts some string along two different computation branches. Let $\mathit{AMBIG}_{\mathrm{NFA}}=\{\enc{N}\mid N\text{ is an ambiguous NFA}\}$. Show that $\mathit{AMBIG}_{\mathrm{NFA}}$ is decidable. (Suggestion: One elegant way to solve this problem is to construct a suitable DFA and then run $E_{\mathrm{DFA}}$ on it.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} Build a DFA $D$ that simulates $N$ while remembering whether each state of $N$ is reached in zero, one, or at least two ways (``pebbles''). Then $N$ is ambiguous iff $L(D)\neq\emptyset$, which Theorem~4.4 decides. (This is the book's selected solution.)
+
+Fix an NFA $N$ with state set $Q$, $|Q|=n$. A state of $D$ is a colouring of $Q$ by $\{\mathit{none},\mathit{red},\mathit{blue}\}$: red means reached by (at least) one branch, blue means reached by at least two branches. Thus $D$ has $3^n$ states.
+
+$M=$ ``On input $\enc{N}$, where $N$ is an NFA:
+\begin{enumerate}
+\item Construct a DFA $D$ as follows.
+\begin{itemize}
+\item \emph{Start state of $D$.} Place a red pebble on the start state of $N$ and on every state reachable from it by $\eps$-transitions. Whenever two pebbles meet on one state during this $\eps$-closure, replace them by a blue pebble. (Red$+$red and anything$+$blue become blue.)
+\item \emph{Transition.} On symbol $a$, move each pebble along all $a$-transitions, preserving colour, then take $\eps$-closure as above, merging to blue whenever two or more pebbles occupy the same state.
+\item \emph{Accept states of $D$.} Those colourings in which a blue pebble sits on an accept state of $N$, or two distinct accept states of $N$ carry red pebbles.
+\end{itemize}
+\item Run the $E_{\mathrm{DFA}}$ decider $T$ of Theorem~4.4 on $\enc{D}$. If $T$ rejects, \emph{accept}; if $T$ accepts, \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} By construction, after reading $w$ the pebbles sit on exactly the states reachable by $N$ on $w$, and a state is blue iff at least two distinct computation branches of $N$ on $w$ end there (including branches that differed earlier and then merged). So $D$ accepts $w$ iff $N$ accepts $w$ along two branches. Hence $L(D)\neq\emptyset$ iff $N$ is ambiguous. Theorem~4.4 decides emptiness, so $M$ decides $\mathit{AMBIG}_{\mathrm{NFA}}$.
+\end{soln}
+
+\begin{question}{Problem 4.24}
+A \emph{useless state} in a pushdown automaton is never entered on any input string. Consider the problem of determining whether a pushdown automaton has any useless states. Formulate this problem as a language and show that it is decidable.
+\end{question}
+\begin{soln}
+Let
+\[
+U_{\mathrm{PDA}}=\{\enc{P}\mid P\text{ is a PDA that has at least one useless state}\}.
+\]
+\textbf{Idea.} A state $q$ is entered on some input iff some computation ends in $q$ (stop the input at the visit). Make $q$ the unique accept state and test emptiness via a CFG (Theorems~2.20 and~4.8).
+
+Sipser PDAs accept by state, independent of the stack. For each state $q$ of $P$, let $P_q$ be $P$ with accept-state set $\{q\}$. Then $q$ is entered on some input (possibly $\eps$, possibly via $\eps$-moves) if and only if $L(P_q)\neq\emptyset$.
+
+$M=$ ``On input $\enc{P}$, where $P$ is a PDA:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item For each state $q$ of $P$:
+\begin{enumerate}
+\item Let $P_q$ be $P$ with $F=\{q\}$.
+\item Convert $P_q$ to an equivalent CFG $G_q$ (Theorem~2.20).
+\item Run the $E_{\mathrm{CFG}}$ decider $R$ of Theorem~4.8 on $\enc{G_q}$.
+\end{enumerate}
+\item If $R$ accepts for some $q$ (so $L(P_q)=\emptyset$), then $q$ is useless: \emph{accept}. If $R$ rejects for every $q$, \emph{reject}.''
+\end{enumerate}
+Each conversion is algorithmic and $R$ always halts, so $M$ decides $U_{\mathrm{PDA}}$.
+\end{soln}
+
+\begin{question}{Problem 4.25 $\bigstar$}
+Let $\mathit{BAL}_{\mathrm{DFA}}$ be the language of encodings $\enc{M}$ where $M$ is a DFA that accepts some string containing an equal number of 0s and 1s. Show that $\mathit{BAL}_{\mathrm{DFA}}$ is decidable. (Hint: Theorems about CFLs are helpful here.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} Equal 0s and 1s is a CFL; its intersection with $L(M)$ is a CFL (Problem~2.18), so emptiness is decidable (Theorem~4.8). This is the book's selected solution.
+
+Let $\Sigma$ be the alphabet of $M$. The language
+\[
+B=\{w\in\Sigma^*\mid \#_0(w)=\#_1(w)\}
+\]
+is context-free, generated by
+\[
+S\to 0S1S \mid 1S0S \mid aS \mid \eps
+\qquad(a\in\Sigma\setminus\{0,1\}).
+\]
+(If $0$ or $1$ is absent from $\Sigma$, the productions that mention it are omitted; $B$ is then $(\Sigma\setminus\{0,1\})^*$.) Let $P$ be a PDA for $B$ (Theorem~2.20).
+
+$T=$ ``On input $\enc{M}$, where $M$ is a DFA:
+\begin{enumerate}
+\item Convert the grammar above (using $M$'s alphabet) to a PDA $P$ for $B$.
+\item Form a PDA $R$ for $L(M)\cap B$ by the product construction of Problem~2.18: states $Q_P\times Q_M$, stack of $P$, accept $F_P\times F_M$.
+\item Convert $R$ to a CFG $G$ (Theorem~2.20) and run the $E_{\mathrm{CFG}}$ decider of Theorem~4.8 on $\enc{G}$.
+\item If that decider accepts, \emph{reject}; if it rejects, \emph{accept}.''
+\end{enumerate}
+$L(R)\neq\emptyset$ iff $M$ accepts some string with equally many 0s and 1s (including $\eps$, which has $0=0$). Theorem~4.8 always halts.
+\end{soln}
+
+\begin{question}{Problem 4.26 $\bigstar$}
+Let $\mathit{PAL}_{\mathrm{DFA}}$ be the encodings $\enc{M}$ where $M$ is a DFA that accepts some palindrome. Show that $\mathit{PAL}_{\mathrm{DFA}}$ is decidable. (Hint: Theorems about CFLs are helpful here.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} Palindromes form a CFL; intersect with $L(M)$ and test emptiness.
+
+Let $\Sigma$ be the alphabet of $M$. The palindrome language $\mathit{PAL}=\{w\in\Sigma^*\mid w=w^{\mathrm{R}}\}$ is generated by
+\[
+S\to aSa \mid a \mid \eps \qquad(a\in\Sigma).
+\]
+
+$T=$ ``On input $\enc{M}$, where $M$ is a DFA:
+\begin{enumerate}
+\item Build a PDA $P$ for $\mathit{PAL}$ from the grammar above (Theorem~2.20).
+\item Build a PDA $R$ for $L(M)\cap\mathit{PAL}$ (Problem~2.18).
+\item Convert $R$ to a CFG $G$ and run the $E_{\mathrm{CFG}}$ decider of Theorem~4.8 on $\enc{G}$.
+\item If that decider accepts, \emph{reject}; if it rejects, \emph{accept}.''
+\end{enumerate}
+$L(R)\neq\emptyset$ iff $M$ accepts some palindrome (including $\eps$ if $M$ accepts $\eps$). The procedure always halts.
+\end{soln}
+
+\begin{question}{Problem 4.27 $\bigstar$}
+Let $E$ be the encodings $\enc{M}$ where $M$ is a DFA that accepts some string with more 1s than 0s. Show that $E$ is decidable. (Hint: Theorems about CFLs are helpful here.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} $\{w\mid \#_1(w)>\#_0(w)\}$ is a CFL. Intersect with $L(M)$ and test emptiness, as in Problems~4.25--4.26.
+
+Let $\Sigma$ be the alphabet of $M$. Let $T_{\mathrm{eq}}$ generate strings with equally many 0s and 1s, as in Problem~4.25:
+\[
+T\to 0T1T \mid 1T0T \mid aT \mid \eps \qquad(a\in\Sigma\setminus\{0,1\}).
+\]
+Every $w$ with $\#_1(w)-\#_0(w)=d\ge 1$ factors as $x1y$ where $x$ is balanced and $y$ has difference $d-1$ (split at the first time the running difference $\#_1-\#_0$ equals $1$). So the language $B=\{w\in\Sigma^*\mid \#_1(w)>\#_0(w)\}$ is generated by
+\[
+S\to T1S \mid T1T.
+\]
+
+$D=$ ``On input $\enc{M}$, where $M$ is a DFA:
+\begin{enumerate}
+\item Build a PDA $P$ for $B$ from the grammar above.
+\item Build a PDA $R$ for $L(M)\cap B$ (Problem~2.18).
+\item Convert $R$ to a CFG $G$ and run the $E_{\mathrm{CFG}}$ decider of Theorem~4.8 on $\enc{G}$.
+\item If that decider accepts, \emph{reject}; if it rejects, \emph{accept}.''
+\end{enumerate}
+$L(R)\neq\emptyset$ iff $M$ accepts some string with more 1s than 0s. The procedure always halts.
+\end{soln}
+
+\begin{question}{Problem 4.28}
+Let $C$ be the encodings $\enc{G,x}$ where $G$ is a CFG and $x$ is a substring of some $y\in L(G)$. Show that $C$ is decidable. (Hint: An elegant solution to this problem uses the decider for $E_{\mathrm{CFG}}$.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} $x$ occurs inside some $y\in L(G)$ iff $L(G)\cap\Sigma^*x\Sigma^*\neq\emptyset$. The intersection is a CFL (Problem~2.18), so Theorem~4.8 decides emptiness.
+
+$M=$ ``On input $\enc{G,x}$, where $G$ is a CFG and $x$ is a string:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}. Let $\Sigma$ be the terminal alphabet of $G$.
+\item Build a DFA $D$ for the regular language $\Sigma^*\{x\}\Sigma^*$ (a chain of $|x|+1$ states that matches $x$, with self-loops on $\Sigma$ before and after; if $x$ uses a symbol not in $\Sigma$, then $\Sigma^*x\Sigma^*=\emptyset$).
+\item Convert $G$ to a PDA $P$ (Theorem~2.20) and form a PDA $R$ for $L(G)\cap L(D)$ (Problem~2.18).
+\item Convert $R$ to a CFG $H$ and run the $E_{\mathrm{CFG}}$ decider of Theorem~4.8 on $\enc{H}$.
+\item If that decider accepts, \emph{reject}; if it rejects, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Edge cases.} If $x=\eps$ then $\Sigma^*x\Sigma^*=\Sigma^*$, so the test is $L(G)\neq\emptyset$: the empty string is a substring of some $y\in L(G)$ iff $L(G)$ is nonempty. If $x\notin\Sigma^*$ the intersection is empty and $M$ correctly rejects. Theorem~4.8 always halts.
+\end{soln}
+
+\begin{question}{Problem 4.29}
+Let $C_{\mathrm{CFG}}$ be the encodings $\enc{G,k}$ where $G$ is a CFG and $L(G)$ contains exactly $k$ strings, for $k\ge 0$ or $k=\infty$. Show that $C_{\mathrm{CFG}}$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} After converting to Chomsky normal form and discarding useless symbols, $L(G)$ is infinite iff the variable-dependency graph has a cycle (a cycle yields a pumpable derivation). If the language is finite the grammar is acyclic, so every string is shorter than $2^{|V|}$; count them with Theorem~4.7.
+
+$M=$ ``On input $\enc{G,k}$, where $G$ is a CFG and $k\in\mathbb{N}\cup\{\infty\}$:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item Decide whether $\eps\in L(G)$ by running the $A_{\mathrm{CFG}}$ decider of Theorem~4.7 on $\enc{G,\eps}$.
+\item Convert $G$ to a Chomsky-normal-form grammar $G'$ with $L(G')=L(G)\setminus\{\eps\}$ (Theorem~2.9). Remove useless symbols from $G'$: first mark productive variables (the marking algorithm of Theorem~4.8), then mark variables reachable from the start symbol, and delete the rest.
+\item If $G'$ has no variables left, then $L(G)$ is $\emptyset$ or $\{\eps\}$. Accept iff $k$ equals that cardinality.
+\item Build a directed graph $H$ on the remaining variables: from each rule $A\to BC$ add edges $A\to B$ and $A\to C$. Test whether $H$ has a cycle (marking / DFS).
+\item If $H$ has a cycle, $L(G)$ is infinite: \emph{accept} iff $k=\infty$.
+\item If $H$ is acyclic, $L(G)$ is finite. Let $n$ be the number of variables of $G'$. A root-to-leaf path has at most $n$ variables, hence at most $n-1$ binary steps, so every string in $L(G')$ has length at most $2^{n-1}$. Using Theorem~4.7, test membership of every string in $\Sigma^{\le 2^{n-1}}$, count the distinct members of $L(G')$, add $1$ if $\eps\in L(G)$, and \emph{accept} iff the total equals $k$ (reject if $k=\infty$).''
+\end{enumerate}
+
+\textbf{Why a cycle iff infinite.} In CNF every remaining variable is useful, so each generates a nonempty terminal string. A cycle $A\Rightarrow^* uAv$ then has $|uv|\ge 1$, and pumping a derivation $S\Rightarrow^* xAy\Rightarrow^* xuAvy\Rightarrow^* xuwvy$ produces infinitely many strings. Conversely, an acyclic CNF grammar has only finitely many parse trees.
+
+All tests (CNF conversion, marking, cycle detection, finitely many $A_{\mathrm{CFG}}$ queries) halt, so $M$ decides $C_{\mathrm{CFG}}$.
+\end{soln}
+
+\begin{question}{Problem 4.30}
+Let $A$ be a Turing-recognizable language consisting of descriptions of Turing machines, $\{\enc{M_1},\enc{M_2},\dots\}$, where every $M_i$ is a decider. Prove that some decidable language $D$ is not decided by any decider $M_i$ whose description appears in $A$. (Hint: You may find it helpful to consider an enumerator for $A$.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} Enumerate $A$ (Theorem~3.21) and diagonalize against the machine that has just been printed at step $i$, on the $i$-th string. Running the enumerator for only $i$ steps keeps the diagonal language decidable.
+
+Let $E$ be an enumerator for $A$ and let $s_1,s_2,\dots$ be the standard list of all strings. Let $M_\emptyset$ be a fixed decider that rejects every input.
+
+$N=$ ``On input $w$:
+\begin{enumerate}
+\item Let $i$ be the index with $w=s_i$.
+\item Run $E$ for $i$ steps. Let $M$ be the last TM description that $E$ fully printed in those $i$ steps; if $E$ printed nothing, let $M=M_\emptyset$.
+\item Simulate $M$ on $w$. If $M$ rejects, \emph{accept}; if $M$ accepts, \emph{reject}.''
+\end{enumerate}
+
+\textbf{$N$ is a decider.} Step~2 runs a fixed number of steps. The machine $M$ in step~3 is either $M_\emptyset$ or a member of $A$, hence a decider, so the simulation halts. Thus $D=L(N)$ is decidable.
+
+\textbf{$D$ is not decided by any $M_i$ with $\enc{M_i}\in A$.} Take $\enc{M_i}\in A$. Then $E$ eventually prints $\enc{M_i}$; let $t$ be the step at which that print completes. On input $s_t$, step~2 of $N$ runs $E$ for $t$ steps, so the last fully printed description is $\enc{M_i}$. Step~3 therefore does the opposite of $M_i$ on $s_t$. Hence $L(N)\neq L(M_i)$.
+
+(If $A=\emptyset$ then $N$ always uses $M_\emptyset$ and $D=\Sigma^*$, while no $M_i$ appears in $A$, so the claim holds vacuously.)
+\end{soln}
+
+\begin{question}{Problem 4.31}
+Say that a variable $A$ in a CFG $G$ is \emph{usable} if it appears in some derivation of some string $w\in L(G)$. Given a CFG $G$ and a variable $A$, consider the problem of testing whether $A$ is usable. Formulate this problem as a language and show that it is decidable.
+\end{question}
+\begin{soln}
+Let
+\[
+\mathit{USABLE}_{\mathrm{CFG}}=\{\enc{G,A}\mid G\text{ is a CFG and }A\text{ is a usable variable of }G\}.
+\]
+\textbf{Idea.} $A$ is usable iff it is \emph{productive} and still \emph{reachable from $S$ after unproductive symbols are deleted}. Both tests are marking algorithms, as in Theorem~4.8.
+
+$M=$ ``On input $\enc{G,A}$, where $G=(V,\Sigma,R,S)$ is a CFG and $A\in V$:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item \emph{Productive variables} (Theorem~4.8). Mark every terminal. Repeat until no new symbol is marked: mark any variable $X$ with a rule $X\to U_1\cdots U_k$ whose every $U_i$ is already marked (including $X\to\eps$). If $A$ is not marked, \emph{reject}.
+\item Delete every unproductive variable and every rule that mentions one.
+\item \emph{Reachable in the productive grammar.} Mark $S$. Repeat until no new variable is marked: if $X$ is marked and $X\to U_1\cdots U_k$ remains, mark every variable among the $U_i$. If $A$ is marked, \emph{accept}; otherwise \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} Usable means $S\Rightarrow^* uAv\Rightarrow^* w\in\Sigma^*$. Then $A$ is productive, and after unproductive symbols are deleted the same derivation still shows $A$ is reachable from $S$, so $M$ accepts.
+
+Conversely, if $M$ accepts then $A$ is productive and, in the grammar $G'$ of only productive symbols, $S\Rightarrow_{G'}^* xAy$. Every variable in $xAy$ is productive, so $xAy\Rightarrow^* w\in\Sigma^*$ and $A$ appears in a derivation of a string of $L(G)$. (Deleting unproductive symbols first is essential: $S\to AB$, $A\to a$, $B\to B$ makes $A$ productive and reachable in $G$, but $L(G)=\emptyset$.)
+
+Both marking loops visit each of finitely many symbols at most once, so $M$ always halts.
+\end{soln}
+
+\begin{question}{Problem 4.32}
+The proof of Lemma~2.41 says that $(q,x)$ is a \emph{looping situation} for a DPDA $P$ if when $P$ is started in state $q$ with $x\in\Gamma$ on the top of the stack, it never pops anything below $x$ and it never reads an input symbol. Show that $F$ is decidable, where $F=\{\enc{P,q,x}\mid (q,x)$ is a looping situation for $P\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} From $(q,x)$ a DPDA has a unique $\eps$-computation. That computation is an infinite $\eps$-loop that never pops $x$ iff it never gets stuck wanting input and either repeats a configuration or the stack grows past $|Q|\cdot|\Gamma|$ (pigeonhole on (state, top symbol) forces a net-push cycle). Simulate until one of those events.
+
+$M=$ ``On input $\enc{P,q,x}$, where $P=(Q,\Sigma,\Gamma,\delta,q_0,F_P)$ is a DPDA, $q\in Q$, and $x\in\Gamma$:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item Simulate $P$ from state $q$ with stack $x$, taking only $\eps$-transitions. At each step:
+\begin{enumerate}
+\item If no $\eps$-transition is defined on the current state and top-of-stack, \emph{reject} (the machine would hang or read a real input symbol).
+\item If the unique $\eps$-move would pop $x$ while $x$ is still the bottom symbol (the stack would go below $x$), \emph{reject}.
+\item If the current pair (state, full stack contents) was seen earlier, \emph{accept} (a cycle of $\eps$-moves).
+\item If the stack height reaches $N+1$, where $N=|Q|\cdot|\Gamma|$, \emph{accept}.
+\item Otherwise take the unique $\eps$-transition and continue.''
+\end{enumerate}
+\end{enumerate}
+
+\textbf{Why height $N+1$ implies a looping situation.} Let $t$ be the first time the stack height is $N+1$. For each $h=1,\dots,N$ let $t_h$ be the last time before $t$ at which the height was $h$, and set $t_{N+1}=t$. After $t_h$ the height stays above $h$, so the symbol in position $h$ never changes again. Look at the pairs (state, top symbol) at the $N+1$ times $t_1<\dots<t_{N+1}$: there are only $N$ possible pairs, so two coincide, say at heights $h_1<h_2$. Between $t_{h_1}$ and $t_{h_2}$ the machine never looks below position $h_1$, so its moves depend only on that (state, top symbol) pair. By determinism the same segment repeats forever from $t_{h_2}$, each time pushing $h_2-h_1$ more symbols. So the computation never reads input and never pops below $x$: $(q,x)$ is a looping situation.
+
+\textbf{Why $M$ halts.} Either the simulation stops at (a) or (b), or the height hits $N+1$, or the stack stays of height $\le N$ and some configuration (state, stack) must repeat (only finitely many such configurations). In the last two cases $M$ accepts. So $M$ decides $F$.
+\end{soln}

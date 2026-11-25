@@ -1,0 +1,20 @@
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+q NULL
+error: invalid pointer
+q NULL
+region 0 65536
+  32 A 144 100
+  176 A 128 10
+  304 F 65232
+11 11 11 11
+ca ca ca ca ca ca ca ca
+region 0 65536
+  32 F 65504

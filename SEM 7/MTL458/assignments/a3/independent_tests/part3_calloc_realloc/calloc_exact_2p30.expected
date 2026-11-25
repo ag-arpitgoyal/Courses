@@ -1,0 +1,16 @@
+p 1
+zero 1
+region 0 1073807360
+  32 A 1073741872 1073741824
+  1073741904 F 65456
+over 1
+realloc over 1
+realloc same 1
+region 0 1073807360
+  32 F 1073807328
+q same 1
+zero 1
+region 0 1073807360
+  32 A 1073741872 1073741824
+  1073741904 F 65456
+leak summary: 0 blocks, 0 bytes

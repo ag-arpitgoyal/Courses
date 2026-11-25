@@ -1,0 +1,13 @@
+error: double free (block 0:160)
+error: double free (block 0:304)
+error: double free (block 0:432)
+error: double free (block 0:432)
+z NULL
+error: double free (block 0:896)
+region 0 65536
+  32 A 128 10
+  160 A 144 100
+  304 A 128 10
+  432 F 224
+  656 A 240 200
+  896 F 64640

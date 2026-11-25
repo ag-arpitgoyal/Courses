@@ -1,0 +1,10 @@
+my_calloc(0, 5) -> NULL
+my_calloc(5, 0) -> NULL
+my_calloc(SIZE_MAX, 2) -> NULL
+my_calloc(SIZE_MAX / 2 + 1, 4) -> NULL
+my_calloc((1 << 15) + 1, 1 << 15) -> NULL
+my_calloc(3, 7) -> ok
+region 0 65536
+  32 F 128
+  160 A 128 21
+  288 F 65248

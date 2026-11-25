@@ -1,0 +1,5 @@
+all_zero=1
+nulls=1
+region 0 65536
+  32 A 128 80
+  160 F 65376

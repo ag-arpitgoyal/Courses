@@ -1,0 +1,26 @@
+realloc slot 0 200: same
+realloc slot 0 300: same
+region 0 65536
+  32 A 384 300
+  416 A 128 10
+  544 A 144 100
+  688 A 128 10
+  816 F 64720
+realloc slot 0 472: same
+region 0 65536
+  32 A 512 472
+  544 A 144 100
+  688 A 128 10
+  816 F 64720
+realloc slot 4 1000: same
+realloc slot 4 64808: same
+realloc slot 4 64809: moved
+region 0 65536
+  32 A 512 472
+  544 A 144 100
+  688 F 64848
+region 1 65536
+  32 A 64864 64809
+  64896 F 640
+bytes slot 0: a7 a3 92
+bytes slot 4: 43 06 c9

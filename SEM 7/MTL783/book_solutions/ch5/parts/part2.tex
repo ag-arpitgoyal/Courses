@@ -1,0 +1,290 @@
+\begin{question}{Problem 5.13}
+A \emph{useless state} in a Turing machine is one that is never entered on any input string. Consider the problem of determining whether a Turing machine has any useless states. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+\[
+\mathit{USELESS}_{\mathrm{TM}}=\{\enc{M}\mid M\text{ is a TM that has a useless state}\}.
+\]
+(Rice's theorem does not apply: this is a property of the machine, not of its language.)
+
+\textbf{Idea.} Reduce $\Atm$ to $\comp{\mathit{USELESS}_{\mathrm{TM}}}$. From $\enc{M,w}$ build $M'$ in which \emph{every state other than $q_{\mathrm{accept}}$ is certainly entered on some input}, while $q_{\mathrm{accept}}$ is entered iff $M$ accepts $w$. Then $M'$ has no useless state iff $M$ accepts $w$.
+
+\textbf{Construction of $M'$.} $M'$ has input alphabet $\{0,1,\#\}$ and an extra tape symbol $\$$. Let $u_1,\dots,u_t$ list all states of $M'$ used in part~1 below, other than $q_{\mathrm{accept}}$ (this includes $q_{\mathrm{reject}}$).
+\begin{enumerate}
+\item \emph{Normal inputs} (not starting with $\#$): ignore the input, simulate $M$ on $w$, and \emph{accept} iff $M$ accepts. Every state of this part, on reading $\#$ or $\$$, goes to $q_{\mathrm{reject}}$.
+\item \emph{Tour inputs} $\#^j$: new states $c_1,\dots,c_t$ count the $\#$'s; on the first non-$\#$ cell, $c_j$ writes $\$$, steps right and back left, and enters $u_j$ with the head on $\$$. By part~1, $u_j$ then rejects at once.
+\end{enumerate}
+
+\textbf{Correctness.}
+\begin{itemize}
+\item Every state except $q_{\mathrm{accept}}$ is entered: each $u_j$ on input $\#^j$, and the counting and helper states along the way.
+\item A tour run rejects immediately after entering $u_j$, so tour runs never accept. A normal input never puts $\$$ on the tape, and a $\#$ inside it only leads to rejection. So $q_{\mathrm{accept}}$ is entered on some input $\iff$ $M$ accepts $w$.
+\end{itemize}
+Hence $\enc{M,w}\in\Atm\iff M'$ has no useless state $\iff\enc{M'}\in\comp{\mathit{USELESS}_{\mathrm{TM}}}$.
+
+\textbf{Computability.} $M'$ is written down from $\enc{M,w}$ without running $M$. So $\Atm\redm\comp{\mathit{USELESS}_{\mathrm{TM}}}$, hence $\comp{\mathit{USELESS}_{\mathrm{TM}}}$ is undecidable (Corollary~5.23), and so is its complement $\mathit{USELESS}_{\mathrm{TM}}$.
+\end{soln}
+
+\begin{question}{Problem 5.14}
+Consider the problem of determining whether a Turing machine $M$ on an input $w$ ever attempts to move its head left when its head is on the left-most tape cell. Formulate this problem as a language and show that it is undecidable.
+\end{question}
+\begin{soln}
+Let
+\[
+\mathit{LEFTEND}_{\mathrm{TM}}
+=\{\enc{M,w}\mid\text{$M$ on $w$ attempts to move left from the leftmost cell}\}.
+\]
+In Sipser's model the head \emph{stays put} on such a move; ``attempts'' means that a transition with direction $L$ is taken while the head is on cell~$0$.
+
+\textbf{Idea.} Reduce $\Atm$ to $\mathit{LEFTEND}_{\mathrm{TM}}$. Simulate $M$ on $w$ behind an end-marker so the simulation itself never tries to leave the left end; attempt that move only if $M$ accepts.
+
+Define $f(\enc{M,w})=\enc{M',\eps}$, where
+$M'=$ ``On input $x$:
+\begin{enumerate}
+\item Write an end-marker $\#$ on the leftmost cell and move \emph{right}. (This stage never moves left.)
+\item Simulate $M$ on $w$ using only the cells to the right of $\#$. If the simulated head would move onto $\#$, bounce: stay on the cell immediately to the right of $\#$.
+\item If $M$ accepts, move onto $\#$ and take a left-moving transition. If $M$ rejects, \emph{reject}.''
+\end{enumerate}
+(Ill-formed input is mapped to a machine that immediately accepts without moving left.)
+
+\textbf{Correctness.}
+If $M$ accepts $w$, stage~3 of $M'$ runs and $M'$ attempts $L$ from cell~$0$, so $\enc{M',\eps}\in\mathit{LEFTEND}_{\mathrm{TM}}$.
+If $M$ rejects $w$, $M'$ rejects in stage~2 without taking $L$ from cell~$0$. If $M$ loops on $w$, $M'$ loops in stage~2 and never reaches stage~3. In both cases $\enc{M',\eps}\notin\mathit{LEFTEND}_{\mathrm{TM}}$.
+Thus $\enc{M,w}\in\Atm$ if and only if $\enc{M',\eps}\in\mathit{LEFTEND}_{\mathrm{TM}}$.
+
+\textbf{Computability.} The description of $M'$ is a finite syntactic modification of $M$ (add a marker, bounce rule, and a final left move), so $f$ is computable. Hence $\Atm\redm\mathit{LEFTEND}_{\mathrm{TM}}$, and $\mathit{LEFTEND}_{\mathrm{TM}}$ is undecidable by Corollary~5.23.
+\end{soln}
+
+\begin{question}{Problem 5.15}
+Consider the problem of determining whether a Turing machine $M$ on an input $w$ ever attempts to move its head left at any point during its computation on $w$. Formulate this problem as a language and show that it is decidable.
+\end{question}
+\begin{soln}
+Let
+\[
+\mathit{LEFT}_{\mathrm{TM}}
+=\{\enc{M,w}\mid\text{$M$ on $w$ takes a transition with direction $L$}\}.
+\]
+
+\textbf{Idea.} If $M$ never moves left, it only moves right, so it visits each cell at most once. After $|w|$ steps the head is on blanks, and the finite control on a blank tape is a path of length at most $|Q|$ before a state repeats (a pure rightward loop). Simulate that far; the machine cannot hide a later left move.
+
+$D=$ ``On input $\enc{M,w}$:
+\begin{enumerate}
+\item If the input is ill-formed, \emph{reject}.
+\item Simulate $M$ on $w$ for at most $|w|+|Q|+1$ steps, recording the direction of each transition.
+\item If a left-moving transition is taken, \emph{accept}.
+\item If $M$ halts without ever moving left, \emph{reject}.
+\item If the bound is reached without a left move, $M$ has been moving only right and has repeated a state on blanks, so it will loop forever rightward: \emph{reject}.''
+\end{enumerate}
+
+\textbf{Why $D$ decides $\mathit{LEFT}_{\mathrm{TM}}$.} While only $R$-transitions are taken, the head position after $t$ steps is $t$. So after $|w|$ steps the head is on $\blank$ cells, and the configuration is determined by the state alone. Among the next $|Q|+1$ steps, either an $L$-transition occurs (accept), $M$ halts (reject), or a state repeats on blanks. In the last case the computation is an infinite rightward loop and never moves left. The bound is finite, so $D$ always halts.
+\end{soln}
+
+\begin{question}{Problem 5.16}
+Let $\Gamma=\{0,1,\blank\}$ be the tape alphabet for all TMs in this problem. Define the \emph{busy beaver function} $BB\colon\mathbb{N}\to\mathbb{N}$ as follows. For each value of $k$, consider all $k$-state TMs that halt when started with a blank tape. Let $BB(k)$ be the maximum number of $1$s that remain on the tape among all of these machines. Show that $BB$ is not a computable function.
+\end{question}
+\begin{soln}
+\textbf{Idea.} A computable $BB$ would let a machine with far fewer than $k$ states write down $BB(k)+1$ ones and halt, contradicting maximality.
+
+$BB(k)$ is well-defined: with a fixed tape alphabet there are finitely many $k$-state TMs, and for $k\ge 2$ at least one halts on a blank tape (immediate accept, using dummy states if needed).
+
+Moreover $BB$ is nondecreasing: add an unreachable dummy state to a $k$-state champion to obtain a $(k+1)$-state TM that leaves the same number of $1$s, so $BB(k+1)\ge BB(k)$.
+
+Suppose, for contradiction, that some TM $M_{BB}$ with $q$ states computes $BB$, taking $k$ in binary and leaving $BB(k)$ ones on the tape. For each $k$ let $N_k$ be the TM that on a blank tape:
+\begin{enumerate}
+\item writes the binary representation of $k$ (a chain of $\lceil\log_2(k+1)\rceil$ states);
+\item runs $M_{BB}$ on that input ($q$ states);
+\item writes one extra $1$ and halts ($O(1)$ states).
+\end{enumerate}
+Then $N_k$ has $m(k)=q+O(\log k)$ states, halts on a blank tape, and leaves $BB(k)+1$ ones, so $BB(m(k))\ge BB(k)+1$.
+
+Choose $k$ large enough that $m(k)<k$ ($q$ is a fixed constant). Nondecreasingness gives $BB(k)\ge BB(m(k))$, hence
+\[
+BB(m(k))\;\ge\; BB(k)+1\;\ge\; BB(m(k))+1,
+\]
+a contradiction. Therefore $BB$ is not computable.
+\end{soln}
+
+\begin{question}{Problem 5.17}
+Show that the Post Correspondence Problem is decidable over the unary alphabet $\Sigma=\{1\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Over $\{1\}$, strings are determined by length, so a match is a nonempty combination of pairs whose top-lengths sum to the same value as the bottom-lengths.
+
+Let the instance be $P=\{(t_i,b_i)\}_{i=1}^k$ with $t_i,b_i\in\{1\}^*$. Set $d_i=|t_i|-|b_i|\in\mathbb{Z}$. A sequence $i_1,\dots,i_\ell$ ($\ell\ge 1$) is a match iff $\sum_{j=1}^\ell d_{i_j}=0$.
+
+$D=$ ``On input $P$:
+\begin{enumerate}
+\item If $P$ is ill-formed, \emph{reject}.
+\item Compute each $d_i$.
+\item If some $d_i=0$, \emph{accept} (that single pair is a match).
+\item If some $d_i>0$ and some $d_j<0$, \emph{accept}
+(take $|d_j|$ copies of pair $i$ and $|d_i|$ copies of pair $j$:
+$|d_j|d_i+|d_i|d_j=0$).
+\item Otherwise every $d_i$ is strictly positive, or every $d_i$ is strictly negative: any nonempty combination has nonzero sum. \emph{Reject}.''
+\end{enumerate}
+Each step is arithmetic on $k$ integers, so $D$ always halts. The three cases are exhaustive, so $D$ decides unary PCP.
+\end{soln}
+
+\begin{question}{Problem 5.18}
+Show that the Post Correspondence Problem is undecidable over the binary alphabet \mbox{$\Sigma=\{0,1\}$}.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Theorem~5.15 shows PCP is undecidable over an arbitrary finite alphabet. Encode that alphabet injectively into $\{0,1\}^*$ so matches are preserved.
+
+Let $P=\{(t_i,b_i)\}_{i=1}^k$ be a PCP instance over a finite alphabet $\Delta=\{a_1,\dots,a_m\}$. Define the homomorphism $e\colon\Delta^*\to\{0,1\}^*$ by $e(a_j)=10^j$ and $e(xy)=e(x)e(y)$. The set $\{10^j\mid 1\le j\le m\}$ is prefix-free, so $e$ is injective: a binary string produced this way has a unique decoding.
+
+Let $e(P)=\{(e(t_i),e(b_i))\}_{i=1}^k$, a PCP instance over $\{0,1\}$.
+
+\textbf{Correctness.}
+If $i_1,\dots,i_\ell$ is a match in $P$, then $t_{i_1}\cdots t_{i_\ell}=b_{i_1}\cdots b_{i_\ell}$, so applying $e$ yields a match in $e(P)$.
+Conversely, a match in $e(P)$ gives $e(t_{i_1}\cdots t_{i_\ell})=e(b_{i_1}\cdots b_{i_\ell})$. Injectivity of $e$ yields $t_{i_1}\cdots t_{i_\ell}=b_{i_1}\cdots b_{i_\ell}$.
+Thus $P\in\mathit{PCP}$ iff $e(P)\in\mathit{PCP}_{\{0,1\}}$.
+
+\textbf{Computability.} Encoding each symbol of a finite alphabet is a finite table lookup, so $P\mapsto e(P)$ is computable (ill-formed input maps to a fixed no-instance). Theorem~5.15 and Corollary~5.23 imply that binary PCP is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.19}
+In the \emph{silly Post Correspondence Problem}, SPCP, the top string in each pair has the same length as the bottom string. Show that the SPCP is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Equal lengths make the concatenations line up pair-by-pair, so a match exists iff some single pair has identical top and bottom.
+
+For any sequence $i_1,\dots,i_\ell$ the top and bottom concatenations have the same length, and because $|t_{i_j}|=|b_{i_j}|$ they occupy identical blocks:
+\begin{center}
+\begin{tabular}{|c|c|c|}
+\hline
+$t_{i_1}$ & $t_{i_2}$ & $\cdots$ \\
+\hline
+$b_{i_1}$ & $b_{i_2}$ & $\cdots$ \\
+\hline
+\end{tabular}
+\end{center}
+The two rows are equal as strings iff $t_{i_j}=b_{i_j}$ for every $j$. In particular a match exists iff \emph{some} pair already satisfies $t_i=b_i$ (use that pair once).
+
+$D=$ ``On input $P=\{(t_i,b_i)\}$:
+\begin{enumerate}
+\item If $P$ is ill-formed, or some pair has $|t_i|\ne|b_i|$, \emph{reject}.
+\item If some pair has $t_i=b_i$, \emph{accept}; otherwise \emph{reject}.''
+\end{enumerate}
+The test is a finite string comparison, so $D$ halts and decides SPCP.
+\end{soln}
+
+\begin{question}{Problem 5.20}
+Prove that there exists an undecidable subset of $\{1\}^*$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Copy $\Atm$ onto the unary strings via the standard enumeration of $\{0,1\}^*$.
+
+Let $s_1,s_2,s_3,\dots$ be the length-then-lexicographic listing of $\{0,1\}^*$ (so $s_1=\eps$, $s_2=0$, $s_3=1$, \ldots). Define
+\[
+A\;=\;\{1^n\mid s_n\in\Atm\}\;\subseteq\;\{1\}^*.
+\]
+The function $f(x)=1^{n(x)}$, where $n(x)$ is the index of $x$ in this listing, is computable (find the index, write that many $1$s). By construction $x\in\Atm$ iff $f(x)\in A$, so $\Atm\redm A$. Theorem~4.11 and Corollary~5.23 imply that $A$ is undecidable.
+\end{soln}
+
+\begin{question}{Problem 5.21}
+Let $\mathit{AMBIG}_{\mathrm{CFG}}=\{\enc{G}\mid G\text{ is an ambiguous CFG}\}$. Show that $\mathit{AMBIG}_{\mathrm{CFG}}$ is undecidable. (Hint: Use a reduction from PCP. Given an instance
+\[
+P=\left\{\begin{bmatrix}t_1\\ b_1\end{bmatrix},
+\begin{bmatrix}t_2\\ b_2\end{bmatrix},\ldots,
+\begin{bmatrix}t_k\\ b_k\end{bmatrix}\right\}
+\]
+of the Post Correspondence Problem, construct a CFG $G$ with the rules
+\begin{align*}
+S&\to T\mid B,\\
+T&\to t_1T\mathrm{a}_1\mid\cdots\mid t_kT\mathrm{a}_k
+   \mid t_1\mathrm{a}_1\mid\cdots\mid t_k\mathrm{a}_k,\\
+B&\to b_1B\mathrm{a}_1\mid\cdots\mid b_kB\mathrm{a}_k
+   \mid b_1\mathrm{a}_1\mid\cdots\mid b_k\mathrm{a}_k,
+\end{align*}
+where $\mathrm{a}_1,\dots,\mathrm{a}_k$ are new terminal symbols. Prove that this reduction works.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} $T$-derivations spell a top concatenation followed by the reverse index word in the new letters $\mathrm{a}_i$; $B$-derivations do the same for the bottoms. The $\mathrm{a}_i$ make the index sequence unique, so $G$ is ambiguous iff some top concatenation equals the corresponding bottom concatenation.
+
+We claim $P$ has a match iff $G$ is ambiguous.
+
+Every string derived from $T$ has the form
+\[
+t_{i_1}t_{i_2}\cdots t_{i_\ell}\,\mathrm{a}_{i_\ell}\cdots\mathrm{a}_{i_2}\mathrm{a}_{i_1}
+\qquad(\ell\ge 1),
+\]
+and likewise from $B$ with the $b$'s. The letters $\mathrm{a}_i$ are new, so they do not occur in any $t_j$ or $b_j$. Therefore the $\mathrm{a}$-suffix of any such string is uniquely determined (the longest suffix in $\{\mathrm{a}_1,\dots,\mathrm{a}_k\}^*$), and that suffix uniquely determines the index sequence $i_1,\dots,i_\ell$. Consequently the $T$-grammar is unambiguous, and so is the $B$-grammar.
+
+\begin{itemize}
+\item If $i_1,\dots,i_\ell$ is a match in $P$, the single string
+$t_{i_1}\cdots t_{i_\ell}\,\mathrm{a}_{i_\ell}\cdots\mathrm{a}_{i_1}
+=b_{i_1}\cdots b_{i_\ell}\,\mathrm{a}_{i_\ell}\cdots\mathrm{a}_{i_1}$
+has two leftmost derivations, one via $S\to T$ and one via $S\to B$. So $G$ is ambiguous.
+\item Conversely, if $G$ is ambiguous then some string has two distinct leftmost derivations. These cannot both stay in $T$, or both in $B$. So one comes from $T$ and one from $B$, giving
+\[
+t_{i_1}\cdots t_{i_\ell}\,\mathrm{a}_{i_\ell}\cdots\mathrm{a}_{i_1}
+\;=\;
+b_{j_1}\cdots b_{j_m}\,\mathrm{a}_{j_m}\cdots\mathrm{a}_{j_1}.
+\]
+The unique $\mathrm{a}$-suffix forces $\ell=m$ and $i_r=j_r$ for all $r$, hence $t_{i_1}\cdots t_{i_\ell}=b_{i_1}\cdots b_{i_\ell}$: a match in $P$.
+\end{itemize}
+\textbf{Computability.} The productions of $G$ are copied from the finitely many pairs of $P$, so $P\mapsto\enc{G}$ is computable (ill-formed $P$ maps to a fixed unambiguous grammar, e.g.\ $S\to 0$). Hence $\mathit{PCP}\redm\mathit{AMBIG}_{\mathrm{CFG}}$. Theorem~5.15 and Corollary~5.23 yield undecidability.
+\end{soln}
+
+\begin{question}{Problem 5.22}
+Show that $A$ is Turing-recognizable iff $A\redm\Atm$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $\Atm$ is RE-complete under mapping reductions: a recognizer for $A$ is a reduction to $\Atm$, and Theorem~5.28 gives the converse.
+
+($\Rightarrow$) Let $M$ be a TM that recognizes $A$. Define $f(w)=\enc{M,w}$. Then $f$ is computable (it pairs a fixed encoding $\enc{M}$ with $w$), and
+\[
+w\in A \iff \text{$M$ accepts $w$} \iff \enc{M,w}\in\Atm.
+\]
+So $A\redm\Atm$ via $f$.
+
+($\Leftarrow$) $\Atm$ is Turing-recognizable (the universal TM $U$). If $A\redm\Atm$, Theorem~5.28 implies that $A$ is Turing-recognizable.
+\end{soln}
+
+\begin{question}{Problem 5.23}
+Show that $A$ is decidable iff $A\redm 0^*1^*$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $0^*1^*$ is a decidable language with a known yes-instance and a known no-instance. A decider for $A$ can map members to the former and non-members to the latter; Theorem~5.22 is the converse.
+
+($\Rightarrow$) Let $D$ decide $A$. Define the computable function
+\[
+f(w)
+=
+\begin{cases}
+0  & \text{if $D$ accepts $w$},\\
+10 & \text{if $D$ rejects $w$}.
+\end{cases}
+\]
+Then $0\in 0^*1^*$ and $10\notin 0^*1^*$, so $w\in A$ iff $f(w)\in 0^*1^*$. ($D$ always halts, so $f$ is total and computable.)
+
+($\Leftarrow$) The language $0^*1^*$ is regular, hence decidable (Theorem~4.1). If $A\redm 0^*1^*$, Theorem~5.22 implies that $A$ is decidable.
+\end{soln}
+
+\begin{question}{Problem 5.24}
+Let $J=\{\,w\mid\text{either }w=0x\text{ for some }x\in\Atm,\text{ or }w=1y\text{ for some }y\in\comp{\Atm}\,\}$.
+Show that neither $J$ nor $\comp{J}$ is Turing-recognizable.
+\end{question}
+\begin{soln}
+So $J=0\Atm\,\cup\,1\comp{\Atm}$.
+(The empty string, and any string whose first symbol is not $0$ or $1$, lie in $\comp{J}$.)
+
+\textbf{Idea.} Prefix $0$ copies $\Atm$ into $J$; prefix $1$ copies $\comp{\Atm}$ into $J$. Each of $J$ and $\comp{J}$ therefore inherits the non-recognizability of $\comp{\Atm}$ (Corollary~4.23) via Corollary~5.29.
+
+\textbf{$J$ is not Turing-recognizable.}
+The map $f(y)=1y$ is computable, and
+\[
+y\in\comp{\Atm}\iff 1y\in J.
+\]
+Thus $\comp{\Atm}\redm J$. Since $\comp{\Atm}$ is not Turing-recognizable (Corollary~4.23), neither is $J$ (Corollary~5.29).
+
+\textbf{$\comp{J}$ is not Turing-recognizable.}
+The map $g(x)=0x$ is computable, and
+\[
+x\in\comp{\Atm}\iff 0x\notin J\iff 0x\in\comp{J}.
+\]
+Thus $\comp{\Atm}\redm\comp{J}$, so $\comp{J}$ is not Turing-recognizable by the same corollary.
+
+(Equivalently: $g$ also satisfies $x\in\Atm\iff 0x\in J$, so $\Atm\redm J$. If $J$ were co-Turing-recognizable then $\Atm$ would be too, contradicting Corollary~4.23.)
+\end{soln}

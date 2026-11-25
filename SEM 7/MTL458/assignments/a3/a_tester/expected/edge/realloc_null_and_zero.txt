@@ -1,0 +1,7 @@
+a -> ok
+region 0 65536
+  32 A 128 50
+  160 F 65376
+my_realloc(a, 0) -> NULL
+region 0 65536
+  32 F 65504

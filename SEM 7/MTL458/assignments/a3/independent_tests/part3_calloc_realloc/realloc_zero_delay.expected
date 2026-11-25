@@ -1,0 +1,35 @@
+1
+1
+region 0 65536
+  32 D 128 10
+  160 D 128 10
+  288 A 128 10
+  416 A 128 10
+  544 A 128 10
+  672 F 64864
+a poisoned 1
+error: overflow detected (block 0:288)
+1
+error: write after free (block 0:160)
+1
+region 0 65536
+  32 F 256
+  288 D 128 10
+  416 D 128 10
+  544 A 128 10
+  672 F 64864
+d poisoned 1
+error: double free (block 0:288)
+1
+error: invalid pointer
+1
+error: double free (block 0:32)
+1
+region 0 65536
+  32 F 384
+  416 D 128 10
+  544 A 128 10
+  672 F 64864
+1
+region 0 65536
+  32 F 65504

@@ -1,0 +1,1405 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=0.9in,headheight=14pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\definecolor{titleblue}{RGB}{24,65,115}
+\definecolor{solutiongreen}{RGB}{20,90,60}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.48em}
+\setlength{\emergencystretch}{2em}
+\allowdisplaybreaks[2]
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Note 3 Practice}
+\fancyfoot[C]{\thepage}
+
+\newtheoremstyle{questionstyle}
+  {10pt}{6pt}{\normalfont}{}{\bfseries\color{titleblue}}{.}{0.5em}{}
+\theoremstyle{questionstyle}
+\newtheorem{question}{Question}
+
+\newenvironment{solution}
+  {\par\noindent\textbf{\color{solutiongreen}Solution.}\ }
+  {\hfill$\square$\par}
+
+\newcommand{\pointmark}[1]{\hfill\textnormal{\textit{[#1 marks]}}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\fall}[1]{n^{(#1)}}
+
+\title{\textcolor{titleblue}{\textbf{MTL712: Computational Methods for Differential Equations}}\\[5pt]
+\large Note 3 Practice Questions with Complete Solutions}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+
+\begin{center}
+\emph{Root conditions, stability, order conditions, and difference equations}
+\end{center}
+
+\tableofcontents
+\clearpage
+
+% =====================================================================
+\section{Proof-Based Questions}
+
+\begin{question}[Necessity of the root condition]\pointmark{8}
+Prove that a linear multistep method cannot be zero-stable if its first
+characteristic polynomial \(\rho\) has either
+\begin{enumerate}[label=(\alph*)]
+  \item a root \(z\) with \(\abs{z}>1\), or
+  \item a repeated root \(z\) with \(\abs{z}=1\).
+\end{enumerate}
+\end{question}
+
+\begin{solution}
+Apply the method to \(y'=0\).  The resulting homogeneous recurrence is
+\[
+  \sum_{j=0}^{k}\alpha_jy_{n+j}=0,
+\]
+and its auxiliary polynomial is \(\rho(z)\).  If \(z_s\) is a root of
+multiplicity \(m_s\), the corresponding terms in the general solution
+are
+\[
+  p_s(n)z_s^n,\qquad \deg p_s\leq m_s-1.
+\]
+
+If \(\abs{z_s}>1\), choose starting values that produce the solution
+\(y_n=z_s^n\).  Its initial values are bounded independently of \(h\),
+but, on a fixed interval \(0\leq nh\leq T\), the value at
+\(n=\lfloor T/h\rfloor\) grows without bound as \(h\to0\).
+
+If \(\abs{z_s}=1\) and \(m_s>1\), choose starting values producing
+\(y_n=n^{m_s-1}z_s^n\).  This also becomes unbounded when
+\(n=\lfloor T/h\rfloor\).
+
+Compare either sequence with the zero solution.  No constant \(K\)
+independent of \(h\) can satisfy
+\[
+  \abs{y_n-\widehat y_n}
+  \leq K\max_{0\leq j<k}\abs{y_j-\widehat y_j}.
+\]
+Hence the method is not zero-stable.
+\end{solution}
+
+\begin{question}[Sufficiency of the root condition]\pointmark{10}
+Assume that \(f\) is uniformly Lipschitz in \(y\) and that the root
+condition holds.  Prove zero-stability using bounded powers of the
+companion matrix, variation of constants, and a discrete Gronwall
+inequality.
+\end{question}
+
+\begin{solution}
+Write the homogeneous recurrence as a first-order system
+\[
+  Y_{n+1}=AY_n,
+\]
+where \(A\) is the companion matrix associated with \(\rho\).  The
+eigenvalues of \(A\) are the roots of \(\rho\).  In Jordan form, blocks
+whose eigenvalues lie strictly inside the unit disk decay, while a
+block corresponding to a root on the unit circle is bounded precisely
+when that root is simple.  The root condition therefore implies
+\[
+  \sup_{m\geq0}\norm{A^m}\leq M
+\]
+for some constant \(M\).
+
+Let \(e_n=y_n-\widehat y_n\) be the difference of two numerical
+solutions.  After writing the error recurrence in first-order form,
+variation of constants gives
+\[
+  \mathcal E_n
+  =A^{n-k+1}\mathcal E_{k-1}
+   +h\sum_{\ell=k-1}^{n-1}
+      A^{n-1-\ell}G_\ell ,
+\]
+where \(\mathcal E_n\) contains \(k\) consecutive errors.  If \(f\) is
+Lipschitz in \(y\), then
+\[
+  \norm{G_\ell}\leq C\norm{\mathcal E_{\ell+1}}.
+\]
+For an implicit method, the term involving the newest error can be
+absorbed into the left side for sufficiently small \(h\).  Consequently,
+\[
+  \norm{\mathcal E_n}
+  \leq M\norm{\mathcal E_{k-1}}
+    +Ch\sum_{\ell=k-1}^{n-1}\norm{\mathcal E_\ell}.
+\]
+The discrete Gronwall inequality yields
+\[
+  \norm{\mathcal E_n}
+  \leq M e^{CT}\norm{\mathcal E_{k-1}},
+  \qquad nh\leq T.
+\]
+The bound is independent of \(h\), which proves zero-stability.
+\end{solution}
+
+\begin{question}[Consistency from the local truncation error]\pointmark{8}
+Assume \(\sigma(1)\neq0\).  Starting from the normalized local
+truncation error, prove that a linear multistep method is consistent
+if and only if
+\[
+  \rho(1)=0,\qquad \rho'(1)=\sigma(1).
+\]
+\end{question}
+
+\begin{solution}
+For
+\[
+  L[y;h]=\sum_{j=0}^{k}\alpha_jy(x+jh)
+  -h\sum_{j=0}^{k}\beta_jy'(x+jh),
+\]
+Taylor expansion about \(x\) gives
+\[
+  L[y;h]=c_0y(x)+c_1hy'(x)+c_2h^2y''(x)+\cdots,
+\]
+where
+\[
+  c_0=\sum_{j=0}^{k}\alpha_j=\rho(1)
+\]
+and
+\[
+  c_1=\sum_{j=0}^{k}j\alpha_j-\sum_{j=0}^{k}\beta_j
+      =\rho'(1)-\sigma(1).
+\]
+Assuming \(\sigma(1)\neq0\), the normalized local truncation error is
+\[
+  T_n=\frac1{\sigma(1)}
+  \left(\frac{c_0}{h}y(x_n)+c_1y'(x_n)
+  +c_2hy''(x_n)+\cdots\right).
+\]
+For \(T_n\to0\) along every sufficiently smooth solution, it is
+necessary and sufficient that \(c_0=c_1=0\).  These equations are
+exactly
+\[
+  \rho(1)=0,\qquad \rho'(1)=\sigma(1).
+\]
+\end{solution}
+
+\begin{question}[Shift invariance of order]\pointmark{6}
+Prove that replacing every index \(n+j\) by \(n+j+t\), where \(t\) is
+a fixed integer, does not change the order or error constant of a
+linear multistep method.
+\end{question}
+
+\begin{solution}
+The shifted difference operator is
+\[
+  L_t[y(x);h]
+  =\sum_{j=0}^{k}\alpha_jy(x+(j+t)h)
+  -h\sum_{j=0}^{k}\beta_jy'(x+(j+t)h).
+\]
+It satisfies
+\[
+  L_t[y(x);h]=L[y(x+th);h].
+\]
+If \(L\) has order \(p\), then
+\[
+  L[y(x);h]
+  =c_{p+1}h^{p+1}y^{(p+1)}(x)+O(h^{p+2}).
+\]
+Therefore
+\[
+  L_t[y(x);h]
+  =c_{p+1}h^{p+1}y^{(p+1)}(x+th)+O(h^{p+2})
+  =c_{p+1}h^{p+1}y^{(p+1)}(x)+O(h^{p+2}).
+\]
+The first nonzero coefficient remains \(c_{p+1}\), while
+\(\sigma(1)\) is unchanged.  Thus both the order and
+\(c_{p+1}/\sigma(1)\) are unchanged.
+\end{solution}
+
+\begin{question}[Order characterization using \(\Psi\)]\pointmark{10}
+Let \(p\geq1\), \(\rho(1)=0\), and \(\sigma(1)\neq0\), and interpret
+\(\rho(z)/\log z\) by its removable extension at \(z=1\).  Prove that
+a linear multistep method has order \(p\) if and only if
+\[
+  \Psi(z)=\frac{\rho(z)}{\log z}-\sigma(z)
+\]
+has a zero of multiplicity \(p\) at \(z=1\).
+\end{question}
+
+\begin{solution}
+Choose a branch of \(\log z\) near \(z=1\).  Put \(z=e^s\) and define
+\[
+  g(s)=\rho(e^s)-s\sigma(e^s).
+\]
+At \(q=0\), \(g(0)=c_0\).  For \(q\geq1\), direct differentiation at
+\(s=0\) gives
+\[
+  g^{(q)}(0)
+  =\sum_{j=0}^{k}\left(j^q\alpha_j
+  -qj^{q-1}\beta_j\right)=q!c_q.
+\]
+Thus an order-\(p\) method, for which
+\[
+  c_0=\cdots=c_p=0,\qquad c_{p+1}\neq0,
+\]
+makes \(g\) vanish to order \(p+1\) at \(s=0\).
+
+Moreover,
+\[
+  \Psi(e^s)
+  =\frac{\rho(e^s)-s\sigma(e^s)}{s}
+  =\frac{g(s)}s.
+\]
+Hence \(\Psi(e^s)\) vanishes to order \(p\) at \(s=0\).  Since
+\(s\mapsto e^s\) is locally invertible at \(s=0\), this is equivalent
+to \(\Psi(z)\) having a zero of multiplicity \(p\) at \(z=1\).
+Reversing the argument proves the converse.
+\end{solution}
+
+\begin{question}[Construction of the second characteristic polynomial]\pointmark{8}
+Let \(\rho\) have degree \(k\), with
+\[
+  \rho(1)=0,\qquad \rho'(1)\neq0.
+\]
+Prove that there is a unique polynomial \(\sigma\), of degree at most
+\(k\), for which the method has order at least \(k+1\).
+\end{question}
+
+\begin{solution}
+The function
+\[
+  R(z)=\frac{\rho(z)}{\log z}
+\]
+has a removable singularity at \(z=1\), and
+\[
+  R(1)=\rho'(1).
+\]
+Let \(\sigma\) be the degree-\(k\) Taylor polynomial of \(R\) at \(1\):
+\[
+  \sigma(z)=\sum_{m=0}^{k}
+  \frac{R^{(m)}(1)}{m!}(z-1)^m.
+\]
+Then \(R-\sigma\) has a zero of multiplicity at least \(k+1\) at
+\(z=1\).  By the order characterization, the resulting method has
+order at least \(k+1\).
+
+If \(\widetilde\sigma\) were another such polynomial, then
+\(\sigma-\widetilde\sigma\), a polynomial of degree at most \(k\),
+would have a zero of multiplicity at least \(k+1\).  It must therefore
+be identically zero.  This proves uniqueness.
+\end{solution}
+
+\begin{question}[Shift rule]\pointmark{6}
+For \(\beta\neq0\), prove
+\[
+  \phi(E)\bigl[\beta^n v(n)\bigr]
+  =\beta^n\phi(\beta E)v(n),
+\]
+and explain its usefulness when \(\phi(\beta)=0\).
+\end{question}
+
+\begin{solution}
+For every integer \(j\geq0\),
+\[
+  E^j[\beta^nv(n)]
+  =\beta^{n+j}v(n+j)
+  =\beta^n(\beta E)^jv(n).
+\]
+Multiplying by the coefficients of \(\phi\) and adding proves the
+identity.  Thus, if \(u\) is any particular solution of
+\[
+  \phi(\beta E)u(n)=v(n),
+\]
+then \(\beta^nu(n)\) is a particular solution of
+\[
+  \phi(E)y_n=\beta^nv(n).
+\]
+The symbolic inverse notation summarizes this rule, but solutions are
+always determined only up to a complementary solution.
+When \(\phi(\beta)=0\), the usual rule
+\(\phi(E)^{-1}\beta^n=\beta^n/\phi(\beta)\) is undefined.  The shift
+rule exposes factors of \(E-1=\Delta\), which can instead be inverted
+using factorial polynomials.
+\end{solution}
+
+% =====================================================================
+\section{Stability Questions}
+
+\begin{question}[Strong and weak stability]\pointmark{6}
+For
+\[
+  \rho(z)=(z-1)(z^2-2az+1),
+\]
+classify the associated method as strongly stable, weakly stable, or
+not zero-stable for every \(a\in\R\).
+\end{question}
+
+\begin{solution}
+The two roots of the quadratic have product \(1\).
+
+If \(\abs a<1\), write \(a=\cos\theta\), where
+\(0<\theta<\pi\).  The roots are \(e^{\pm i\theta}\).  They are
+distinct, lie on the unit circle, and differ from \(1\).  Together
+with the simple root \(1\), they satisfy the root condition.  The
+method is weakly stable because it has additional unit-modulus roots.
+
+If \(a=1\), the quadratic is \((z-1)^2\), so \(z=1\) is repeated.  If
+\(a=-1\), it is \((z+1)^2\), so \(z=-1\) is repeated.  Both cases fail
+the root condition.
+
+If \(\abs a>1\), the quadratic has two real reciprocal roots and one
+has modulus greater than \(1\).  Hence the method is not zero-stable.
+There is no value of \(a\) for which the method is strongly stable.
+\end{solution}
+
+\begin{question}[Two-step Adams--Bashforth stability]\pointmark{8}
+For
+\[
+  y_{n+2}=y_{n+1}+\frac h2(3f_{n+1}-f_n),
+\]
+derive the stability polynomial and use the quadratic Schur criterion
+to find its real interval of absolute stability.
+\end{question}
+
+\begin{solution}
+Applying the method to \(y'=\lambda y\), with \(\mu=h\lambda\), gives
+\[
+  \pi(z,\mu)
+  =z^2-\left(1+\frac{3\mu}{2}\right)z+\frac{\mu}{2}.
+\]
+For a real monic quadratic \(z^2+az+b\), the roots lie in the open
+unit disk if and only if
+\[
+  \abs b<1,\qquad 1+a+b>0,\qquad 1-a+b>0.
+\]
+Here
+\[
+  a=-1-\frac{3\mu}{2},\qquad b=\frac{\mu}{2}.
+\]
+The three inequalities become
+\[
+  \abs\mu<2,\qquad -\mu>0,\qquad 2+2\mu>0.
+\]
+Their intersection is
+\[
+  \boxed{-1<\mu<0}.
+\]
+\end{solution}
+
+\begin{question}[BDF2 using Routh--Hurwitz]\pointmark{10}
+Apply
+\[
+  3y_{n+2}-4y_{n+1}+y_n=2hf_{n+2}
+\]
+to \(y'=\lambda y\).  Use the Cayley transformation and the
+Routh--Hurwitz criterion to determine its interval of absolute
+stability on the negative real axis.
+\end{question}
+
+\begin{solution}
+The stability polynomial is
+\[
+  \pi(z,\mu)=(3-2\mu)z^2-4z+1.
+\]
+Use \(z=(1+w)/(1-w)\) and multiply by \((1-w)^2\).  The transformed
+polynomial is
+\[
+  q(w)=(8-2\mu)w^2+(4-4\mu)w-2\mu.
+\]
+For a quadratic, Routh--Hurwitz requires all three coefficients to
+have the same positive sign.  If \(\mu<0\), then
+\[
+  8-2\mu>0,\qquad 4-4\mu>0,\qquad -2\mu>0.
+\]
+Thus every negative real \(\mu\) is stable.  At \(\mu=0\), the
+principal root is \(1\), so the endpoint is excluded.  Therefore
+\[
+  \boxed{-\infty<\mu<0}.
+\]
+\end{solution}
+
+\begin{question}[Three-step Adams--Bashforth stability]\pointmark{10}
+Determine the real interval of absolute stability of
+\[
+  y_{n+3}=y_{n+2}
+  +\frac h{12}(23f_{n+2}-16f_{n+1}+5f_n).
+\]
+\end{question}
+
+\begin{solution}
+The stability polynomial is
+\[
+  \pi(z,\mu)
+  =z^3-z^2-\frac{\mu}{12}(23z^2-16z+5).
+\]
+Under \(z=(1+w)/(1-w)\), multiplication by \((1-w)^3\) gives
+\[
+  q(w)
+  =\left(2+\frac{11\mu}{3}\right)w^3
+   +\left(4-\frac{2\mu}{3}\right)w^2
+   +(2-2\mu)w-\mu.
+\]
+For \(-6/11<\mu<0\), all four coefficients are positive.  The
+remaining cubic Routh--Hurwitz condition is
+\[
+\begin{split}
+ &\left(4-\frac{2\mu}{3}\right)(2-2\mu)
+ -\left(2+\frac{11\mu}{3}\right)(-\mu)\\
+ &\hspace{2cm}
+ =8-\frac{22\mu}{3}+5\mu^2>0,
+\end{split}
+\]
+which certainly holds for \(\mu<0\).
+
+At \(\mu=-6/11\), the leading coefficient vanishes; equivalently,
+\(z=-1\) lies on the stability boundary.  For \(\mu<-6/11\), the
+leading and constant coefficients have opposite signs, so the
+Routh--Hurwitz conditions cannot hold.  Positive \(\mu\) also gives
+opposite signs.  Hence
+\[
+  \boxed{-\frac6{11}<\mu<0}.
+\]
+\end{solution}
+
+\begin{question}[Relative but not absolute stability]\pointmark{6}
+Construct a consistent two-step method and a value of \(\mu\) for
+which the principal root dominates the parasitic root, but at least
+one root has modulus greater than \(1\).
+\end{question}
+
+\begin{solution}
+Take
+\[
+  \rho(z)=z^2-z,\qquad
+  \sigma(z)=\frac{1+7z}{8}.
+\]
+Since
+\[
+  \rho(1)=0,\qquad \rho'(1)=1=\sigma(1),
+\]
+the method
+\[
+  y_{n+2}-y_{n+1}
+  =\frac h8(f_n+7f_{n+1})
+\]
+is consistent.  At \(\mu=1\),
+\[
+  \pi(z,1)=z^2-\frac{15}{8}z-\frac18,
+\]
+whose roots are
+\[
+  z_{1,2}=\frac{15\pm\sqrt{257}}{16}.
+\]
+Numerically, these are approximately \(1.9395\) and \(-0.0645\).
+The root continuing from \(1\) is the first root, and it dominates the
+parasitic root.  Thus the method is relatively stable at \(\mu=1\),
+but it is not absolutely stable because \(\abs{z_1}>1\).
+\end{solution}
+
+\begin{question}[Cayley transformation]\pointmark{5}
+Prove that
+\[
+  w=\frac{z-1}{z+1}
+\]
+maps \(\abs z<1\) onto \(\operatorname{Re}w<0\).  Find the images of
+\(z=1,-1,i\).
+\end{question}
+
+\begin{solution}
+Using the inverse map \(z=(1+w)/(1-w)\),
+\[
+  \abs z<1
+  \iff \abs{1+w}<\abs{1-w}.
+\]
+Squaring both sides gives
+\[
+  1+2\operatorname{Re}w+\abs w^2
+  <1-2\operatorname{Re}w+\abs w^2,
+\]
+which is equivalent to \(\operatorname{Re}w<0\).  Therefore the open
+unit disk maps onto the open left half-plane.
+
+The specified points map as follows:
+\[
+  1\mapsto0,\qquad -1\mapsto\infty,\qquad
+  i\mapsto i.
+\]
+The point \(-1\) is the pole of the transformation.
+\end{solution}
+
+% =====================================================================
+\section{Order and Error Constants}
+
+\begin{question}[Derivation of Simpson's multistep formula]\pointmark{10}
+Determine \(a,b,c\) so that
+\[
+  y_{n+2}-y_n=h(af_n+bf_{n+1}+cf_{n+2})
+\]
+has the maximum possible order.  Find its order, error constant, and
+zero-stability classification.
+\end{question}
+
+\begin{solution}
+Here
+\[
+  \alpha_0=-1,\quad\alpha_1=0,\quad\alpha_2=1,
+  \qquad
+  \beta_0=a,\quad\beta_1=b,\quad\beta_2=c.
+\]
+The conditions \(c_1=c_2=c_3=0\) are
+\[
+  a+b+c=2,\qquad b+2c=2,\qquad b+4c=\frac83.
+\]
+They give
+\[
+  a=\frac13,\qquad b=\frac43,\qquad c=\frac13.
+\]
+The condition \(c_4=0\) then holds automatically, while
+\[
+  c_5=-\frac1{90}\neq0.
+\]
+Thus the method is
+\[
+  y_{n+2}-y_n
+  =\frac h3(f_n+4f_{n+1}+f_{n+2})
+\]
+and has order \(4\).  Since \(\sigma(1)=2\), its normalized error
+constant is
+\[
+  \boxed{C=\frac{c_5}{\sigma(1)}=-\frac1{180}}.
+\]
+The first characteristic polynomial is
+\[
+  \rho(z)=z^2-1=(z-1)(z+1).
+\]
+Both roots are simple and lie on the unit circle.  Hence the method is
+zero-stable but weakly stable.
+\end{solution}
+
+\begin{question}[Unexpected extra order]\pointmark{8}
+Take \(\rho(z)=z^2-1\).  Construct \(\sigma\) by matching the
+degree-two Taylor polynomial of \(\rho(z)/\log z\) about \(z=1\).
+Show that the resulting method has order four.
+\end{question}
+
+\begin{solution}
+Set \(x=z-1\).  Since
+\[
+  z^2-1=2x+x^2,\qquad
+  \log z=x-\frac{x^2}{2}+\frac{x^3}{3}-\cdots,
+\]
+division gives
+\[
+  \frac{z^2-1}{\log z}
+  =2+2x+\frac{x^2}{3}+O(x^3).
+\]
+Therefore
+\[
+\begin{split}
+  \sigma(z)
+  &=2+2(z-1)+\frac{(z-1)^2}{3}\\
+  &=\frac13(z^2+4z+1).
+\end{split}
+\]
+This is precisely Simpson's multistep formula from the preceding
+question.  Direct order-condition calculation gives
+\[
+  c_0=c_1=c_2=c_3=c_4=0,\qquad c_5=-\frac1{90}.
+\]
+Hence its order is \(4\), one higher than the order \(3\) guaranteed
+by the general degree-\(k\) construction theorem.
+\end{solution}
+
+\begin{question}[Order conditions for a three-step family]\pointmark{8}
+For
+\[
+  y_{n+3}+ay_{n+2}+by_{n+1}+cy_n
+  =h(df_{n+3}+ef_{n+2}+gf_{n+1}),
+\]
+write all algebraic conditions required for order three.  State the
+conditions for consistency and zero-stability.
+\end{question}
+
+\begin{solution}
+The coefficients, indexed from \(j=0\), are
+\[
+  (\alpha_0,\alpha_1,\alpha_2,\alpha_3)=(c,b,a,1),
+\quad
+  (\beta_0,\beta_1,\beta_2,\beta_3)=(0,g,e,d).
+\]
+Order at least three requires \(c_0=c_1=c_2=c_3=0\), namely
+\[
+\begin{aligned}
+  1+a+b+c&=0,\\
+  3+2a+b-(d+e+g)&=0,\\
+  \frac{9+4a+b}{2}-(3d+2e+g)&=0,\\
+  \frac{27+8a+b}{6}-\frac{9d+4e+g}{2}&=0.
+\end{aligned}
+\]
+For the order to be exactly three, one additionally requires
+\[
+  c_4=
+  \frac{81+16a+b}{24}
+  -\frac{27d+8e+g}{6}\neq0.
+\]
+
+Consistency requires only the first two displayed equations.  For
+zero-stability, every root of
+\[
+  \rho(z)=z^3+az^2+bz+c
+\]
+must lie in \(\abs z\leq1\), and every root on \(\abs z=1\) must be
+simple.
+\end{solution}
+
+% =====================================================================
+\section{Difference Equations}
+
+\begin{question}[Repeated and complex roots]\pointmark{7}
+Find the real complementary solution of
+\[
+  (E-2)^2(E^2-2E+2)y_n=0
+\]
+and describe the asymptotic growth of its components.
+\end{question}
+
+\begin{solution}
+The root \(2\) has multiplicity two.  The quadratic roots are
+\[
+  1\pm i=\sqrt2\,e^{\pm i\pi/4}.
+\]
+Hence the real complementary solution is
+\[
+  \boxed{
+  y_n=(A+Bn)2^n
+  +(\sqrt2)^n
+   \left(C\cos\frac{n\pi}{4}
+         +D\sin\frac{n\pi}{4}\right)}.
+\]
+The terms \(A2^n\) and \(Bn2^n\) grow respectively like \(2^n\) and
+\(n2^n\).  The oscillatory pair has envelope \((\sqrt2)^n\).
+Unless their coefficients vanish, all these components are unbounded.
+\end{solution}
+
+\begin{question}[Resonant exponential forcing]\pointmark{10}
+Solve
+\[
+  (E-2)^2(E+1)y_n=2^n(n+1)
+\]
+using the shift rule.
+\end{question}
+
+\begin{solution}
+The complementary solution is
+\[
+  y_n^{(c)}=(C_1+C_2n)2^n+C_3(-1)^n.
+\]
+For a particular solution, put \(y_n^{(p)}=2^nv(n)\).  The shift rule
+gives
+\[
+  (E-2)^2(E+1)[2^nv(n)]
+  =2^n(2E-2)^2(2E+1)v(n).
+\]
+Since \(2E-2=2\Delta\), \(v\) must satisfy
+\[
+  4\Delta^2(2E+1)v(n)=n+1.
+\]
+Take
+\[
+  v(n)=\frac{n^3}{72}-\frac{n^2}{36}
+      =\frac{n^2(n-2)}{72}.
+\]
+Direct substitution gives
+\[
+  4\Delta^2(2E+1)v(n)=n+1.
+\]
+Therefore
+\[
+  \boxed{
+  y_n=(C_1+C_2n)2^n+C_3(-1)^n
+      +\frac{2^nn^2(n-2)}{72}}.
+\]
+The direct exponential rule fails because \(\phi(2)=0\), and in fact
+\(2\) is a double root.
+\end{solution}
+
+\begin{question}[Polynomial resonance]\pointmark{8}
+Solve
+\[
+  \Delta^3y_n=n^2+2n+1
+\]
+using factorial polynomials.
+\end{question}
+
+\begin{solution}
+Write \(n^{(r)}=n(n-1)\cdots(n-r+1)\).  In this
+falling-factorial basis,
+\[
+  n^2+2n+1=n^{(2)}+3n^{(1)}+n^{(0)}.
+\]
+Using
+\[
+  \Delta^m n^{(p)}
+  =p(p-1)\cdots(p-m+1)n^{(p-m)},
+\]
+a particular solution is
+\[
+  y_n^{(p)}
+  =\frac{n^{(5)}}{60}
+   +\frac{n^{(4)}}8
+   +\frac{n^{(3)}}6.
+\]
+The complementary equation \(\Delta^3y_n=0\) has solution
+\(C_1+C_2n+C_3n^2\).  Hence
+\[
+  \boxed{
+  y_n=C_1+C_2n+C_3n^2
+  +\frac{n^{(5)}}{60}
+  +\frac{n^{(4)}}8
+  +\frac{n^{(3)}}6}.
+\]
+\end{solution}
+
+\begin{question}[Mixed forcing]\pointmark{10}
+Find the complete solution of
+\[
+  (E-1)^2(E+2)y_n=3^n+n^2.
+\]
+\end{question}
+
+\begin{solution}
+The complementary solution is
+\[
+  y_n^{(c)}=C_1+C_2n+C_3(-2)^n.
+\]
+For \(3^n\),
+\[
+  \phi(3)=(3-1)^2(3+2)=20,
+\]
+so its particular solution is \(3^n/20\).
+
+For the polynomial forcing, write
+\[
+  \phi(E)=\Delta^2(\Delta+3).
+\]
+Since
+\[
+  \frac1{\Delta+3}
+  =\frac13\left(1-\frac{\Delta}{3}
+  +\frac{\Delta^2}{9}-\cdots\right),
+\]
+and \(\Delta^3n^2=0\),
+\[
+  \frac1{\Delta+3}n^2
+  =\frac13n^2-\frac19(2n+1)+\frac{2}{27}.
+\]
+In factorial form this is
+\[
+  \frac13n^{(2)}+\frac19n^{(1)}-\frac1{27}.
+\]
+Applying \(1/\Delta^2\) gives
+\[
+  y_{n,\mathrm{poly}}^{(p)}
+  =\frac{n^{(4)}}{36}
+   +\frac{n^{(3)}}{54}
+   -\frac{n^{(2)}}{54}.
+\]
+Therefore
+\[
+  \boxed{
+  y_n=C_1+C_2n+C_3(-2)^n+\frac{3^n}{20}
+  +\frac{n^{(4)}}{36}
+  +\frac{n^{(3)}}{54}
+  -\frac{n^{(2)}}{54}}.
+\]
+\end{solution}
+
+\begin{question}[Boundedness of homogeneous solutions]\pointmark{8}
+Give necessary and sufficient conditions on the roots of
+\(\phi(\xi)\) for every solution of
+\[
+  \phi(E)y_n=0
+\]
+to remain bounded as \(n\to\infty\).  Prove your answer.
+\end{question}
+
+\begin{solution}
+The necessary and sufficient conditions are
+\[
+  \abs{\xi}\leq1\quad\text{for every root},
+  \qquad
+  \abs{\xi}=1\Longrightarrow \xi
+  \text{ is simple}.
+\]
+Indeed, a nonzero root \(\xi\) of multiplicity \(m\) contributes
+\[
+  (C_0+C_1n+\cdots+C_{m-1}n^{m-1})\xi^n.
+\]
+If \(\abs{\xi}<1\), every such term is bounded and in fact tends to
+zero despite its polynomial factor.  If \(\abs{\xi}=1\) and \(m=1\),
+the term \(C_0\xi^n\) is bounded.  Therefore the stated conditions are
+sufficient.
+
+Conversely, if \(\abs{\xi}>1\), the solution \(\xi^n\) is unbounded.
+If \(\abs{\xi}=1\) and \(m>1\), the solution
+\(n^{m-1}\xi^n\) is unbounded.  A zero root contributes only a finite
+initial transient (for example, \(E^my_n=0\) forces \(y_n=0\) for
+\(n\geq m\)), so it cannot cause asymptotic unboundedness.  Thus both
+conditions are necessary and sufficient.
+\end{solution}
+
+% =====================================================================
+\section{Comprehensive Numerical Case Drill}
+
+This section fills the remaining computational case-types arising from
+Note 3.  Together with Questions 8--20, it covers boundary and repeated
+roots, direct Schur and Routh tests, parameterized stability,
+consistency and convergence, all homogeneous root patterns, and the
+principal nonhomogeneous forcing and resonance cases.
+
+\begin{question}[Parameterized root condition]\pointmark{6}
+Classify the zero-stability of a three-step method whose first
+characteristic polynomial is
+\[
+  \rho(z)=(z-1)(z-r)^2,\qquad r\in\R.
+\]
+State whether each zero-stable case is strong or weak.
+\end{question}
+
+\begin{solution}
+The root \(1\) is always present.  If \(\abs r<1\), the repeated root
+\(r\) lies strictly inside the unit disk, where repeated roots are
+allowed.  The only unit-modulus root is the simple root \(1\), so the
+method is strongly stable.
+
+If \(r=1\), then \(1\) is a triple root.  If \(r=-1\), then \(-1\) is
+a repeated unit root.  Both violate the root condition.  If
+\(\abs r>1\), a root lies outside the unit disk.  Therefore
+\[
+  \boxed{\text{strongly stable for }\abs r<1;
+  \quad\text{not zero-stable for }\abs r\geq1.}
+\]
+There is no weakly stable case.
+\end{solution}
+
+\begin{question}[Recursive Schur test for a cubic]\pointmark{8}
+Without finding its roots, use Schur's recursive criterion to decide
+whether
+\[
+  \phi(z)=z^3-\frac12z^2+\frac14z-\frac18
+\]
+has all its roots in the open unit disk.
+\end{question}
+
+\begin{solution}
+The conjugate-reciprocal polynomial is
+\[
+  \widehat\phi(z)
+  =-\frac18z^3+\frac14z^2-\frac12z+1.
+\]
+The first Schur inequality is \(1>1/8\).  The reduced polynomial is
+\[
+\begin{split}
+  \phi_1(z)
+  &=\frac{\phi(z)+\frac18\widehat\phi(z)}{z}\\
+  &=\frac3{64}(21z^2-10z+4).
+\end{split}
+\]
+Multiplication by a nonzero constant does not change the roots, so
+consider \(\psi(z)=21z^2-10z+4\).  Its first Schur inequality is
+\(21>4\), and its reduction is
+\[
+  \psi_1(z)
+  =\frac{21\psi(z)-4\widehat\psi(z)}{z}
+  =425z-170.
+\]
+For this linear polynomial, \(425>170\), so its single root lies in
+the open unit disk.  Applying the criterion backwards shows that
+\[
+  \boxed{\phi\text{ is a Schur polynomial}.}
+\]
+\end{solution}
+
+\begin{question}[Quartic Routh--Hurwitz parameter range]\pointmark{8}
+Let
+\[
+\begin{split}
+  \phi_a(z)={}&(z-1)^4+2(z-1)^3(z+1)
+  +3(z-1)^2(z+1)^2\\
+  &+4(z-1)(z+1)^3+a(z+1)^4.
+\end{split}
+\]
+Use the Cayley transformation and the quartic Routh--Hurwitz
+criterion to determine all \(a\in\R\) for which every zero of
+\(\phi_a\) lies in \(\abs z<1\).
+\end{question}
+
+\begin{solution}
+Under \(w=(z-1)/(z+1)\), division by \((z+1)^4\) gives
+\[
+  q_a(w)=w^4+2w^3+3w^2+4w+a.
+\]
+Its coefficients are
+\[
+  a_0=1,\quad a_1=2,\quad a_2=3,\quad a_3=4,\quad a_4=a.
+\]
+They must all be positive, so \(a>0\).  The nontrivial quartic
+Hurwitz determinant is
+\[
+\begin{split}
+  a_1a_2a_3-a_0a_3^2-a_1^2a_4
+  &=2\cdot3\cdot4-1\cdot4^2-2^2a\\
+  &=8-4a.
+\end{split}
+\]
+It is positive precisely when \(a<2\).  Thus
+\[
+  \boxed{0<a<2}.
+\]
+\end{solution}
+
+\begin{question}[Complete real stability interval of the
+\(\theta\)-method]\pointmark{8}
+For \(0\leq\theta\leq1\), consider
+\[
+  y_{n+1}=y_n+h\bigl[(1-\theta)f_n+\theta f_{n+1}\bigr].
+\]
+Find its interval of absolute stability on the negative real axis for
+every \(\theta\).  Determine when it contains the entire negative real
+axis.
+\end{question}
+
+\begin{solution}
+For \(y'=\lambda y\), the amplification factor is
+\[
+  R(\mu)=\frac{1+(1-\theta)\mu}{1-\theta\mu},
+  \qquad \mu=h\lambda.
+\]
+For real \(\mu<0\), the denominator is positive.  The condition
+\(\abs{R(\mu)}<1\) is equivalent to
+\[
+\begin{split}
+  &(1-\theta\mu)^2-
+  \bigl(1+(1-\theta)\mu\bigr)^2>0\\
+  &\qquad\Longleftrightarrow
+  (-\mu)\bigl[2+(1-2\theta)\mu\bigr]>0.
+\end{split}
+\]
+Hence
+\[
+  \boxed{
+  \begin{cases}
+  -\dfrac{2}{1-2\theta}<\mu<0,
+       &0\leq\theta<\dfrac12,\\[6pt]
+  -\infty<\mu<0,
+       &\dfrac12\leq\theta\leq1.
+  \end{cases}}
+\]
+Thus the whole negative real axis is included exactly when
+\(\theta\geq1/2\).  The cases \(\theta=0,1/2,1\) give forward Euler,
+trapezoidal, and backward Euler, respectively.
+\end{solution}
+
+\begin{question}[Consistency, zero-stability, and convergence]\pointmark{10}
+For each method, determine its order, zero-stability type, and whether
+it is convergent:
+\[
+\begin{array}{ll}
+\text{(a)}&
+ y_{n+2}-y_n=2hf_{n+1},\\[2pt]
+\text{(b)}&
+ y_{n+2}-3y_{n+1}+2y_n=hf_{n+1},\\[2pt]
+\text{(c)}&
+ y_{n+2}-\dfrac43y_{n+1}+\dfrac13y_n
+ =\dfrac23hf_{n+2}.
+\end{array}
+\]
+\end{question}
+
+\begin{solution}
+\textbf{(a)} Here
+\[
+  \rho(z)=z^2-1,\qquad \sigma(z)=2z.
+\]
+Since \(\rho(1)=0\) and \(\rho'(1)=2=\sigma(1)\), it is consistent.
+The coefficients satisfy \(c_2=0\), \(c_3=1/3\), so the order is two.
+The roots \(1,-1\) are simple; hence the method is weakly zero-stable
+and therefore convergent.
+
+\textbf{(b)} Here
+\[
+  \rho(z)=(z-1)(z-2),\qquad \sigma(z)=z.
+\]
+Although \(\rho(1)=0\), one has \(\rho'(1)=-1\neq1=\sigma(1)\).
+Thus \(c_0=0\) but \(c_1=-2\neq0\): the method has order zero and is
+inconsistent.  It also has a root \(2\) outside the unit disk and is
+not zero-stable.  It is not convergent.
+
+\textbf{(c)} Here
+\[
+  \rho(z)=z^2-\frac43z+\frac13
+  =(z-1)\left(z-\frac13\right),
+  \qquad \sigma(z)=\frac23z^2.
+\]
+It is consistent because
+\(\rho'(1)=2/3=\sigma(1)\).  Also \(c_2=0\) and
+\(c_3=-2/9\), so it has order two.  Its roots are \(1\) and \(1/3\);
+therefore it is strongly zero-stable and convergent.
+\end{solution}
+
+\begin{question}[Leapfrog truncation error]\pointmark{7}
+For
+\[
+  y_{n+2}-y_n=2hf_{n+1},
+\]
+compute the normalized local truncation error on the exact solution
+\(y(x)=e^x\).  Confirm the order and error constant directly.
+\end{question}
+
+\begin{solution}
+Here \(\sigma(1)=2\).  Substituting \(y=e^x\) gives
+\[
+  T_n=\frac{e^{x_n}}{2h}
+  \left(e^{2h}-1-2he^h\right).
+\]
+Using
+\[
+  e^{2h}-1-2he^h
+  =\frac13h^3+\frac13h^4+O(h^5),
+\]
+we obtain
+\[
+  T_n=e^{x_n}
+  \left(\frac16h^2+\frac16h^3+O(h^4)\right).
+\]
+Therefore the method has order \(2\), and
+\[
+  \boxed{C=\frac16}.
+\]
+\end{solution}
+
+\begin{question}[Constructing a maximal-order implicit formula]\pointmark{10}
+Choose \(a,b,c\) so that
+\[
+  y_{n+2}-y_{n+1}
+  =h(af_n+bf_{n+1}+cf_{n+2})
+\]
+has maximum possible order.  Find its error constant and classify its
+zero-stability.
+\end{question}
+
+\begin{solution}
+The conditions \(c_1=c_2=c_3=0\) are
+\[
+  a+b+c=1,\qquad
+  b+2c=\frac32,\qquad
+  b+4c=\frac73.
+\]
+Solving,
+\[
+  a=-\frac1{12},\qquad
+  b=\frac23,\qquad
+  c=\frac5{12}.
+\]
+Thus
+\[
+  y_{n+2}-y_{n+1}
+  =\frac h{12}(-f_n+8f_{n+1}+5f_{n+2}).
+\]
+The next coefficient is
+\[
+  c_4=\frac58-\frac23=-\frac1{24}\neq0.
+\]
+Since \(\sigma(1)=1\), the method has order \(3\) and error constant
+\[
+  \boxed{C=-\frac1{24}}.
+\]
+Finally, \(\rho(z)=z(z-1)\), whose roots are \(0\) and \(1\).
+It is strongly zero-stable.
+\end{solution}
+
+\begin{question}[Distinct real roots with initial data]\pointmark{5}
+Solve
+\[
+  y_{n+2}-5y_{n+1}+6y_n=0,
+  \qquad y_0=1,\quad y_1=4.
+\]
+\end{question}
+
+\begin{solution}
+The auxiliary equation
+\[
+  \xi^2-5\xi+6=(\xi-2)(\xi-3)=0
+\]
+has distinct roots \(2,3\).  Thus
+\[
+  y_n=A2^n+B3^n.
+\]
+The initial conditions give \(A+B=1\) and \(2A+3B=4\), whence
+\(A=-1\), \(B=2\).  Therefore
+\[
+  \boxed{y_n=-2^n+2\cdot3^n}.
+\]
+\end{solution}
+
+\begin{question}[Repeated real root with initial data]\pointmark{5}
+Solve
+\[
+  y_{n+2}-6y_{n+1}+9y_n=0,
+  \qquad y_0=2,\quad y_1=9.
+\]
+\end{question}
+
+\begin{solution}
+The auxiliary equation is \((\xi-3)^2=0\), so
+\[
+  y_n=(A+Bn)3^n.
+\]
+From \(y_0=2\), \(A=2\).  From \(y_1=9\),
+\(3(2+B)=9\), so \(B=1\).  Hence
+\[
+  \boxed{y_n=(n+2)3^n}.
+\]
+\end{solution}
+
+\begin{question}[Complex roots with initial data]\pointmark{6}
+Solve
+\[
+  y_{n+2}-2y_{n+1}+4y_n=0,
+  \qquad y_0=1,\quad y_1=0.
+\]
+\end{question}
+
+\begin{solution}
+The roots are
+\[
+  1\pm i\sqrt3
+  =2e^{\pm i\pi/3}.
+\]
+Thus
+\[
+  y_n=2^n\left(A\cos\frac{n\pi}{3}
+  +B\sin\frac{n\pi}{3}\right).
+\]
+The first condition gives \(A=1\).  The second gives
+\[
+  2\left(\frac12+\frac{\sqrt3}{2}B\right)=0,
+\]
+so \(B=-1/\sqrt3\).  Therefore
+\[
+  \boxed{
+  y_n=2^n\left(\cos\frac{n\pi}{3}
+  -\frac1{\sqrt3}\sin\frac{n\pi}{3}\right)}.
+\]
+\end{solution}
+
+\begin{question}[Repeated complex-conjugate roots]\pointmark{6}
+Find the general real solution of
+\[
+  (E^2-2E+2)^2y_n=0.
+\]
+\end{question}
+
+\begin{solution}
+The roots \(1\pm i=\sqrt2e^{\pm i\pi/4}\) each have multiplicity two.
+The general real solution is
+\[
+  \boxed{
+  y_n=(\sqrt2)^n
+  \left[
+  (A+Bn)\cos\frac{n\pi}{4}
+  +(C+Dn)\sin\frac{n\pi}{4}
+  \right]}.
+\]
+\end{solution}
+
+\begin{question}[Constant and nonresonant exponential forcing]\pointmark{8}
+Solve
+\[
+  y_{n+2}-5y_{n+1}+6y_n=4+4^n,
+  \qquad y_0=0,\quad y_1=1.
+\]
+\end{question}
+
+\begin{solution}
+The complementary solution is \(A2^n+B3^n\).  Since
+\[
+  \phi(1)=2,\qquad \phi(4)=2,
+\]
+particular solutions for \(4\) and \(4^n\) are respectively
+\[
+  2,\qquad \frac{4^n}{2}.
+\]
+Thus
+\[
+  y_n=A2^n+B3^n+2+\frac{4^n}{2}.
+\]
+The initial conditions yield
+\[
+  A+B=-\frac52,\qquad 2A+3B=-3,
+\]
+so \(A=-9/2\), \(B=2\).  Therefore
+\[
+  \boxed{
+  y_n=-\frac92\,2^n+2\cdot3^n+2+\frac{4^n}{2}}.
+\]
+\end{solution}
+
+\begin{question}[Simple exponential resonance]\pointmark{8}
+Solve
+\[
+  y_{n+2}-5y_{n+1}+6y_n=2^n,
+  \qquad y_0=1,\quad y_1=0.
+\]
+\end{question}
+
+\begin{solution}
+The complementary solution is \(A2^n+B3^n\).  Since \(2\) is a
+simple root of \(\phi(\xi)=(\xi-2)(\xi-3)\), use
+\[
+  y_n^{(p)}
+  =\frac{n2^n}{2\phi'(2)}
+  =-\frac12n2^n.
+\]
+Thus
+\[
+  y_n=A2^n+B3^n-\frac12n2^n.
+\]
+The initial conditions give \(A+B=1\) and \(2A+3B=1\), so
+\(A=2\), \(B=-1\).  Hence
+\[
+  \boxed{y_n=2\cdot2^n-3^n-\frac12n2^n}.
+\]
+\end{solution}
+
+\begin{question}[Nonresonant polynomial forcing]\pointmark{7}
+Find the general solution of
+\[
+  y_{n+2}-5y_{n+1}+6y_n=n^2.
+\]
+\end{question}
+
+\begin{solution}
+Because \(\phi(1)=2\neq0\), take
+\[
+  y_n^{(p)}=an^2+bn+c.
+\]
+Substitution gives
+\[
+  2an^2+(-6a+2b)n+(-a-3b+2c)=n^2.
+\]
+Hence
+\[
+  a=\frac12,\qquad b=\frac32,\qquad c=\frac52.
+\]
+Therefore
+\[
+  \boxed{
+  y_n=A2^n+B3^n+\frac12n^2+\frac32n+\frac52}.
+\]
+\end{solution}
+
+\begin{question}[Nonresonant polynomial times an exponential]\pointmark{9}
+Find the general solution of
+\[
+  y_{n+2}-5y_{n+1}+6y_n=4^n(n^2+1).
+\]
+\end{question}
+
+\begin{solution}
+Put \(y_n^{(p)}=4^nv(n)\), where
+\[
+  v(n)=an^2+bn+c.
+\]
+The shift rule gives
+\[
+  (16E^2-20E+6)v(n)=n^2+1.
+\]
+Equating coefficients yields
+\[
+  a=\frac12,\qquad b=-6,\qquad c=\frac{51}{2}.
+\]
+Adding the complementary solution gives
+\[
+  \boxed{
+  y_n=A2^n+B3^n+
+  4^n\left(\frac12n^2-6n+\frac{51}{2}\right)}.
+\]
+\end{solution}
+
+\begin{question}[Polynomial times a simply resonant exponential]\pointmark{10}
+Find the general solution of
+\[
+  y_{n+2}-5y_{n+1}+6y_n=2^n(n+1).
+\]
+\end{question}
+
+\begin{solution}
+Set \(y_n^{(p)}=2^nv(n)\).  Then
+\[
+  (4E^2-10E+6)v(n)=n+1.
+\]
+Because \(2\) is a simple characteristic root, a polynomial \(v\) of
+one degree higher than the forcing is required.  Taking
+\[
+  v(n)=-\frac14n^2-\frac54n
+\]
+gives the required right-hand side.  Hence
+\[
+  \boxed{
+  y_n=A2^n+B3^n
+  -\frac{2^n}{4}(n^2+5n)}.
+\]
+The arbitrary constant term in \(v\) would only reproduce the
+complementary term \(A2^n\).
+\end{solution}
+
+\begin{question}[Conversion from \(\Delta\)-form and mixed forcing]\pointmark{10}
+Solve
+\[
+  \Delta^2y_n-3\Delta y_n+2y_n=5^n+n,
+  \qquad y_0=0,\quad y_1=1.
+\]
+\end{question}
+
+\begin{solution}
+Since \(\Delta=E-1\),
+\[
+  \Delta^2-3\Delta+2
+  =(E-1)^2-3(E-1)+2=E^2-5E+6.
+\]
+Thus the complementary solution is \(A2^n+B3^n\).  For the
+exponential forcing,
+\[
+  \phi(5)=25-25+6=6,
+\]
+so its particular solution is \(5^n/6\).  For the linear forcing,
+substitution of \(an+b\) gives
+\[
+  a=\frac12,\qquad b=\frac34.
+\]
+Therefore
+\[
+  y_n=A2^n+B3^n+\frac{5^n}{6}+\frac n2+\frac34.
+\]
+The initial conditions yield
+\[
+  A+B=-\frac{11}{12},\qquad
+  2A+3B=-\frac{13}{12}.
+\]
+Hence \(A=-5/3\), \(B=3/4\), and
+\[
+  \boxed{
+  y_n=-\frac53\,2^n+\frac34\,3^n
+  +\frac{5^n}{6}+\frac n2+\frac34}.
+\]
+\end{solution}
+
+\end{document}

@@ -1,0 +1,28 @@
+realloc slot 0 0: NULL
+realloc slot 1 1073741825: NULL
+realloc slot 2 100: new
+region 0 65536
+  32 A 144 100
+  176 F 65360
+realloc slot 2 0: NULL
+region 0 65536
+  32 F 144
+  176 A 128 10
+  304 F 65232
+error: double free (block 0:32)
+error: double free (block 0:32)
+error: double free (block 0:32)
+realloc slot 4 1073741825: NULL
+realloc slot 4 18446744073709551615: NULL
+region 0 65536
+  32 A 144 10
+  176 A 128 10
+  304 F 65232
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+region 0 65536
+  32 A 144 10
+  176 A 128 10
+  304 F 65232
+bytes slot 4: ea 2b 5f

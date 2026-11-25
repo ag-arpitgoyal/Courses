@@ -1,0 +1,4 @@
+hello world
+leak: block 0:32 (50 bytes)
+leak: block 0:304 (200 bytes)
+leak summary: 2 blocks, 250 bytes

@@ -1,0 +1,5 @@
+region 0 131072
+  32 A 100048 100000
+  100080 F 30992
+leak: block 0:32 (100000 bytes)
+leak summary: 1 blocks, 100000 bytes

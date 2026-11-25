@@ -1,0 +1,16 @@
+error: invalid pointer
+error: double free (block 0:32)
+error: invalid pointer
+error: double free (block 0:32)
+error: invalid pointer
+error: double free (block 0:416)
+error: double free (block 0:416)
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+nulls=1
+region 0 65536
+  32 F 256
+  288 A 128 10
+  416 F 65120

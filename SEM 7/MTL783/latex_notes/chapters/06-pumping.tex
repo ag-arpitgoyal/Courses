@@ -1,0 +1,122 @@
+\section{Nonregular languages and the pumping lemma}
+
+\subsection{Languages that look nonregular}
+We now know
+\[
+  \text{DFA}\;\equiv\;\text{NFA}\;\equiv\;\text{regular expressions}.
+\]
+Candidate nonregular languages:
+\[
+\begin{aligned}
+  B&=\set{0^n1^n:n\geq 0},\\
+  C&=\set{w\in\set{0,1}^*:w\text{ has equally many }0\text{s and }1\text{s}},\\
+  F&=\set{ww:w\in\set{0,1}^*}.
+\end{aligned}
+\]
+$B$ seems to require remembering how many $0$s have been seen. Finite memory
+cannot do that for arbitrary $n$.
+
+\begin{exercise}
+Let $D$ be the language of strings over $\set{0,1}$ with equally many
+occurrences of the substrings $01$ and $10$. Show that $D$ is regular.
+(The language depends only on the first and last symbols.)
+\end{exercise}
+
+\begin{exercise}
+Every finite language is regular. (Build a tree-like DFA, or a regular
+expression that is a finite union of concrete words.)
+\end{exercise}
+
+\subsection{The pumping lemma}
+If a DFA has $p$ states and a string of length at least $p$ is accepted, then
+in the run some state repeats. The substring that takes the machine around
+that loop can be repeated any number of times.
+
+\begin{lemma}[Pumping lemma for regular languages]
+If $A$ is regular, then there exists a pumping length $p\geq 1$ such that every
+$s\in A$ with $|s|\geq p$ can be written $s=xyz$ satisfying
+\begin{enumerate}
+  \item $xy^iz\in A$ for every $i\geq 0$;
+  \item $|y|>0$;
+  \item $|xy|\leq p$.
+\end{enumerate}
+The strings $x$ and $z$ are allowed to be $\eps$.
+\end{lemma}
+
+\begin{proof}
+Let $M=(Q,\Sigma,\transition,q_0,F)$ recognize $A$, and set $p=|Q|$. Let
+$s=s_1s_2\cdots s_n\in A$ with $n\geq p$. Let $r_0,r_1,\ldots,r_n$ be the
+states visited, so $r_0=q_0$, $r_{j}=\transition(r_{j-1},s_j)$, and
+$r_n\in F$. The prefix sequence $r_0,\ldots,r_p$ has length $p+1$, so two of
+these states coincide: take the first repeated state, at positions $i<j$
+with $0\leq i<j\leq p$. Set
+\[
+  x=s_1\cdots s_i,\qquad
+  y=s_{i+1}\cdots s_j,\qquad
+  z=s_{j+1}\cdots s_n.
+\]
+Then $y$ takes $M$ from that state back to itself, so $xy^iz$ is accepted for
+every $i\geq 0$. Also $|y|=j-i\geq 1$ and $|xy|=j\leq p$.
+\end{proof}
+
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=32mm]
+  \node[state,initial] (q0) {$q_0$};
+  \node[state,right=of q0] (qi) {$q$};
+  \node[state,accepting,right=of qi] (qn) {$q_n$};
+  \path[->]
+    (q0) edge node[above]{$x$} (qi)
+    (qi) edge[loop above] node{$y$} ()
+    (qi) edge node[above]{$z$} (qn);
+\end{tikzpicture}
+\end{center}
+The repeated state is $q=q_i=q_j$. Pumping $y$ stays in $q$ and still reaches
+an accept state.
+
+\subsection{How to prove a language is not regular}
+Quantifier order:
+\[
+  \text{assume regular}
+  \;\to\;
+  \text{obtain }p
+  \;\to\;
+  \text{choose }s
+  \;\to\;
+  \text{defeat every }xyz
+  \;\to\;
+  \text{choose }i.
+\]
+You do not get to pick the decomposition; the adversary does. You must show
+that \emph{every} $xyz$ obeying $|xy|\leq p$ and $|y|\geq 1$ fails for some
+$i$.
+
+\begin{example}[$B=\set{0^n1^n:n\geq 0}$]
+Suppose $B$ is regular with pumping length $p$. Choose $s=0^p1^p$. Then
+$|s|\geq p$. For any decomposition $s=xyz$ with $|xy|\leq p$ and $|y|\geq 1$,
+the string $y$ lies entirely in the $0$s, so $y=0^k$ with $k\geq 1$. Pumping
+with $i=0$ (or $i=2$) changes the number of $0$s but not the number of $1$s,
+so $xy^iz\notin B$. Contradiction.
+\end{example}
+
+\begin{example}[$C=\set{w:\text{equal number of }0\text{s and }1\text{s}}$]
+The same $s=0^p1^p$ works: $y$ is again a nonempty block of $0$s, and
+$xy^2z$ has more $0$s than $1$s. (Choosing $s=(01)^p$ does \emph{not} work:
+$y$ might be $01$, which pumps inside $C$.)
+\end{example}
+
+\begin{example}[$F=\set{ww:w\in\set{0,1}^*}$]
+Take $s=0^p10^p1$. Then $|s|\geq p$. If $y$ lies in the first block of $0$s,
+pumping breaks the two-copy structure. The Myhill--Nerode argument in the
+next section is cleaner.
+\end{example}
+
+\begin{example}[$E=\set{0^i1^j:i\neq j}$]
+A standard trick: if $E$ were regular then
+$B=\overline{E}\cap 0^*1^*$ would be regular, but $B=\set{0^n1^n:n\geq 0}$.
+Direct pumping on $0^{p}1^{p!+p}$ is another option (pumping $i=0$ is not
+enough; the factorial gap prevents accidental equality).
+\end{example}
+
+\begin{exercise}
+Show that $\set{1^{n^2}:n\geq 0}$ is not regular.
+\end{exercise}

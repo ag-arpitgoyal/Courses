@@ -1,0 +1,63 @@
+same 1
+region 0 65536
+  32 A 128 10
+  160 A 144 100
+  304 F 400
+  704 A 128 10
+  832 A 144 100
+  976 F 64560
+same 1
+region 0 65536
+  32 A 128 10
+  160 A 352 300
+  512 F 192
+  704 A 128 10
+  832 A 144 100
+  976 A 128 10
+  1104 F 64432
+moved 1 data 1
+region 0 65536
+  32 F 128
+  160 A 352 300
+  512 A 192 100
+  704 A 128 10
+  832 A 144 10
+  976 A 128 10
+  1104 F 64432
+moved 1 data 1
+same 1
+region 0 65536
+  32 F 480
+  512 A 192 100
+  704 A 128 10
+  832 A 144 10
+  976 A 128 10
+  1104 A 448 400
+  1552 A 128 10
+  1680 A 144 100
+  1824 F 63712
+moved 1 data 1
+moved 1 data 1
+region 0 65536
+  32 A 352 300
+  384 A 128 10
+  512 A 192 100
+  704 A 128 10
+  832 F 272
+  1104 A 448 400
+  1552 A 128 10
+  1680 A 144 100
+  1824 A 63040 63000
+  64864 A 448 400
+  65312 F 224
+data 1 1 1
+leak: block 0:32 (300 bytes)
+leak: block 0:384 (10 bytes)
+leak: block 0:512 (100 bytes)
+leak: block 0:704 (10 bytes)
+leak: block 0:1104 (400 bytes)
+leak: block 0:1552 (10 bytes)
+leak: block 0:1680 (100 bytes)
+leak: block 0:1824 (63000 bytes)
+leak: block 0:64864 (400 bytes)
+leak summary: 9 blocks, 64330 bytes

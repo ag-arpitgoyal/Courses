@@ -1,0 +1,11 @@
+error: write after free (block 0:32)
+error: write after free (block 0:288)
+region 0 65536
+  32 F 384
+  416 D 128 10
+  544 A 128 10
+  672 A 240 200
+  912 F 64624
+leak: block 0:544 (10 bytes)
+leak: block 0:672 (200 bytes)
+leak summary: 2 blocks, 210 bytes

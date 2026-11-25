@@ -1,0 +1,170 @@
+\section{Regular expressions and Kleene's theorem}
+
+\subsection{Regular expressions as shorthand}
+A regular expression is a compact description of a regular
+language. Examples over $\Sigma=\set{0,1}$:
+\[
+\begin{aligned}
+  0^*10^*
+    &=\set{w:w\text{ contains exactly one }1},\\
+  \Sigma^*1
+    &=\set{w:w\text{ ends with }1},\\
+  0\Sigma^*\cup\Sigma^*1
+    &=\set{w:w\text{ starts with }0\text{ or ends with }1},\\
+  (0\cup 1)^*001(0\cup 1)^*
+    &=\set{w:w\text{ contains }001\text{ as a substring}},\\
+  (00)^*
+    &=\set{w:|w|\text{ is even and }w\in 0^*},\\
+  (0\cup 1)(0\cup 1)
+    &=\set{w:|w|=2},\\
+  (0\cup\varepsilon)1^*
+    &=\set{0^i1^k:i\in\set{0,1},\,k\geq 0},\\
+  0(0\cup 1)^*0\cup 1(0\cup 1)^*1\cup 0\cup 1
+    &=\set{w:w\text{ starts and ends with the same symbol}}.
+\end{aligned}
+\]
+Useful identities include
+\[
+  A\cup\varnothing=A,\qquad
+  A\concat\varnothing=\varnothing,\qquad
+  A\concat\set{\eps}=A,\qquad
+  A\cup\set{\eps}=A\text{ if and only if }\eps\in A.
+\]
+$R\cup\eps$ need not equal $R$ unless $\eps$ is already in $\lang{R}$.
+
+\textbf{Operator precedence} (highest to lowest): star, then concatenation, then
+union. Use parentheses to override.
+
+\subsection{Formal definition}
+\begin{definition}[Regular expression]
+$R$ is a regular expression over $\Sigma$ if it has one of the forms
+\begin{enumerate}
+  \item $R=a$ for some $a\in\Sigma$;
+  \item $R=\eps$;
+  \item $R=\varnothing$;
+  \item $R=(R_1\cup R_2)$;
+  \item $R=(R_1R_2)$;
+  \item $R=(R_1^*)$;
+\end{enumerate}
+where $R_1$ and $R_2$ are regular expressions. The language $\lang{R}$ is
+defined inductively:
+\[
+\begin{aligned}
+  \lang{a}&=\set{a},&
+  \lang{\eps}&=\set{\eps},&
+  \lang{\varnothing}&=\varnothing,\\
+  \lang{R_1\cup R_2}&=\lang{R_1}\cup\lang{R_2},&
+  \lang{R_1R_2}&=\lang{R_1}\concat\lang{R_2},&
+  \lang{R_1^*}&=\lang{R_1}^*.
+\end{aligned}
+\]
+\end{definition}
+Write $R^+$ for $RR^*$, which excludes $\eps$ unless $\eps\in\lang{R}$. Then
+$R^*\equiv R^+\cup\set{\eps}$.
+
+\subsection{Kleene's theorem}
+\begin{theorem}[Kleene]
+A language is regular if and only if some regular expression describes it.
+\end{theorem}
+The two directions are the next two lemmas.
+
+\begin{lemma}[Expression $\Rightarrow$ automaton]
+If a language is described by a regular expression, then it is regular.
+\end{lemma}
+
+\begin{proof}
+Let $R$ be a regular expression. Induct on the structure of $R$.
+\begin{enumerate}
+  \item $R=a$: a two-state NFA with a single $a$-edge from start to accept.
+  \item $R=\eps$: a single accepting start state and no edges (or an
+        $\eps$-edge to an accept state).
+  \item $R=\varnothing$: a start state that is not accepting, and no edges.
+  \item $R=R_1\cup R_2$, $R=R_1R_2$, $R=R_1^*$: apply the NFA constructions of
+        Chapter~\ref{ch:nfa} to the machines given by the inductive hypothesis.
+\end{enumerate}
+\end{proof}
+
+\begin{exercise}
+Build, by the inductive method, an NFA for $(ab\cup a)^*$ and compare it with
+an NFA for $(ab^*\cup a^*)$. They are not the same language.
+\end{exercise}
+
+\subsection{Generalized NFAs}
+\begin{lemma}[Automaton $\Rightarrow$ expression]
+If a language is regular, then it is described by a regular expression.
+\end{lemma}
+
+\begin{proof}[Idea]
+Convert a DFA to a \emph{generalized NFA} (GNFA), then eliminate states until
+a single regular-expression label remains.
+
+A GNFA has regular expressions (not just symbols) as edge labels, and satisfies:
+\begin{enumerate}
+  \item a unique start state with edges to every other state, and no incoming
+        edges;
+  \item a unique accept state with edges from every other state, and no
+        outgoing edges;
+  \item for every pair of non-start, non-accept states (including a state and
+        itself), edges in both directions.
+\end{enumerate}
+Missing edges are labelled $\varnothing$.
+
+\textbf{DFA to GNFA.} Add a new start state with an $\eps$-edge to the old
+start. Add a new unique accept state with $\eps$-edges from every old accept
+state. Combine multiple labels $R,S$ on the same pair of states into
+$R\cup S$. Add $\varnothing$ labels where no edge existed.
+
+\begin{definition}[GNFA]
+A GNFA is a $5$-tuple $(Q,\Sigma,\transition,q_{\mathrm{start}},q_{\mathrm{accept}})$
+where
+\[
+  \transition:
+    \bigl(Q\setminus\set{q_{\mathrm{accept}}}\bigr)
+    \times
+    \bigl(Q\setminus\set{q_{\mathrm{start}}}\bigr)
+    \to \mathcal{R}
+\]
+and $\mathcal{R}$ is the set of regular expressions over $\Sigma$. It accepts $w$
+if $w$ can be broken into pieces matching the labels of some path from
+$q_{\mathrm{start}}$ to $q_{\mathrm{accept}}$.
+\end{definition}
+
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=28mm]
+  \node[state] (qi) {$q_i$};
+  \node[state,right=of qi] (rip) {$q_{\mathrm{rip}}$};
+  \node[state,right=of rip] (qj) {$q_j$};
+  \path[->]
+    (qi) edge[bend left=18] node[above]{$R_1$} (rip)
+    (rip) edge[loop above] node{$R_2$} ()
+    (rip) edge[bend left=18] node[above]{$R_3$} (qj)
+    (qi) edge[bend right=28] node[below]{$R_4$} (qj);
+\end{tikzpicture}
+\end{center}
+After removing $q_{\mathrm{rip}}$, the direct label $q_i\to q_j$ becomes
+$R_4\cup R_1(R_2)^*R_3$.
+
+\textbf{State elimination.} While more than two states remain, pick a state
+$q_{\mathrm{rip}}\notin\set{q_{\mathrm{start}},q_{\mathrm{accept}}}$ and remove
+it. For every remaining $q_i,q_j$ (not the accept as source, not the start as
+target), replace the $q_i\to q_j$ label $R_4$ by
+\[
+  R_4\cup\bigl(R_1(R_2)^*R_3\bigr),
+\]
+where $R_1$ labels $q_i\to q_{\mathrm{rip}}$, $R_2$ labels the loop at
+$q_{\mathrm{rip}}$, $R_3$ labels $q_{\mathrm{rip}}\to q_j$, and $R_4$ is the old
+direct label $q_i\to q_j$.
+
+When two states remain, the label of the unique edge
+$q_{\mathrm{start}}\to q_{\mathrm{accept}}$ is the desired expression.
+
+Correctness is by induction on the number $k$ of states of the GNFA. The base
+$k=2$ is immediate. The inductive step: any path
+that used $q_{\mathrm{rip}}$ is accounted for by $R_1(R_2)^*R_3$, and paths
+that never used it are accounted for by $R_4$.
+\end{proof}
+
+\begin{exercise}
+Convert the odd-parity DFA and the substring-$001$ DFA to regular
+expressions by state elimination.
+\end{exercise}

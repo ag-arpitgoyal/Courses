@@ -1,0 +1,4 @@
+error: overflow detected (block 0:32)
+region 0 65536
+  32 A 128 4
+  160 F 65376

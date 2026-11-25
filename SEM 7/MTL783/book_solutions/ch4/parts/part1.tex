@@ -1,0 +1,453 @@
+\newcommand{\Adfa}{A_{\mathrm{DFA}}}
+\newcommand{\Arex}{A_{\mathrm{REX}}}
+\newcommand{\Edfa}{E_{\mathrm{DFA}}}
+\newcommand{\EQdfa}{\mathit{EQ}_{\mathrm{DFA}}}
+\newcommand{\Acfg}{A_{\mathrm{CFG}}}
+\newcommand{\Ecfg}{E_{\mathrm{CFG}}}
+\newcommand{\ALLdfa}{\mathit{ALL}_{\mathrm{DFA}}}
+\newcommand{\INFdfa}{\mathit{INFINITE}_{\mathrm{DFA}}}
+\newcommand{\INFpda}{\mathit{INFINITE}_{\mathrm{PDA}}}
+
+\begin{question}{Exercise 4.1}
+Answer all parts for the following DFA $M$ and give reasons for your answers.
+
+\begin{center}
+\begin{tikzpicture}[tm,initial text={}]
+\node[state,initial,accepting] (q1) at (0,0) {$q_1$};
+\node[state] (q2) at (3.6,0) {$q_2$};
+\node[state] (q3) at (1.8,-2.5) {$q_3$};
+\path
+  (q1) edge[loop above] node {0} ()
+  (q1) edge[bend left=18] node {1} (q2)
+  (q2) edge[bend left=14] node {0,1} (q3)
+  (q3) edge[bend left=14] node {1} (q2)
+  (q3) edge[bend left=20] node {0} (q1);
+\end{tikzpicture}
+\end{center}
+
+\begin{enumerate}[label=\alph*.]
+\item Is $\enc{M,0100}\in\Adfa$?
+\item Is $\enc{M,011}\in\Adfa$?
+\item Is $\enc{M}\in\Adfa$?
+\item Is $\enc{M,0100}\in\Arex$?
+\item Is $\enc{M}\in\Edfa$?
+\item Is $\enc{M,M}\in\EQdfa$?
+\end{enumerate}
+\end{question}
+\begin{soln}
+Recall (p.~194--197)
+\[
+\begin{aligned}
+\Adfa&=\{\enc{B,w}\mid\text{$B$ is a DFA that accepts $w$}\},\\
+\Arex&=\{\enc{R,w}\mid\text{$R$ is a regular expression generating $w$}\},\\
+\Edfa&=\{\enc{A}\mid\text{$A$ is a DFA and $L(A)=\emptyset$}\},\\
+\EQdfa&=\{\enc{A,B}\mid\text{$A,B$ are DFAs and $L(A)=L(B)$}\}.
+\end{aligned}
+\]
+States are labelled as in the figure ($q_1$ start/accept). Traces:
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+input & run & result \\
+\midrule
+$0100$ & $q_1\xrightarrow{0}q_1\xrightarrow{1}q_2\xrightarrow{0}q_3\xrightarrow{0}q_1$ & accept \\
+$011$  & $q_1\xrightarrow{0}q_1\xrightarrow{1}q_2\xrightarrow{1}q_3$ & reject \\
+\bottomrule
+\end{tabular}
+\end{center}
+\begin{enumerate}[label=\alph*.]
+\item \textbf{Yes.} $M$ accepts $0100$, so the pair $\enc{M,0100}$ is in $\Adfa$.
+\item \textbf{No.} $M$ ends in $q_3\notin F$, so it does not accept $011$.
+\item \textbf{No.} Members of $\Adfa$ are \emph{pairs} $\enc{B,w}$. The string $\enc{M}$ has only one component, so it is not of the correct form.
+\item \textbf{No.} Members of $\Arex$ have a regular expression as the first component. $M$ is a DFA, so $\enc{M,0100}$ is not of the correct form.
+\item \textbf{No.} $L(M)$ is not empty: already $\eps\in L(M)$ because $q_1$ is an accept state, and $0100\in L(M)$ by~(a).
+\item \textbf{Yes.} $L(M)=L(M)$, so $\enc{M,M}\in\EQdfa$.
+\end{enumerate}
+\end{soln}
+
+\begin{question}{Exercise 4.2}
+Consider the problem of determining whether a DFA and a regular expression are equivalent. Express this problem as a language and show that it is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Convert the regular expression to a DFA, then invoke the $\EQdfa$ decider of Theorem~4.5.
+
+The language is
+\[
+A=\{\enc{B,R}\mid B\text{ a DFA},\ R\text{ a regular expression},\ L(B)=L(R)\}.
+\]
+Let $F$ be the decider for $\EQdfa$ (Theorem~4.5). Define
+$M=$ ``On input $\enc{B,R}$:
+\begin{enumerate}
+\item Convert $R$ to an equivalent NFA $N$ (Theorem~1.54), then convert $N$ to an equivalent DFA $C$ (Theorem~1.39).
+\item Run $F$ on $\enc{B,C}$. If $F$ accepts, \emph{accept}; if $F$ rejects, \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} Theorems~1.54 and~1.39 give $L(C)=L(R)$, so $L(B)=L(R)$ if and only if $L(B)=L(C)$, if and only if $F$ accepts $\enc{B,C}$.
+
+\textbf{Halting.} Each conversion is a finite syntactic construction, and $F$ is a decider, so $M$ always halts.
+\end{soln}
+
+\begin{question}{Exercise 4.3}
+Let $\ALLdfa=\{\enc{A}\mid\text{$A$ is a DFA and $L(A)=\Sigma^*$}\}$. Show that $\ALLdfa$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $L(A)=\Sigma^*$ if and only if the complementary DFA accepts nothing. Test emptiness with Theorem~4.4.
+
+$M=$ ``On input $\enc{A}$, where $A$ is a DFA:
+\begin{enumerate}
+\item Construct a DFA $A'$ with the same states, start state, and transitions as $A$, but with accept states $Q\setminus F$ (the standard complement construction; $A$ is complete).
+\item Run the $\Edfa$ decider $T$ of Theorem~4.4 on $\enc{A'}$.
+\item If $T$ accepts, \emph{accept}; if $T$ rejects, \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} $L(A')=\comp{L(A)}$, so $L(A')=\emptyset$ if and only if $L(A)=\Sigma^*$. Thus $T$ accepts $\enc{A'}$ if and only if $\enc{A}\in\ALLdfa$.
+
+\textbf{Halting.} Complementing a DFA is finite work, and $T$ always halts.
+\end{soln}
+
+\begin{question}{Exercise 4.4}
+Let $A_{\eps\mathrm{CFG}}=\{\enc{G}\mid\text{$G$ is a CFG that generates $\eps$}\}$. Show that $A_{\eps\mathrm{CFG}}$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} This is membership of $\eps$ in $L(G)$, which Theorem~4.7 already decides. Concretely it is the nullable-variable marking used in the Chomsky normal form conversion (Theorem~2.9).
+
+$X=$ ``On input $\enc{G}$, where $G$ is a CFG:
+\begin{enumerate}
+\item Mark every variable $A$ for which $A\to\eps$ is a rule.
+\item Repeat until no new variable is marked: mark any variable $A$ that has a rule $A\to X_1\cdots X_k$ whose every symbol $X_i$ is a marked variable.
+\item If the start variable is marked, \emph{accept}; otherwise \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} A variable is marked if and only if it derives $\eps$ (induction on the marking round: a rule can produce $\eps$ only if every symbol on its right-hand side can). So the start variable is marked if and only if $\eps\in L(G)$.
+
+\textbf{Halting.} There are finitely many variables, so the loop adds a mark only finitely often. Equivalently, run the $\Acfg$ decider $S$ of Theorem~4.7 on $\enc{G,\eps}$ (the $n=0$ case in that proof).
+\end{soln}
+
+\begin{question}{Exercise 4.5}
+Let $\Etm=\{\enc{M}\mid\text{$M$ is a TM and $L(M)=\emptyset$}\}$. Show that $\comp{\Etm}$, the complement of $\Etm$, is Turing-recognizable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $\comp{\Etm}$ is the set of TMs that accept \emph{some} string. Dovetail $M$ on all inputs; accept if any simulation ever accepts. (This is the book's selected solution.)
+
+Let $s_1,s_2,\dots$ be a list of all strings in $\Sigma^*$. The following TM recognizes $\comp{\Etm}$.
+$R=$ ``On input $\enc{M}$, where $M$ is a TM:
+\begin{enumerate}
+\item Repeat the following for $i=1,2,3,\dots$.
+\item Run $M$ for $i$ steps on each input $s_1,s_2,\dots,s_i$.
+\item If $M$ has accepted any of these, \emph{accept}. Otherwise, continue.''
+\end{enumerate}
+
+\textbf{Correctness.} If $L(M)\ne\emptyset$, some $s_j$ is accepted by $M$ in some $t$ steps. When $i\ge\max(j,t)$ the simulation of $s_j$ for $i$ steps accepts, so $R$ accepts. If $L(M)=\emptyset$, no simulation ever accepts and $R$ loops.
+
+Each inner round is finite ($i$ simulations, $i$ steps each), so if $R$ accepts it does so after finitely many steps. Thus $R$ recognizes $\comp{\Etm}$.
+\end{soln}
+
+\begin{question}{Exercise 4.6}
+Let $X$ be the set $\{1,2,3,4,5\}$ and $Y$ be the set $\{6,7,8,9,10\}$. We describe the functions $f:X\to Y$ and $g:X\to Y$ in the following tables. Answer each part and give a reason for each negative answer.
+
+\begin{center}
+\begin{tabular}{@{}cc@{\hspace{2.5em}}cc@{}}
+\begin{tabular}{@{}cc@{}}
+\toprule
+$n$ & $f(n)$ \\
+\midrule
+$1$ & $6$ \\
+$2$ & $7$ \\
+$3$ & $6$ \\
+$4$ & $7$ \\
+$5$ & $6$ \\
+\bottomrule
+\end{tabular}
+&
+&
+\begin{tabular}{@{}cc@{}}
+\toprule
+$n$ & $g(n)$ \\
+\midrule
+$1$ & $10$ \\
+$2$ & $9$ \\
+$3$ & $8$ \\
+$4$ & $7$ \\
+$5$ & $6$ \\
+\bottomrule
+\end{tabular}
+\end{tabular}
+\end{center}
+
+\begin{enumerate}[label=\alph*.]
+\item Is $f$ one-to-one?
+\item Is $f$ onto?
+\item Is $f$ a correspondence?
+\item Is $g$ one-to-one?
+\item Is $g$ onto?
+\item Is $g$ a correspondence?
+\end{enumerate}
+\end{question}
+\begin{soln}
+By Definition~4.12: $f$ is one-to-one if $a\ne b$ implies $f(a)\ne f(b)$; onto if every $y\in Y$ is $f(x)$ for some $x$; a correspondence if it is both.
+\begin{enumerate}[label=\alph*.]
+\item \textbf{No.} $f(1)=f(3)=6$ with $1\ne 3$.
+\item \textbf{No.} The image of $f$ is $\{6,7\}$, so $8,9,10\in Y$ are missed. (Since $|X|=|Y|$ this also follows from~(a).)
+\item \textbf{No.} A correspondence must be one-to-one and onto; $f$ is neither.
+\item \textbf{Yes.} The values $10,9,8,7,6$ are pairwise distinct.
+\item \textbf{Yes.} Those five values are exactly $Y$.
+\item \textbf{Yes.} $g$ is one-to-one and onto, hence a correspondence (in fact $g(n)=11-n$).
+\end{enumerate}
+\end{soln}
+
+\begin{question}{Exercise 4.7}
+Let $\mathcal{B}$ be the set of all infinite sequences over $\{0,1\}$. Show that $\mathcal{B}$ is uncountable using a proof by diagonalization.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Same diagonalization as Theorem~4.17, but on sequences, so there is no dual-representation issue.
+
+Suppose toward a contradiction that $\mathcal{B}$ is countable. Then we may list its members as $x_1,x_2,x_3,\dots$, where $x_i=x_{i1}x_{i2}x_{i3}\cdots$ with each $x_{ij}\in\{0,1\}$.
+
+\begin{center}
+\begin{tabular}{@{}c|ccccc@{}}
+ & $1$ & $2$ & $3$ & $4$ & $\cdots$ \\
+\midrule
+$x_1$ & $x_{11}$ & $x_{12}$ & $x_{13}$ & $x_{14}$ & $\cdots$ \\
+$x_2$ & $x_{21}$ & $x_{22}$ & $x_{23}$ & $x_{24}$ & $\cdots$ \\
+$x_3$ & $x_{31}$ & $x_{32}$ & $x_{33}$ & $x_{34}$ & $\cdots$ \\
+$\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\vdots$ & $\ddots$ \\
+\end{tabular}
+\end{center}
+
+Define $d=d_1d_2d_3\cdots$ by flipping the diagonal:
+\[
+d_i=\begin{cases}
+0 & \text{if }x_{ii}=1,\\
+1 & \text{if }x_{ii}=0.
+\end{cases}
+\]
+Then $d\in\mathcal{B}$, but $d\ne x_i$ for every $i$ because they differ in position $i$. The list was therefore incomplete, a contradiction. Hence $\mathcal{B}$ is uncountable.
+\end{soln}
+
+\begin{question}{Exercise 4.8}
+Let $T=\{(i,j,k)\mid i,j,k\in\mathcal{N}\}$. Show that $T$ is countable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Group triples by the sum of coordinates; each group is finite, so the groups may be listed in order (the same method as Example~4.15 for $\mathcal{Q}$).
+
+In this chapter $\mathcal{N}=\{1,2,3,\dots\}$ (Example~4.13). For each $s\ge 3$ let
+\[
+T_s=\{(i,j,k)\in T\mid i+j+k=s\}.
+\]
+Each $T_s$ is finite ($1\le i,j,k\le s-2$). List $T_s$ in lexicographic order. Concatenating the lists
+\[
+T_3,\;T_4,\;T_5,\;\dots
+\]
+gives a sequence that contains every triple exactly once:
+\begin{center}
+\begin{tabular}{@{}cl@{}}
+\toprule
+$s$ & $T_s$ \\
+\midrule
+$3$ & $(1,1,1)$ \\
+$4$ & $(1,1,2),\;(1,2,1),\;(2,1,1)$ \\
+$5$ & $(1,1,3),\;(1,2,2),\;(1,3,1),\;(2,1,2),\;(2,2,1),\;(3,1,1)$ \\
+$\vdots$ & $\vdots$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+Pairing the $n$th triple in this sequence with $n\in\mathcal{N}$ is a correspondence $\mathcal{N}\to T$. Thus $T$ is countable (Definition~4.14).
+\end{soln}
+
+\begin{question}{Exercise 4.9}
+Review the way that we define sets to be the same size in Definition~4.12 (page~203). Show that ``is the same size'' is an equivalence relation.
+\end{question}
+\begin{soln}
+By Definition~4.12, $A$ and $B$ are the same size if there is a correspondence $f:A\to B$ (a one-to-one onto function). Write $A\sim B$ for this relation.
+\begin{enumerate}
+\item \textbf{Reflexive.} The identity $f(a)=a$ is a correspondence $A\to A$, so $A\sim A$.
+\item \textbf{Symmetric.} If $f:A\to B$ is a correspondence then it has an inverse function $f^{-1}:B\to A$, which is also one-to-one and onto, so $B\sim A$.
+\item \textbf{Transitive.} If $f:A\to B$ and $g:B\to C$ are correspondences then $g\circ f:A\to C$ is one-to-one (if $g(f(a))=g(f(a'))$ then $f(a)=f(a')$ because $g$ is one-to-one, hence $a=a'$) and onto (each $c\in C$ is $g(b)$ for some $b$, and that $b$ is $f(a)$ for some $a$). Thus $A\sim C$.
+\end{enumerate}
+So $\sim$ is an equivalence relation.
+\end{soln}
+
+\begin{question}{Problem 4.10}
+Let $\INFdfa=\{\enc{A}\mid A\text{ is a DFA and }L(A)\text{ is infinite}\}$.
+Show that $\INFdfa$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} A DFA with $k$ states accepts infinitely many strings if and only if it accepts some string of length at least~$k$ (pumping lemma). Intersect with $\{w:|w|\ge k\}$ and test emptiness. (This is the book's selected solution.)
+
+Let $T$ be the $\Edfa$ decider of Theorem~4.4. Define
+$I=$ ``On input $\enc{A}$, where $A$ is a DFA:
+\begin{enumerate}
+\item Let $k$ be the number of states of $A$.
+\item Construct a DFA $D$ that accepts all strings of length $k$ or more.
+\item Construct a DFA $M$ such that $L(M)=L(A)\cap L(D)$.
+\item Test $L(M)=\emptyset$ using $T$ from Theorem~4.4.
+\item If $T$ accepts, \emph{reject}; if $T$ rejects, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Correctness.} If $L(A)$ is infinite then $A$ accepts arbitrarily long strings, so $L(M)\ne\emptyset$ and $I$ accepts.
+
+Conversely, if $I$ accepts then $A$ accepts some string $w$ with $|w|\ge k$. By the pumping lemma for regular languages (Theorem~1.70), we may write $w=xyz$ with $|xy|\le k$, $|y|\ge 1$, and $xy^iz\in L(A)$ for all $i\ge 0$. These strings are pairwise distinct, so $L(A)$ is infinite.
+
+\textbf{Halting.} $D$ has $k+1$ states (count up to $k$ and stay). The product construction for $M$ is finite, and $T$ is a decider.
+\end{soln}
+
+\begin{question}{Problem 4.11}
+Let $\INFpda=\{\enc{M}\mid M\text{ is a PDA and }L(M)\text{ is infinite}\}$.
+Show that $\INFpda$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Same as Problem~4.10, using the CFL pumping lemma in place of the regular one. Convert the PDA to a CFG, take the pumping length $p$ from the proof of Theorem~2.34, and test whether $L$ contains any string of length at least~$p$.
+
+$I=$ ``On input $\enc{M}$, where $M$ is a PDA:
+\begin{enumerate}
+\item Convert $M$ to an equivalent CFG $G$ (Theorem~2.20).
+\item Let $b$ be the maximum number of symbols on the right-hand side of any rule of $G$ (take $b\ge 2$) and let $|V|$ be the number of variables. Set $p=b^{|V|+1}$, the pumping length from the proof of Theorem~2.34.
+\item Construct a DFA $D$ that accepts $\{w\in\Sigma^*:|w|\ge p\}$.
+\item Construct a CFG $H$ with $L(H)=L(G)\cap L(D)$ (Problem~2.18: product of a PDA for $G$ with $D$, then convert back to a CFG).
+\item Run the $\Ecfg$ decider $R$ of Theorem~4.8 on $\enc{H}$.
+\item If $R$ accepts, \emph{reject}; if $R$ rejects, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Correctness.} If $L(M)$ is infinite then it contains arbitrarily long strings, so $L(H)\ne\emptyset$ and $I$ accepts.
+
+Conversely, if $I$ accepts then some $s\in L(G)$ has $|s|\ge p$. Theorem~2.34 splits $s=uvxyz$ with $|vy|\ge 1$ and $uv^ixy^iz\in L(G)$ for every $i\ge 0$. These strings have pairwise different lengths, so $L(M)$ is infinite.
+
+\textbf{Halting.} Each conversion is effective and finite, $p$ is a concrete integer computed from $G$, and $R$ is a decider. (As noted after Theorem~4.8, decidability results for CFGs apply equally to PDAs via Theorem~2.20.)
+\end{soln}
+
+\begin{question}{Problem 4.12}
+Let $A$ be the language of encodings of DFAs that do not accept any string
+containing an odd number of~$1$s. Show that $A$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $M$ is in $A$ if and only if $L(M)$ is disjoint from the regular language of strings with an odd number of~$1$s. Intersect and test emptiness. (This is the book's selected solution.)
+
+$D=$ ``On input $\enc{M}$:
+\begin{enumerate}
+\item Construct a DFA $O$ that accepts every string containing an odd number of $1$s.
+\item Construct a DFA $B$ such that $L(B)=L(M)\cap L(O)$.
+\item Test whether $L(B)=\emptyset$ using the $\Edfa$ decider $T$ from Theorem~4.4.
+\item If $T$ accepts, \emph{accept}; if $T$ rejects, \emph{reject}.''
+\end{enumerate}
+
+(The DFA $O$ has two states, tracking the parity of the number of $1$s; the odd state is accepting.)
+
+\textbf{Correctness.} $L(B)=\emptyset$ if and only if $M$ accepts no string with an odd number of~$1$s, if and only if $\enc{M}\in A$.
+
+\textbf{Halting.} $O$ and the product $B$ are finite constructions, and $T$ is a decider.
+\end{soln}
+
+\begin{question}{Problem 4.13}
+Let $A=\{\enc{R,S}\mid R,S\text{ are regular expressions and }L(R)\subseteq L(S)\}$.
+Show that $A$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $L(R)\subseteq L(S)$ if and only if $L(R)\cap\comp{L(S)}=\emptyset$. Convert both expressions to DFAs, complement the second, take the product, and test emptiness.
+
+$M=$ ``On input $\enc{R,S}$, where $R$ and $S$ are regular expressions:
+\begin{enumerate}
+\item Convert $R$ and $S$ to equivalent DFAs $B_R$ and $B_S$ (Theorems~1.54 and~1.39).
+\item Construct a DFA $B_{\bar S}$ for $\comp{L(S)}$ by swapping accept and non-accept states of $B_S$.
+\item Construct a DFA $C$ with $L(C)=L(B_R)\cap L(B_{\bar S})$.
+\item Run the $\Edfa$ decider $T$ of Theorem~4.4 on $\enc{C}$.
+\item If $T$ accepts, \emph{accept}; if $T$ rejects, \emph{reject}.''
+\end{enumerate}
+
+\textbf{Correctness.} $L(C)=L(R)\cap\comp{L(S)}$, which is empty if and only if $L(R)\subseteq L(S)$.
+
+\textbf{Halting.} All constructions are finite, and $T$ is a decider.
+\end{soln}
+
+\begin{question}{Problem 4.14}
+Let $\Sigma=\{0,1\}$. Show that the problem of determining whether a CFG generates some string in $1^*$ is decidable. In other words, show that
+\[
+\{\enc{G}\mid\text{$G$ is a CFG over $\{0,1\}$ and $1^*\cap L(G)\ne\emptyset$}\}
+\]
+is a decidable language.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $1^*\cap L(G)$ is context-free (Problem~2.18). Test that CFL for emptiness. (This is the book's selected solution.)
+
+$M=$ ``On input $\enc{G}$:
+\begin{enumerate}
+\item Construct a CFG $H$ such that $L(H)=1^*\cap L(G)$.
+\item Test whether $L(H)=\emptyset$ using the $\Ecfg$ decider $R$ from Theorem~4.8.
+\item If $R$ accepts, \emph{reject}; if $R$ rejects, \emph{accept}.''
+\end{enumerate}
+
+(For step~1: convert $G$ to a PDA, take the product with a 2-state DFA for $1^*$, and convert back to a CFG, as in Problem~2.18.)
+
+\textbf{Correctness.} $R$ accepts $\enc{H}$ if and only if $1^*\cap L(G)=\emptyset$. We flip the answer, so $M$ accepts if and only if the intersection is nonempty.
+
+\textbf{Halting.} The product construction is finite, and $R$ is a decider.
+\end{soln}
+
+\begin{question}{Problem 4.15 $\bigstar$}
+Show that the problem of determining whether a CFG generates all strings in $1^*$ is decidable. In other words, show that
+\[
+\{\enc{G}\mid\text{$G$ is a CFG over $\{0,1\}$ and }1^*\subseteq L(G)\}
+\]
+is a decidable language.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Reduce to a unary CFL $H=L(G)\cap 1^*$, then use CFL pumping: it is enough to check, with $\Acfg$, that $H$ contains every string $1^i$ of length less than $p+p!$, where $p$ is the pumping length.
+
+$M=$ ``On input $\enc{G}$, where $G$ is a CFG over $\{0,1\}$:
+\begin{enumerate}
+\item Construct a CFG $H$ with $L(H)=L(G)\cap 1^*$ (Problem~2.18).
+\item From $H$, compute the pumping length $p=b^{|V|+1}$ as in the proof of Theorem~2.34.
+\item For each $i=0,1,\dots,p+p!-1$, run the $\Acfg$ decider $S$ of Theorem~4.7 on $\enc{H,1^i}$. If $S$ ever rejects, \emph{reject}.
+\item If every such test accepts, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Claim.} $1^*\subseteq L(H)$ if and only if $\{1^i:0\le i<p+p!\}\subseteq L(H)$.
+
+The forward direction is immediate. For the converse, assume every string of $1$s of length less than $p+p!$ is in $L(H)$, and take $n\ge p+p!$. Write $n=q+k\cdot p!$ with $p\le q<p+p!$ and $k\ge 1$. Then $1^q\in L(H)$ and $|1^q|\ge p$, so Theorem~2.34 gives $1^q=uvxyz$ with $d:=|vy|$ satisfying $1\le d\le p$ and $1^{q+td}\in L(H)$ for all $t\ge 0$. Because $d\le p$, the integer $d$ divides $p!$, say $p!=md$. Hence
+\[
+1^n=1^{q+k\cdot p!}=1^{q+(km)d}\in L(H).
+\]
+Thus $L(H)=1^*$.
+
+\textbf{Correctness.} $1^*\subseteq L(G)$ if and only if $L(H)=1^*$, if and only if the finitely many $\Acfg$ tests in step~3 all accept.
+
+\textbf{Halting.} $p$ is a concrete integer, $p+p!$ membership tests are finitely many, and $S$ is a decider.
+\end{soln}
+
+\begin{question}{Problem 4.16}
+Let $A=\{\enc{R}\mid R$ is a regular expression describing a language containing at least one string $w$ that has $111$ as a substring (i.e., $w=x111y$ for some $x$ and $y$)$\}$. Show that $A$ is decidable.
+\end{question}
+\begin{soln}
+\textbf{Idea.} The strings that contain $111$ form a regular language. Intersect it with $L(R)$ and test emptiness.
+
+\needspace{12\baselineskip}Let $D$ be the DFA below ($q_{\sigma}$ means ``the current suffix of the input, not yet containing $111$, is the string $\sigma$'').
+
+\begin{center}
+\begin{tikzpicture}[tm,initial text={},node distance=2.55cm]
+\node[state,initial] (q0) {$q_\eps$};
+\node[state,right=of q0] (q1) {$q_1$};
+\node[state,right=of q1] (q11) {$q_{11}$};
+\node[state,accepting,right=of q11] (q111) {$q_{111}$};
+\path
+  (q0) edge[loop above] node {0} ()
+  (q0) edge node {1} (q1)
+  (q1) edge[bend left=22] node[below] {0} (q0)
+  (q1) edge node {1} (q11)
+  (q11) edge[bend left=40] node[below] {0} (q0)
+  (q11) edge node {1} (q111)
+  (q111) edge[loop above] node {0,1} ();
+\end{tikzpicture}
+\end{center}
+(Drawn for $\Sigma=\{0,1\}$; for a larger alphabet every label $0$ stands for ``any symbol other than $1$''.) So $L(D)=\Sigma^*111\Sigma^*$. Then $R$ is in $A$ if and only if $L(R)\cap L(D)\ne\emptyset$.
+
+$M=$ ``On input $\enc{R}$, where $R$ is a regular expression:
+\begin{enumerate}
+\item Convert $R$ to an equivalent DFA $B$ (Theorems~1.54 and~1.39).
+\item Construct a DFA $C$ with $L(C)=L(B)\cap L(D)$.
+\item Run the $\Edfa$ decider $T$ of Theorem~4.4 on $\enc{C}$.
+\item If $T$ accepts, \emph{reject}; if $T$ rejects, \emph{accept}.''
+\end{enumerate}
+
+\textbf{Correctness.} $T$ accepts if and only if $L(R)\cap\Sigma^*111\Sigma^*=\emptyset$ if and only if no string of $L(R)$ contains the substring $111$. We flip the answer.
+
+\textbf{Halting.} The conversions and the product are finite, and $T$ is a decider.
+\end{soln}

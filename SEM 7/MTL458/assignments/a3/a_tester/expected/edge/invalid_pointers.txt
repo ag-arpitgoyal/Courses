@@ -1,0 +1,15 @@
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: double free (block 0:32)
+error: double free (block 0:32)
+error: invalid pointer
+region 0 65536
+  32 F 256
+  288 A 144 100
+  432 F 65104

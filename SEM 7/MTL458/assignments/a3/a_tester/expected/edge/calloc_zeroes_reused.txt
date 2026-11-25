@@ -1,0 +1,5 @@
+calloc reused block same, zeroed: yes
+region 0 65536
+  32 A 544 500
+  576 A 128 10
+  704 F 64832

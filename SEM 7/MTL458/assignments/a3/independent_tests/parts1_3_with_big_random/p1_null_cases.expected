@@ -1,0 +1,10 @@
+slot 0: NULL
+slot 1: NULL
+slot 2: NULL
+region 0 65536
+  32 A 128 10
+  160 F 65376
+region 0 65536
+  32 A 128 10
+  160 F 65376
+slot 4: NULL

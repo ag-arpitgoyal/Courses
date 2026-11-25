@@ -1,0 +1,19 @@
+a 1 zero 1
+b 1 zero 1
+c 1 zero 1
+region 0 65536
+  32 A 160 120
+  192 A 128 1
+  320 A 144 100
+  464 F 65072
+leak: block 0:32 (120 bytes)
+leak: block 0:192 (1 bytes)
+leak: block 0:320 (100 bytes)
+leak summary: 3 blocks, 221 bytes
+error: overflow detected (block 0:32)
+region 0 65536
+  32 F 288
+  320 A 144 100
+  464 F 65072
+leak: block 0:320 (100 bytes)
+leak summary: 1 blocks, 100 bytes

@@ -1,0 +1,664 @@
+\lectureheading{Lecture 13 (22/09/26)}
+
+% --- page 01 ---
+
+\section{Difficulty of the discrete logarithm}
+
+How difficult is it to solve the discrete logarithm problem?
+Recall from Lecture~12 that, for a prime \(p\), a primitive root \(g\) modulo \(p\), and \(h\in\units{p}\), the DLP asks for the integer \(x\) with \(1\le x\le p-1\) and \(g^{x}\equiv h\pmod{p}\), that is \(x=\ind_{g}(h)\). In a general group the same problem is the equation \(g^{x}=h\).
+
+\begin{example}[An additive group]
+Recall from Lecture~12 that solving the discrete logarithm can be easy in certain groups.
+In the additive group \((\Z/p\Z,+)\), one is given \(g,h\in\Z/p\Z\) with
+\(\gcdop(g,p)=1\), and one must find \(x\) such that
+\[
+    xg \equiv h \pmod{p}.
+\]
+The solution is
+\[
+    x \equiv g^{-1}h \pmod{p},
+\]
+and computing the inverse is easy. The same symbols in the multiplicative group \(\units{p}\) hide an apparently hard search.
+\end{example}
+
+% The date (22/09/26) is written on the page at this point.
+
+How long does it take to solve the discrete logarithm problem?
+
+\begin{remark}
+Let \(G\) be a group and let \(g\in G\) be an element of order \(N\), so
+\(g^N=e\). The equation \(g^x=h\) can be solved in \(O(N)\) steps, by
+testing the powers of \(g\) one at a time. This bound is trivial. It is
+also exponential in the input length: \(O(N)\) is of size \(e^{\log N}\).
+% p.01: the marginal note beside ``Trivial'' is \(e^{\log N}\), i.e. the \(O(N)\) search is exponential in the input length.
+\end{remark}
+
+\begin{remark}
+Depending on the group \(G\), one can do better. As in the additive example of Lecture~12, the congruence \(xg\equiv h\pmod{n}\) in \((\Z/n\Z,+)\) is ordinary linear arithmetic whenever \(\gcdop(g,n)=1\).
+\end{remark}
+
+% ============================================================
+\section{Shanks' baby-step giant-step algorithm}
+% ============================================================
+
+% FIX p.01: the heading on the page is ``Shank's''.
+
+\begin{keybox}
+\begin{theorem}[Shanks]
+Let \(G\) be a group, let \(g\in G\) be an element of order \(N\) with
+\(N\ge 2\), and let \(h\in\langle g\rangle\). The discrete logarithm
+\(g^x=h\) can be solved in \(O(\sqrt{N}\log N)\) steps. In particular
+the running time is \(O(N^{1/2+\varepsilon})\) for every \(\varepsilon>0\).
+% FIX p.01: under \(O(\sqrt{N}\log N)\) the page first writes \(O(N^{\varepsilon})\) for any \(\varepsilon>0\), strikes it out, and replaces it by \(O(N^{1/2+\varepsilon})\). The struck bound is too small; \(O(\sqrt{N}\log N)=O(N^{1/2+\varepsilon})\) is the right comparison.
+\end{theorem}
+\end{keybox}
+
+% --- page 02 ---
+
+The algorithm is as follows. Write
+\[
+    n = \bigl\lfloor\sqrt{N}\bigr\rfloor + 1,
+\]
+so that \(n>\sqrt{N}\). Form the two lists
+\begin{align*}
+    \text{List 1}&\colon
+        e,\; g,\; g^2,\; \ldots,\; g^{n-1}
+        &&\text{(baby steps),}\\[0.3em]
+    \text{List 2}&\colon
+        h,\; hg^{-n},\; hg^{-2n},\; \ldots,\; hg^{-(n-1)n}
+        &&\text{(giant steps).}
+\end{align*}
+With \(u=g^{-n}\), List~2 is the same as
+\[
+    h,\; hu,\; hu^2,\; \ldots,\; hu^{n-1}.
+\]
+
+\begin{claim}
+The two lists have an element in common. If
+\[
+    g^i = h\cdot g^{-jn},
+\]
+then \(h=g^{i+jn}\), and the discrete logarithm is
+\[
+    x = i+jn.
+\]
+\end{claim}
+
+\begin{proof}
+First, every integer \(k\) with \(0\le k\le N\) may be written
+\(k=nq+r\) where \(0\le r<n\). The quotient satisfies
+\[
+    0\le q < n,
+\]
+because
+\[
+    q = \frac{k-r}{n} \le \frac{N}{n} < n.
+\]
+The last inequality holds since \(n>\sqrt{N}\).
+
+Since \(h\in\langle g\rangle\), one has \(h=g^k\) for some
+\(0\le k<N\). Write \(k=nq+r\) with \(0\le q,r<n\), as above. Then
+\[
+    h = g^k = g^{nq+r},
+\]
+and therefore
+\[
+    h\cdot g^{-nq} = g^r.
+\]
+The left-hand side lies in List~2 and the right-hand side lies in
+List~1, so the two lists have an element in common. In the notation of
+the claim, \(i=r\) and \(j=q\).
+\end{proof}
+
+% --- page 03 ---
+
+It remains only to count steps. List~1 is built with \(n\)
+multiplications, and List~2 is built with \(n\) multiplications. Sorting
+List~1 takes \(O(n\log n)\) steps. Each of the \(n\) elements of List~2
+can then be tested for membership in List~1 in \(O(\log n)\) steps.
+The total is
+\[
+    O(n\log n) = O\bigl(\sqrt{N}\log N\bigr).
+\]
+
+\begin{example}[Baby-step giant-step modulo \(31\)]
+Take \(p=31\) and \(G=\Fp^\times=\units{p}\). The residue \(3\)
+is a primitive root, so let \(g=3\). The order of \(g\) is
+\(N=p-1=30\), and
+\[
+    n=\bigl\lfloor\sqrt{30}\bigr\rfloor+1=6.
+\]
+% FIX p.03: the page writes \(\lfloor\sqrt{31}\rfloor+1=6\). The order is \(N=30\), and \(\lfloor\sqrt{30}\rfloor+1\) is the same integer, so the lists are unchanged.
+List~1, the powers \(g^0,\ldots,g^{5}\) modulo \(31\), is
+\[
+    1,\; 3,\; 9,\; 27,\; 19,\; 26.
+\]
+Here \(g^n=3^6\equiv 16\pmod{31}\), so \(g^{-n}\equiv 16^{-1}\equiv 2\pmod{31}\).
+
+For \(h=17\), List~2 is
+\[
+    17,\; 17\cdot 16^{-1},\; 17\cdot 16^{-2},\; \ldots,\; 17\cdot 16^{-5},
+\]
+which begins
+\[
+    17,\; 17\cdot 2,\; 17\cdot 4,\; \ldots.
+\]
+The second entry is \(17\cdot 2=34\equiv 3\pmod{31}\), and \(3=g^1\) lies
+in List~1. Thus
+\[
+    3^1 = 17\cdot 3^{-6},
+\]
+so \(17=3^7\) and \(x=7\).
+
+For \(h=11\), List~2 is
+\[
+    11,\; 11\cdot 2,\; 11\cdot 4,\; 11\cdot 8,\; 11\cdot 16,\; 11\cdot 32,
+\]
+which reduces modulo \(31\) to
+\[
+    11,\; 22,\; 13,\; 26,\; 21,\; 11.
+\]
+The entry \(26\) lies in List~1, since \(3^5\equiv 26\pmod{31}\), and
+\(26\equiv 11\cdot 8=11\cdot 2^3\pmod{31}\). As \(2\equiv 3^{-6}\), one has
+\(2^3\equiv 3^{-18}\), and therefore
+\[
+    3^5 = 11\cdot 3^{-18}.
+\]
+Hence \(3^{23}\equiv 11\pmod{31}\), so \(x=23\).
+\end{example}
+
+% --- page 04 ---
+
+% ============================================================
+\section{The Pohlig--Hellman algorithm}
+% ============================================================
+
+% FIX p.06: the page spells the name ``Pohlig--Heuman''.
+
+Recall from Lecture~12 that if the order of \(g\) is smooth, Pohlig--Hellman solves the discrete logarithm efficiently. Given \(g^x=h\), it is enough
+to find \(x\pmod{N}\), where \(N\) is the order of \(g\).
+
+\begin{example}[A smooth order: \(p=271\)]
+Let \(p=271\), and let \(g=6\), a primitive root modulo \(271\). Then
+\[
+    p-1 = 270 = 2\cdot 3^3\cdot 5,
+\]
+so it is enough to solve the discrete logarithm modulo \(2\), modulo
+\(27\), and modulo \(5\). Take \(h=145\), and write \(h=g^x\).
+
+Since \(g\) is a primitive root, \(g^{(p-1)/2}\equiv -1\pmod{p}\), and
+\[
+    h^{(p-1)/2}
+    = g^{x(p-1)/2}
+    = (-1)^x
+    =
+    \begin{cases}
+        1, & \text{if \(x\) is even},\\
+        -1, & \text{if \(x\) is odd}.
+    \end{cases}
+\]
+The same power is the Legendre symbol \(\bigl(\frac{h}{p}\bigr)\).
+Compute
+\begin{align*}
+    \Bigl(\frac{h}{p}\Bigr)
+    = \Bigl(\frac{145}{271}\Bigr)
+    &= \Bigl(\frac{5}{271}\Bigr)\Bigl(\frac{29}{271}\Bigr)
+     = \Bigl(\frac{271}{5}\Bigr)\Bigl(\frac{271}{29}\Bigr)\\
+    &= \Bigl(\frac{1}{5}\Bigr)\Bigl(\frac{10}{29}\Bigr)
+     = \Bigl(\frac{2}{29}\Bigr)\Bigl(\frac{5}{29}\Bigr)
+     = (-1)\cdot\Bigl(\frac{4}{5}\Bigr)
+     = -1.
+\end{align*}
+% The factor \(\bigl(\frac{1}{5}\bigr)\) is crossed out on the page once it is seen to equal \(1\).
+% Filled step: \(5\equiv 29\equiv 1\pmod{4}\), so quadratic reciprocity gives the two flips; \(271\equiv 1\pmod{5}\) and \(271\equiv 10\pmod{29}\); \(10=2\cdot 5\); \(\bigl(\frac{2}{29}\bigr)=-1\) because \(29\equiv 5\pmod{8}\); and \(\bigl(\frac{5}{29}\bigr)=\bigl(\frac{29}{5}\bigr)=\bigl(\frac{4}{5}\bigr)=1\).
+Thus \(x\) is odd:
+\[
+    x\equiv 1\pmod{2}.
+\]
+
+% --- page 05 ---
+
+Next one finds \(x\pmod{5}\). Compare
+\[
+    h^{(p-1)/5}
+    \qquad\text{with}\qquad
+    g^{(p-1)/5},\;
+    g^{2(p-1)/5},\;
+    g^{3(p-1)/5},\;
+    g^{4(p-1)/5},\;
+    g^{5(p-1)/5}.
+\]
+Since \((p-1)/5=54\),
+\[
+    145^{54}\equiv 1\pmod{p},
+\]
+and therefore \(x\equiv 0\pmod{5}\).
+
+To see the shape of this congruence, write \(x=5k+m\). Then
+\(h=g^x=g^{5k+m}\), so
+\[
+    h^{(p-1)/5}
+    = g^{(5k+m)(p-1)/5}
+    = g^{m(p-1)/5},
+\]
+the term in \(k\) disappearing because \(g^{p-1}\equiv 1\). The value
+\(1\) occurs precisely for \(m\equiv 0\pmod{5}\).
+
+Next one calculates \(x\pmod{27}\). Expand
+\[
+    x = c_0 + c_1\cdot 3 + c_2\cdot 3^2,
+    \qquad 0\le c_i\le 2.
+\]
+Modulo \(p\),
+\[
+    g^{(p-1)/3}\equiv 242, \qquad
+    g^{2(p-1)/3}\equiv 28, \qquad
+    h^{(p-1)/3}\equiv 28.
+\]
+The last two agree, so \(c_0=2\).
+
+To find \(c_1\), write \(h=g^x=g^{c_0+3c_1+3^2 c_2}\). Then
+\[
+    \frac{h}{g^{c_0}}
+    = g^{3c_1+3^2 c_2}
+    = g^{3(c_1+3c_2)},
+\]
+% FIX p.05: the middle exponent is written \(3^2 c_1\). The next expression is \(g^{3(c_1+3c_2)}\), so the factor must be \(c_2\).
+and raising to the power \((p-1)/9\) isolates the next digit:
+\[
+    \Bigl(\frac{h}{g^{c_0}}\Bigr)^{(p-1)/9}
+    = g^{c_1(p-1)/3}.
+\]
+% FIX p.05: the denominator is the digit \(9\). The loop looks like a \(q\), but \(q\) is not defined here, and the identity needs \((p-1)/9\): the left side is \(g^{3(c_1+3c_2)}\), so the exponent \((p-1)/9\) produces \(g^{c_1(p-1)/3}\).
+The notes say to continue from here. Carrying out that arithmetic:
+\(g^{c_0}=6^2\equiv 36\), and
+\[
+    h\cdot g^{-c_0}\equiv 132\pmod{271},
+    \qquad
+    132^{(p-1)/9}=132^{30}\equiv 28
+    \equiv g^{2(p-1)/3}\pmod{271},
+\]
+so \(c_1=2\). One further step, with \(c_0+3c_1=8\), gives
+\[
+    h\cdot g^{-8}\equiv 3\pmod{271},
+    \qquad
+    3^{(p-1)/27}=3^{10}\equiv 242
+    \equiv g^{(p-1)/3}\pmod{271},
+\]
+so \(c_2=1\). Therefore
+\[
+    x\pmod{27}
+    = c_0+3c_1+9c_2
+    = 2+6+9
+    = 17.
+\]
+% Filled step: the page writes ``\(\ldots\) continue'' and then the answer \(c_1=2\), \(c_2=1\).
+\end{example}
+
+% --- page 06 ---
+
+The three congruences are
+\[
+    \left.
+    \begin{aligned}
+        x&\equiv 1 \pmod{2}\\
+        x&\equiv 0 \pmod{5}\\
+        x&\equiv 17\pmod{27}
+    \end{aligned}
+    \right\}
+    \qquad
+    x\equiv 125\pmod{270}.
+\]
+% Filled step: the page records the result of the Chinese remainder theorem and not the arithmetic. From \(x=27t+17\equiv 0\pmod{5}\) one gets \(2t\equiv 3\pmod{5}\), so \(t\equiv 4\pmod{5}\) and \(x\equiv 125\pmod{270}\). The class \(125\) is already odd, so the condition modulo \(2\) holds as well. And \(6^{125}\equiv 145\pmod{271}\).
+
+\subsection{Primes for which the algorithm does not help}
+
+There is a way out of the improvement above. Let \(p\) be an odd prime, so
+that \(p-1\) is even, and suppose that \((p-1)/2\) itself is prime. Set
+\[
+    q=\frac{p-1}{2},
+\]
+so that \(p=2q+1\). Baby-step giant-step on the whole group, and on the
+subgroup of order \(q\), then cost about \(\sqrt{p}\) and \(\sqrt{q}\)
+respectively, and
+\[
+    \sqrt{p}=\sqrt{2q+1}\approx\sqrt{2q}=\sqrt{2}\,\sqrt{q}.
+\]
+The two running times are of the same size, so factoring \(p-1=2q\) does
+not improve on a direct attack.
+
+\begin{definition}[Sophie Germain prime]
+A \emph{Sophie Germain prime} is a prime \(p\) such that \(2p+1\) is also
+prime.
+\end{definition}
+In the notation above, \(q\) is a Sophie Germain prime and \(p=2q+1\) is
+prime.
+
+\subsection{The general statement}
+
+\begin{keybox}
+\begin{theorem}[Pohlig--Hellman]
+Let \(G\) be a group, and suppose that whenever \(g\in G\) has order
+\(p^e\) one can solve the discrete logarithm in the subgroup
+\(H=\langle g\rangle\) in \(S(p^e)\) steps.
+% FIX p.06: the page writes the order as \(p^2\), while the cost on the next line is \(S(p^e)\) and the sum below runs over \(p_i^{e_i}\). The statement is for a general prime power.
+Let \(\hat g\in G\) be an
+element of order
+\[
+    N = p_1^{e_1}\cdots p_t^{e_t}.
+\]
+Then the discrete logarithm in \(\langle\hat g\rangle\) can be solved in
+\[
+    \sum_{i=1}^{t} S(p_i^{e_i}) + (\log N)^{*}
+\]
+steps.
+% p.06: the second term is \((\log N)^{*}\) on the page. Page~10 identifies it as the Chinese-remainder cost \(O(\log N)\).
+\end{theorem}
+\end{keybox}
+
+By comparison, baby-step giant-step on a group of order \(N\) costs
+\(\sqrt{N}\log N\) steps.
+
+% --- page 07 ---
+
+As a rough comparison, take \(t=2\) with \(p_1\approx p_2\) and
+\(e_1=e_2\). Writing \(p\) and \(e\) for those common values, and using
+baby-step giant-step as the prime-power routine, so that
+\(S(p^e)\) contributes a factor \(p^{e/2}\cdot e\log p\), one gets
+\begin{align*}
+    S(p_1^{e_1})+S(p_2^{e_2})+(\log N)^{*}
+    &= p_1^{e_1/2}\cdot e_1\log p_1
+       + p_2^{e_2/2}\cdot e_2\log p_2
+       + (\log N)^{*}\\
+    &\approx 2\,p^{e/2}\,(\log N)^{*}.
+\end{align*}
+For \(N\) of size \(p^{2e}\) the direct baby-step giant-step bound
+\(\sqrt{N}\log N\) is about \(p^{e}\log N\), larger by a factor about
+\(p^{e/2}\).
+
+The algorithm producing the \(y_i\) in the theorem is the following.
+The input is \(\hat g^{x}=h\).
+\begin{enumerate}[leftmargin=1.6em]
+    \item For each \(i\), set
+    \[
+        g_i = \hat g^{\,N/p_i^{e_i}}
+        \qquad\text{and}\qquad
+        h_i = h^{\,N/p_i^{e_i}}.
+    \]
+    The element \(g_i\) has order \(p_i^{e_i}\). Solve the discrete
+    logarithm \(g_i^{y_i}=h_i\), and let \(y_i\) be the solution.
+    \item Solve the system
+    \[
+        \begin{cases}
+            x\equiv y_1\pmod{p_1^{e_1}},\\
+            \qquad\vdots\\
+            x\equiv y_t\pmod{p_t^{e_t}}
+        \end{cases}
+    \]
+    by the Chinese remainder theorem. The solution satisfies
+    \(\hat g^{x}=h\).
+\end{enumerate}
+
+\lectureheading{Lecture 14 (23/09/26)}
+
+% --- page 08 ---
+
+Baby-step giant-step applies to an element \(g\) of order \(N\): the
+discrete logarithm in \(\langle g\rangle\), namely \(g^x=h\), can be
+solved in \(O(\sqrt{N}\log N)\) steps. For a typical example take
+\(G=\units{p}\) with \(p-1\) even, and suppose
+\[
+    q=\frac{p-1}{2}
+\]
+is also prime. As on the previous page, Pohlig--Hellman then gives no
+substantial saving.
+
+The Pohlig--Hellman theorem is recorded again, together with the
+algorithm.
+
+\begin{theorem}
+Let \(G\) be a group. Suppose that for any element \(g\) of order
+\(p^e\), with \(p\) prime and \(e\ge 1\), the discrete logarithm in
+\(\langle g\rangle\) can be solved in \(S(p^e)\) steps. Let \(\hat g\)
+be an element whose order is \(p_1^{e_1}\cdots p_t^{e_t}\). Then the
+discrete logarithm in \(\langle\hat g\rangle\) can be solved in
+\[
+    \sum_{i=1}^{t} S(p_i^{e_i}) + (\log N)^{*}
+\]
+steps, by the following algorithm. Here \(N\) is the order of \(\hat g\).
+\end{theorem}
+
+% A line struck through before step~(1) is illegible; it appears to begin ``if \(N\neq p_1\), \(p_1\neq p_2\)''.
+% UNCLEAR p.08: struck-out false start immediately before the algorithm.
+
+Let \(\hat g^{x}=h\).
+\begin{enumerate}[leftmargin=1.6em]
+    \item Let
+    \[
+        g_i=\hat g^{\,N/p_i^{e_i}},
+        \qquad
+        h_i=h^{\,N/p_i^{e_i}},
+    \]
+    and let \(y_i\) be the solution of the discrete logarithm
+    \(g_i^{y}=h_i\).
+    \item Solve
+    \[
+        \begin{cases}
+            x\equiv y_1\pmod{p_1^{e_1}},\\
+            \qquad\vdots\\
+            x\equiv y_t\pmod{p_t^{e_t}}
+        \end{cases}
+    \]
+    by the Chinese remainder theorem. The solution satisfies
+    \(\hat g^{x}=h\).
+\end{enumerate}
+
+% --- page 09 ---
+
+\begin{proof}
+The element \(g_i\) has order \(p_i^{e_i}\). If \(\hat g^{x}=h\), then
+\(g_i^{x}=h_i=g_i^{y_i}\), so the true discrete logarithm satisfies
+\[
+    x = y_i + p_i^{e_i}\,k
+\]
+for some integer \(k\), for each \(i\). Conversely, any integer \(x\) of
+this form for every \(i\) is a discrete logarithm, by the calculation
+that follows. Substituting the shape of \(x\),
+\begin{align*}
+    \bigl(\hat g^{x}\bigr)^{N/p_i^{e_i}}
+    &= \hat g^{\,(y_i+p_i^{e_i}k)\,N/p_i^{e_i}}
+     = \hat g^{\,y_i\,N/p_i^{e_i}}
+       \cdot\bigl(\hat g^{N}\bigr)^{k}
+     = \hat g^{\,y_i\,N/p_i^{e_i}}\\
+    &= g_i^{y_i}
+     = h_i
+     = h^{\,N/p_i^{e_i}}.
+\end{align*}
+% p.09: an attempt to conclude \(\hat g^{x}=h\) already at this line is crossed out.
+The identity
+\[
+    \bigl(\hat g^{x}\bigr)^{N/p_i^{e_i}} = h^{\,N/p_i^{e_i}}
+\]
+therefore holds for every \(i\) with \(1\le i\le t\).
+
+The integers \(N/p_1^{e_1},\ldots,N/p_t^{e_t}\) have gcd \(1\), since
+each prime \(p_i\) fails to divide \(N/p_i^{e_i}\) and these are all the
+prime factors of \(N\). Hence there exist integers \(c_1,\ldots,c_t\)
+such that
+\[
+    c_1\frac{N}{p_1^{e_1}} + \cdots + c_t\frac{N}{p_t^{e_t}} = 1.
+\]
+Raising the identity above to the power \(c_i\) gives
+\[
+    \bigl(\hat g^{x}\bigr)^{c_i N/p_i^{e_i}}
+    = h^{\,c_i N/p_i^{e_i}}
+\]
+for each \(i\). Multiplying these \(t\) equations together, the exponent
+on each side is \(\sum c_i N/p_i^{e_i}=1\), and one obtains
+\(\hat g^{x}=h\).
+\end{proof}
+
+The number of steps splits in the same way as the algorithm.
+\begin{itemize}[leftmargin=1.4em]
+    \item Step~1, accounting for each \(i\) with \(1\le i\le t\), takes
+    \[
+        \sum_{i=1}^{t} S(p_i^{e_i})
+    \]
+    steps.
+    \item Step~2 solves a system of linear congruences by the Chinese
+    remainder theorem.
+\end{itemize}
+
+% --- page 10 ---
+
+For the second step, recall the explicit solution of a Chinese remainder
+system. If \(x\equiv b_i\pmod{m_i}\) for \(1\le i\le t\), with the
+\(m_i\) pairwise coprime, set \(M=m_1\cdots m_t\) and \(M_i=M/m_i\). Then
+\(\gcdop(m_i,M_i)=1\), so there are integers \(N_i\) and \(n_i\) with
+\[
+    M_i N_i + m_i n_i = 1,
+\]
+and in particular \(M_i N_i \equiv 1\pmod{m_i}\).
+% FIX p.10: the line is \(M_i N_i+m_i n_i=1\), not \(M_i N_i+m_i=1\). The coefficient \(n_i\) is the second Bézout coefficient; only \(N_i\) is used in the sum below.
+The integer
+\[
+    x = \sum_{i=1}^{t} b_i M_i N_i
+\]
+is a solution. This arithmetic takes \(O(\log N)\) steps, where \(N\) is
+the product of the moduli. In the Pohlig--Hellman system one has
+\(m_i=p_i^{e_i}\), \(b_i=y_i\), and \(M=N\), so step~2 requires
+\(O(\log N)\) steps. This is the term written \((\log N)^{*}\) above.
+
+The prime-power cost \(S(p_i^{e_i})\) will now be reduced to the
+prime-order cost \(S(p_i)\):
+\[
+    S(p_i^{e_i}) = e_i\, S(p_i).
+\]
+
+\begin{theorem}[Reduction to prime order]
+Let \(G\) be a group and let \(p\) be a prime. Suppose \(g\in G\)
+satisfies \(\ord(g)=p\), and that for every such element the discrete
+logarithm in \(\langle g\rangle\) can be solved in \(S(p)\) steps. Then
+for \(\hat g\in G\) with \(\ord(\hat g)=p^e\) and some \(e\ge 1\), the
+discrete logarithm \(\hat g^{x}=h\) in \(\langle\hat g\rangle\) can be
+solved in \(O\bigl(e\,S(p)\bigr)\) steps.
+\end{theorem}
+
+\begingroup\samepage
+Applied to the previous theorem, the discrete logarithm for an element
+of order \(N=\prod_i p_i^{e_i}\) can therefore be solved in
+\[
+    \sum_{i} e_i\, S(p_i) + O(\log N)
+\]
+steps.
+\endgroup
+
+\begin{proof}
+One wants to solve \(\hat g^{x}=h\). The unknown may be taken in the
+range \(0\le x\le p^e-1\).
+% The page writes ``expect \(0\le x<p^e\)'' and, beneath it, ``\(\le p^e-1\)''.
+Expand \(x\) in base \(p\),
+\[
+    x = x_0 + x_1 p + x_2 p^2 + \cdots + x_{e-1}p^{e-1},
+    \qquad 0\le x_i<p.
+\]
+% --- page 11 ---
+The digits \(x_i\) are what one has to find. The element
+\(\hat g^{\,p^{e-1}}\) has order \(p\).
+
+For the first digit, 
+\[
+    h^{p^{e-1}}
+    = \bigl(\hat g^{x}\bigr)^{p^{e-1}}
+    = \hat g^{\,x_0\,p^{e-1}}
+    = \bigl(\hat g^{\,p^{e-1}}\bigr)^{x_0},
+\]
+since every term \(x_j p^j\) with \(j\ge 1\) contributes a multiple of
+\(p^e\) to the exponent. Set
+\[
+    h' = h^{p^{e-1}},
+    \qquad
+    g' = \hat g^{\,p^{e-1}},
+\]
+both of which are determined by the input, and \(g'\) has order \(p\).
+The displayed equation is \(h'=(g')^{x_0}\), a discrete logarithm for an
+element of order \(p\). It is solved in \(S(p)\) steps and returns
+\(x_0\). Equivalently, the discrete logarithm in the subgroup
+\(\langle\hat g^{\,p^{e-1}}\rangle\) is solved in time \(S(p)\).
+
+For the next digit,
+\begin{align*}
+    h^{p^{e-2}}
+    = \bigl(\hat g^{x}\bigr)^{p^{e-2}}
+    &= \hat g^{\,x_0\,p^{e-2}+x_1\,p^{e-1}},\\[0.3em]
+    \frac{h^{p^{e-2}}}{\hat g^{\,x_0\,p^{e-2}}}
+    &= \bigl(\hat g^{\,p^{e-1}}\bigr)^{x_1}.
+\end{align*}
+The left-hand side is known once \(x_0\) is known, and the base on the
+right has order \(p\). This discrete logarithm is solved in \(S(p)\)
+steps and returns \(x_1\).
+
+Continuing in the same way produces every digit \(x_i\). At stage \(i\)
+one solves
+\[
+    \Bigl(
+        h\,\hat g^{-(x_0+x_1 p+\cdots+x_{i-1}p^{i-1})}
+    \Bigr)^{p^{e-(i+1)}}
+    =
+    \bigl(\hat g^{\,p^{e-1}}\bigr)^{x_i}
+\]
+in the subgroup of order \(p\). There are \(e\) digits, so the total
+number of steps is \(e\times S(p)\). This completes the proof.
+\end{proof}
+
+% --- page 12 ---
+
+\subsection{Comparison of the algorithms}
+
+Baby-step giant-step applies in every case. It is an exponential-time
+algorithm. Pohlig--Hellman is useful in some special cases, but it does
+not improve the algorithm substantially in many cases, the safeprime
+situation above being the typical example.
+
+Index calculus is a subexponential algorithm, of shape
+\(e^{\sqrt{\log N}}\), and will be discussed later.
+% FIX p.12: the parenthetical is \(e^{\sqrt{\log N}}\), confirmed on the page. The usual index-calculus bound also has a \(\log\log N\) under the square root; the notes omit it. The written shape is still subexponential.
+
+% ============================================================
+\section{The RSA cryptosystem}
+% ============================================================
+
+The cryptosystem is due to R.~Rivest, A.~Shamir, and L.~Adleman.
+
+\subsection{Factorization of integers}
+The main principle is that the public modulus is a product
+\[
+    N=pq
+\]
+of two large primes.
+
+\begin{theorem}[Bertrand's postulate]
+Between \(n\) and \(2n\) there is a prime, for every integer \(n\ge 2\).
+\end{theorem}
+
+If \(p\) and \(q\) are distinct primes, then
+\[
+    \varphi(pq)=(p-1)(q-1).
+\]
+Euler's theorem gives: if \(\gcdop(a,pq)=1\), then
+\[
+    a^{(p-1)(q-1)}\equiv 1\pmod{pq}.
+\]
+Is this exponent optimal?
+
+For the special case \(p=2\), and \(q\) an odd prime,
+% FIX p.12: the page writes \(\varphi(2q)=q-1\) with no hypothesis on \(q\). This holds when \(q\) is an odd prime.
+\[
+    \varphi(2q)=q-1.
+\]
+If \(\gcdop(a,2q)=1\), then
+\[
+    a^{q-1}\equiv 1\pmod{2q}.
+\]
+This exponent is optimal.
+% UNCLEAR p.12: the page ends with the parenthetical ``(primitive root'', cut off at the margin. Read as a reference to primitive roots modulo \(2q\): the group \(\units{2q}\) is cyclic of order \(q-1\), so the exponent \(q-1\) is sharp.

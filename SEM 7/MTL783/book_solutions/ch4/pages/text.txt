@@ -1,0 +1,216 @@
+               EXERCISES
+               A
+                   4.1 Answer all parts for the following DFA M and give reasons for your answers.
+
+
+
+
+                                a. Is hM, 0100i ∈ ADFA ?                                                       d. Is hM, 0100i ∈ AREX ?
+                                b. Is hM, 011i ∈ ADFA ?                                                        e. Is hM i ∈ EDFA ?
+                                c. Is hM i ∈ ADFA ?                                                            f. Is hM, M i ∈ EQ DFA ?
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                                                          PROBLEMS                          211
+
+                      4.2 Consider the problem of determining whether a DFA and a regular expression are
+                          equivalent. Express this problem as a language and show that it is decidable.
+                      4.3 Let ALLDFA = {hAi| A is a DFA and L(A) = Σ∗ }. Show that ALLDFA is decidable.
+                      4.4 Let AεCFG = {hGi| G is a CFG that generates ε}. Show that AεCFG is decidable.
+                  A
+                      4.5 Let ETM = {hM i| M is a TM and L(M ) = ∅}. Show that ETM , the complement of
+                          ETM , is Turing-recognizable.
+                      4.6 Let X be the set {1, 2, 3, 4, 5} and Y be the set {6, 7, 8, 9, 10}. We describe the
+                          functions f : X−→Y and g : X−→Y in the following tables. Answer each part
+                          and give a reason for each negative answer.
+
+                                                                   n        f (n)                                              n        g(n)
+                                                                   1          6                                                1         10
+                                                                   2          7                                                2         9
+                                                                   3          6                                                3         8
+                                                                   4          7                                                4         7
+                                                                   5          6                                                5         6
+
+                               A                                                                              A
+                                 a. Is f one-to-one?                                                              d. Is g one-to-one?
+                                 b. Is f onto?                                                                    e. Is g onto?
+                                 c. Is f a correspondence?                                                        f. Is g a correspondence?
+
+                      4.7 Let B be the set of all infinite sequences over {0,1}. Show that B is uncountable
+                          using a proof by diagonalization.
+                      4.8 Let T = {(i, j, k)| i, j, k ∈ N }. Show that T is countable.
+                      4.9 Review the way that we define sets to be the same size in Definition 4.12 (page 203).
+                          Show that “is the same size” is an equivalence relation.
+
+
+
+
+                  PROBLEMS
+              A
+                  4.10 Let INFINITEDFA = {hAi| A is a DFA and L(A) is an infinite language}. Show
+                       that INFINITEDFA is decidable.
+                  4.11 Let INFINITE PDA = {hM i| M is a PDA and L(M ) is an infinite language}. Show
+                       that INFINITE PDA is decidable.
+              A
+                  4.12 Let A = {hM i| M is a DFA that doesn’t accept any string containing an odd num-
+                       ber of 1s}. Show that A is decidable.
+                  4.13 Let A = {hR, Si| R and S are regular expressions and L(R) ⊆ L(S)}. Show that
+                       A is decidable.
+              A
+                  4.14 Let Σ = {0,1}. Show that the problem of determining whether a CFG generates
+                       some string in 1∗ is decidable. In other words, show that
+
+                                                          {hGi| G is a CFG over {0,1} and 1∗ ∩ L(G) 6= ∅}
+
+                            is a decidable language.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                 212              CHAPTER 4 / DECIDABILITY
+
+             ?
+                 4.15 Show that the problem of determining whether a CFG generates all strings in 1∗ is
+                      decidable. In other words, show that {hGi| G is a CFG over {0,1} and 1∗ ⊆ L(G)}
+                      is a decidable language.
+                 4.16 Let A = {hRi| R is a regular expression describing a language containing at least
+                      one string w that has 111 as a substring (i.e., w = x111y for some x and y)}. Show
+                      that A is decidable.
+                 4.17 Prove that EQ DFA is decidable by testing the two DFAs on all strings up to a certain
+                      size. Calculate a size that works.
+             ?
+                 4.18 Let C be a language. Prove that C is Turing-recognizable iff a decidable language
+                      D exists such that C = {x| ∃y (hx, yi ∈ D)}.
+             ?
+                 4.19 Prove that the class of decidable languages is not closed under homomorphism.
+                 4.20 Let A and B be two disjoint languages. Say that language C separates A and B if
+                      A ⊆ C and B ⊆ C. Show that any two disjoint co-Turing-recognizable languages
+                      are separable by some decidable language.
+                 4.21 Let S = {hM i| M is a DFA that accepts wR whenever it accepts w}. Show that S
+                      is decidable.
+                 4.22 Let PREFIX-FREEREX = {hRi| R is a regular expression and L(R) is prefix-free}.
+                      Show that PREFIX-FREEREX is decidable. Why does a similar approach fail to
+                      show that PREFIX-FREE CFG is decidable?
+           A?
+                 4.23 Say that an NFA is ambiguous if it accepts some string along two different com-
+                      putation branches. Let AMBIGNFA = {hN i| N is an ambiguous NFA}. Show that
+                      AMBIGNFA is decidable. (Suggestion: One elegant way to solve this problem is to
+                      construct a suitable DFA and then run EDFA on it.)
+                 4.24 A useless state in a pushdown automaton is never entered on any input string. Con-
+                      sider the problem of determining whether a pushdown automaton has any useless
+                      states. Formulate this problem as a language and show that it is decidable.
+           A?
+                 4.25 Let BALDFA = {hM i| M is a DFA that accepts some string containing an equal
+                      number of 0s and 1s}. Show that BALDFA is decidable. (Hint: Theorems about
+                      CFLs are helpful here.)
+             ?
+                 4.26 Let PALDFA = {hM i| M is a DFA that accepts some palindrome}. Show that
+                      PALDFA is decidable. (Hint: Theorems about CFLs are helpful here.)
+             ?
+                 4.27 Let E = {hM i| M is a DFA that accepts some string with more 1s than 0s}. Show
+                      that E is decidable. (Hint: Theorems about CFLs are helpful here.)
+                 4.28 Let C = {hG, xi| G is a CFG x is a substring of some y ∈ L(G)}. Show that C is
+                      decidable. (Hint: An elegant solution to this problem uses the decider for ECFG .)
+                 4.29 Let CCFG = {hG, ki| G is a CFG and L(G) contains exactly k strings where k ≥ 0
+                      or k = ∞}. Show that CCFG is decidable.
+                 4.30 Let A be a Turing-recognizable language consisting of descriptions of Turing ma-
+                      chines, {hM1 i, hM2 i, . . .}, where every Mi is a decider. Prove that some decidable
+                      language D is not decided by any decider Mi whose description appears in A.
+                      (Hint: You may find it helpful to consider an enumerator for A.)
+                 4.31 Say that a variable A in CFL G is usable if it appears in some derivation of some
+                      string w ∈ G. Given a CFG G and a variable A, consider the problem of testing
+                      whether A is usable. Formulate this problem as a language and show that it is
+                      decidable.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                               SELECTED SOLUTIONS                                           213
+
+                4.32 The proof of Lemma 2.41 says that (q, x) is a looping situation for a DPDA P if
+                     when P is started in state q with x ∈ Γ on the top of the stack, it never pops
+                     anything below x and it never reads an input symbol. Show that F is decidable,
+                     where F = {hP, q, xi| (q, x) is a looping situation for P }.
+
+
+
+
+                SELECTED SOLUTIONS
+                  4.1 (a) Yes. The DFA M accepts 0100.
+                            (b) No. M doesn’t accept 011.
+                            (c) No. This input has only a single component and thus is not of the correct form.
+
+                            (d) No. The first component is not a regular expression and so the input is not of
+                            the correct form.
+                            (e) No. M ’s language isn’t empty.
+                            (f) Yes. M accepts the same language as itself.
+
+                  4.5 Let s1 , s2 , . . . be a list of all strings in Σ∗ . The following TM recognizes ETM .
+
+                             “On input hM i, where M is a TM:
+                                   1. Repeat the following for i = 1, 2, 3, . . . .
+                                   2.    Run M for i steps on each input, s1 , s2 , . . . , si .
+                                   3.    If M has accepted any of these, accept . Otherwise, continue.”
+
+                  4.6 (a) No, f is not one-to-one because f (1) = f (3).
+                            (d) Yes, g is one-to-one.
+
+               4.10 The following TM I decides INFINITE DFA .
+
+                            I = “On input hAi, where A is a DFA:
+                                  1. Let k be the number of states of A.
+                                  2. Construct a DFA D that accepts all strings of length k or more.
+                                  3. Construct a DFA M such that L(M ) = L(A) ∩ L(D).
+                                  4. Test L(M ) = ∅ using the EDFA decider T from Theorem 4.4.
+                                  5. If T accepts, reject ; if T rejects, accept .”
+
+                            This algorithm works because a DFA that accepts infinitely many strings must ac-
+                            cept arbitrarily long strings. Therefore, this algorithm accepts such DFAs. Con-
+                            versely, if the algorithm accepts a DFA, the DFA accepts some string of length k or
+                            more, where k is the number of states of the DFA. This string may be pumped in
+                            the manner of the pumping lemma for regular languages to obtain infinitely many
+                            accepted strings.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+               214                CHAPTER 4 / DECIDABILITY
+
+
+               4.12 The following TM decides A.
+                            “On input hM i:
+                                  1. Construct a DFA O that accepts every string containing an odd
+                                      number of 1s.
+                                  2. Construct a DFA B such that L(B) = L(M ) ∩ L(O).
+                                  3. Test whether L(B) = ∅ using the EDFA decider T from Theo-
+                                      rem 4.4.
+                                  4. If T accepts, accept ; if T rejects, reject .”
+               4.14 You showed in Problem 2.18 that if C is a context-free language and R is a regular
+                    language, then C ∩ R is context free. Therefore, 1∗ ∩ L(G) is context free. The
+                    following TM decides the language of this problem.
+                            “On input hGi:
+                                  1. Construct CFG H such that L(H) = 1∗ ∩ L(G).
+                                  2. Test whether L(H) = ∅ using the ECFG decider R from Theo-
+                                      rem 4.8.
+                                  3. If R accepts, reject ; if R rejects, accept .”
+               4.23 The following procedure decides AMBIGNFA . Given an NFA N , we design a DFA
+                    D that simulates N and accepts a string iff it is accepted by N along two different
+                    computational branches. Then we use a decider for EDFA to determine whether D
+                    accepts any strings.
+                    Our strategy for constructing D is similar to the NFA-to-DFA conversion in the
+                    proof of Theorem 1.39. We simulate N by keeping a pebble on each active state.
+                    We begin by putting a red pebble on the start state and on each state reachable
+                    from the start state along ε transitions. We move, add, and remove pebbles in
+                    accordance with N ’s transitions, preserving the color of the pebbles. Whenever

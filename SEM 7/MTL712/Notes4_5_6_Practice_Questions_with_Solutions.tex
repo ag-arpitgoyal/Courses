@@ -1,0 +1,5071 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[
+  left=1.05in,
+  right=1.05in,
+  top=1in,
+  bottom=1in,
+  headheight=14pt
+]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+% Start a new page unless #1 of vertical space remains.
+\makeatletter
+\newcommand{\Needspace}[1]{\par\penalty-100\begingroup
+  \dimen@=#1\relax
+  \dimen@ii=\pagegoal\advance\dimen@ii by -\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi
+  \endgroup}
+\makeatother
+
+\linespread{1.25}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em plus 0.25em minus 0.1em}
+\setlength{\abovedisplayskip}{1.2em plus 0.3em minus 0.2em}
+\setlength{\belowdisplayskip}{1.2em plus 0.3em minus 0.2em}
+\setlength{\abovedisplayshortskip}{0.9em plus 0.2em}
+\setlength{\belowdisplayshortskip}{1em plus 0.2em}
+\setlength{\jot}{9pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\setlist[itemize]{leftmargin=*,itemsep=6pt,topsep=6pt,parsep=3pt}
+\setlist[enumerate]{leftmargin=*,itemsep=6pt,topsep=6pt,parsep=3pt}
+
+% Plain black frame for the question statement.
+\newtcolorbox{qbox}{
+  enhanced,
+  colback=white,colframe=black,
+  boxrule=0.6pt,sharp corners,
+  left=10pt,right=10pt,top=4pt,bottom=6pt,
+  before skip=14pt,after skip=10pt
+}
+
+% Revision block: the facts needed for the question, marked by a rule
+% on the left only.
+\newtcolorbox{remember}{
+  enhanced,
+  colback=white,frame hidden,
+  borderline west={1.4pt}{0pt}{black},
+  sharp corners,
+  left=10pt,right=6pt,top=2pt,bottom=2pt,
+  before skip=6pt,after skip=12pt
+}
+\newenvironment{rem}
+  {\begin{remember}\noindent\textbf{Remember}\par\nobreak\vspace{-0.3em}}
+  {\end{remember}}
+
+\newcounter{qn}
+% \Q{title}{type}{marks}
+\newcommand{\Q}[3]{\Needspace{14\baselineskip}\refstepcounter{qn}\subsection*{Q\theqn.\ #1}%
+  \addcontentsline{toc}{subsection}{Q\theqn.\ #1}%
+  \noindent\textit{#2}\hfill\textit{[#3 marks]}\par}
+
+\newenvironment{solution}
+  {\par\noindent\textbf{Solution.}\par\nobreak}
+  {\par\nobreak\noindent\hfill\(\square\)\par}
+
+\newcommand{\step}[1]{\par\addvspace{0.5em}\noindent\textbf{#1}\par\nobreak}
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\hb}{\bar h}
+\newcommand{\lam}{\lambda_{n+1}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Practice: Notes 4, 5 and 6}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\title{\textbf{MTL712: Computational Methods for Differential\\Equations}\\[6pt]
+\large Practice Questions with Complete Solutions\\
+on Notes 4, 5 and 6}
+\author{\normalsize Multistep methods, BVPs, parabolic, elliptic and
+hyperbolic PDEs}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+
+These questions cover every topic of Notes 4, 5 and 6, in the order in
+which the topics appear in the notes.  They are written in the style
+of the major examinations, including the questions of recent papers:
+proofs, derivations, convergence and stability analyses, numerical
+calculations and short conceptual answers.
+
+Each question has three parts.
+\begin{itemize}
+  \item The \emph{question}, in a box, with its type and suggested
+    marks.
+  \item A \textbf{Remember} block, marked by a rule on the left: the
+    definitions, theorems and formulas needed for the question.  Read
+    these blocks on their own for a quick revision.
+  \item A complete \emph{solution}, written as a full-marks answer.
+\end{itemize}
+Try each question before reading its solution.  All numerical answers
+have been checked by computer.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Section & Topic & Notes\\
+\midrule
+1 & Linear multistep methods for \(y'=f\) & Note 4\\
+2 & Methods for \(y''=f\) & Note 4\\
+3 & Boundary value problems & Note 4\\
+4 & Classification and difference operators & Note 4\\
+5 & Parabolic equations: schemes, LTE, convergence, stability & Note 4\\
+6 & Lecture 35: ADI, three-level and Du Fort--Frankel schemes & Note 5\\
+7 & Block matrices and Du Fort--Frankel by the matrix method & Note 6\\
+8 & Elliptic equations and the five-point formula & Note 6\\
+9 & ADI iterations: Dirichlet, Neumann and Robin problems & Note 6\\
+10 & Hyperbolic equations: the wave equation & Note 6\\
+11 & The heat equation: comparison of methods & Note 6\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+{\linespread{1.0}\selectfont\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Linear Multistep Methods for \(y'=f(x,y)\)}
+%#####################################################################
+
+Notation as in Note 4: \(\rho(\zeta)=\sum\alpha_j\zeta^j\),
+\(\sigma(\zeta)=\sum\beta_j\zeta^j\), \(w=\zeta-1\), and the error
+constant of an order-\(p\) method is \(C_{p+1}\).
+
+%---------------------------------------------------------------------
+\Q{Order via \(\rho(\zeta)/\log\zeta-\sigma(\zeta)\)}{Proof}{5}\label{q:orderlemma}
+\begin{qbox}
+Let \(f\) be sufficiently smooth and \(p\) a positive integer.  Prove
+that the linear \(k\)-step method
+\(\sum_{j=0}^k\alpha_jy_{n+j}=h\sum_{j=0}^k\beta_jf_{n+j}\) is of order
+\(p\) if and only if
+\[
+  \varphi(\zeta)=\frac{\rho(\zeta)}{\log\zeta}-\sigma(\zeta)
+\]
+has a zero of multiplicity \(p\) at \(\zeta=1\).  Show also that then
+\[
+  \varphi(\zeta)=C_{p+1}(\zeta-1)^p+O\bigl((\zeta-1)^{p+1}\bigr).
+\]
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(L[y(x);h]=\sum_j\bigl[\alpha_jy(x+jh)-h\beta_jy'(x+jh)\bigr]
+    =\sum_{q\ge0}C_qh^qy^{(q)}(x)\), with
+    \(C_0=\sum\alpha_j\), \(C_1=\sum j\alpha_j-\sum\beta_j\),
+    \(C_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-1)!}\sum j^{q-1}\beta_j\).
+  \item Order \(p\): \(C_0=\dots=C_p=0\), \(C_{p+1}\ne0\) (error
+    constant).
+  \item Key trick: apply \(L\) to \(y=e^x\) at \(x=0\), then put
+    \(\zeta=e^h\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Step 1: apply \(L\) to \(e^x\)}
+Every derivative of \(e^x\) equals \(1\) at \(x=0\).  Hence
+\[
+  g(h):=L[e^x;h]\big|_{x=0}
+  =\sum_j\bigl(\alpha_je^{jh}-h\beta_je^{jh}\bigr)
+  =\rho(e^h)-h\,\sigma(e^h)
+  =\sum_{q\ge0}C_qh^q .
+\]
+
+\step{Step 2: change of variable}
+Put \(\zeta=e^h\), so \(h=\log\zeta\) and \(\zeta\to1\iff h\to0\)
+(\(\log\) is single valued after cutting the plane along the negative
+real axis \((-\infty,0]\)).  Then
+\[
+  g(\log\zeta)=\rho(\zeta)-\log\zeta\,\sigma(\zeta)
+  =\log\zeta\cdot\varphi(\zeta).
+\]
+
+\step{Step 3 (\(\Leftarrow\))}
+Suppose \(\varphi(\zeta)=c(\zeta-1)^p+O\bigl((\zeta-1)^{p+1}\bigr)\)
+with \(c\ne0\).  Since \(\zeta-1=e^h-1=h+O(h^2)\),
+\((\zeta-1)^p=h^p+O(h^{p+1})\), so
+\[
+  g(h)=h\,\varphi(e^h)=h\bigl[c\,h^p+O(h^{p+1})\bigr]
+  =c\,h^{p+1}+O(h^{p+2}).
+\]
+Comparing with \(g(h)=\sum C_qh^q\): \(C_0=\dots=C_p=0\) and
+\(C_{p+1}=c\ne0\).  So the method has order \(p\), with
+\(C_{p+1}=c\).
+
+\step{Step 4 (\(\Rightarrow\))}
+If the order is \(p\), then \(g(h)=C_{p+1}h^{p+1}+O(h^{p+2})\) and
+\[
+  \varphi(\zeta)=\frac{g(\log\zeta)}{\log\zeta}
+  =C_{p+1}(\log\zeta)^p+O\bigl((\log\zeta)^{p+1}\bigr)
+  =C_{p+1}(\zeta-1)^p+O\bigl((\zeta-1)^{p+1}\bigr),
+\]
+using \(\log\zeta=(\zeta-1)+O\bigl((\zeta-1)^2\bigr)\).  Since
+\(C_{p+1}\ne0\), the zero at \(\zeta=1\) has multiplicity exactly
+\(p\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A one-parameter family of two-step methods}{Analysis}{8}\label{q:family}
+\begin{qbox}
+Consider the family
+\[
+  y_{n+2}-(1+a)y_{n+1}+a\,y_n
+  =\frac h2\bigl[(3-a)f_{n+1}-(1+a)f_n\bigr],
+\]
+where \(a\) is a real parameter.
+\begin{enumerate}[label=(\roman*)]
+  \item For which \(a\) is the method consistent?
+  \item What is the maximum order, and the error constant in that case?
+  \item For which \(a\) is it zero-stable?
+  \item For which \(a\) is it convergent?  Is the method of maximal
+    order convergent?
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Consistent \(\iff\) \(\rho(1)=0\) and \(\rho'(1)=\sigma(1)\)
+    \(\iff C_0=C_1=0\).
+  \item Zero-stable (root condition): all roots of \(\rho\) satisfy
+    \(|\zeta|\le1\), and those with \(|\zeta|=1\) are simple.
+  \item Dahlquist: convergent \(\iff\) consistent and zero-stable.
+  \item First Dahlquist barrier: zero-stable \(k\)-step order
+    \(\le k+1\) (\(k\) odd), \(\le k+2\) (\(k\) even).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Here \(\alpha_0=a\), \(\alpha_1=-(1+a)\), \(\alpha_2=1\);
+\(\beta_0=-\frac{1+a}2\), \(\beta_1=\frac{3-a}2\), \(\beta_2=0\).
+
+\step{(i) Consistency}
+\(C_0=a-(1+a)+1=0\) and
+\(C_1=\sum j\alpha_j-\sum\beta_j=\bigl(-(1+a)+2\bigr)-\bigl(\frac{3-a}2-\frac{1+a}2\bigr)
+=(1-a)-(1-a)=0\).  So the method is consistent for \emph{every} \(a\).
+
+\step{(ii) Order}
+\begin{align*}
+  C_2&=\tfrac12\bigl(-(1+a)+4\bigr)-\tfrac{3-a}2=\tfrac{3-a}2-\tfrac{3-a}2=0,\\
+  C_3&=\tfrac16\bigl(-(1+a)+8\bigr)-\tfrac12\cdot\tfrac{3-a}2
+      =\tfrac{7-a}6-\tfrac{3-a}4=\tfrac{a+5}{12},\\
+  C_4&=\tfrac1{24}\bigl(-(1+a)+16\bigr)-\tfrac16\cdot\tfrac{3-a}2
+      =\tfrac{15-a}{24}-\tfrac{3-a}{12}=\tfrac{a+9}{24}.
+\end{align*}
+For \(a\ne-5\) the order is \(2\) with \(C_3=\frac{a+5}{12}\).  For
+\(a=-5\), \(C_3=0\) and \(C_4=\frac4{24}=\frac16\ne0\): the maximum
+order is \(3\), with error constant \(C_4=\frac16\).  (For \(a=-5\) the
+method is \(y_{n+2}+4y_{n+1}-5y_n=h(4f_{n+1}+2f_n)\).)
+
+\step{(iii) Zero-stability}
+\(\rho(\zeta)=\zeta^2-(1+a)\zeta+a=(\zeta-1)(\zeta-a)\), with roots
+\(1\) and \(a\).  The root condition holds if and only if \(|a|\le1\)
+and \(a\ne1\) (for \(a=1\), \(\zeta=1\) is a double root on the unit
+circle).  So the method is zero-stable for \(-1\le a<1\).
+
+\step{(iv) Convergence}
+By Dahlquist's theorem, convergent \(\iff\) consistent and
+zero-stable, i.e.\ for \(-1\le a<1\).  The method of maximal order
+(\(a=-5\)) has the root \(\zeta=-5\), so it is \emph{not} zero-stable
+and not convergent.  This agrees with the Dahlquist barrier: an
+explicit zero-stable two-step method has order at most \(2\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Two methods from \(\rho(\zeta)=\zeta^2-1\)}{Numerical / Henrici's theorem}{10}\label{q:old1}
+\begin{qbox}
+Let \(\rho(\zeta)=\zeta^2-1\).
+\begin{enumerate}[label=(\alph*)]
+  \item Use Henrici's construction to find the \emph{explicit} method of
+    maximal order.  State its order and error constant.
+  \item Find the \emph{implicit} method of maximal order, its order and
+    error constant.
+  \item Show that the method in (a) has no interval of absolute
+    stability.
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Henrici: given \(\rho\) (\(\rho(1)=0\), \(\rho'(1)\ne0\)),
+    expand \(\rho(\zeta)/\log\zeta\) in powers of \(w=\zeta-1\) and
+    truncate at \(w^{k'}\) to get \(\sigma\).  Explicit: \(k'=k-1\);
+    implicit: \(k'=k\).
+  \item \(\dfrac{w}{\log(1+w)}=1+\dfrac w2-\dfrac{w^2}{12}+\dfrac{w^3}{24}-\dfrac{19w^4}{720}+\cdots\).
+  \item The first omitted coefficient is \(C_{p+1}\).
+  \item Stability polynomial \(\pi(z,\hb)=\rho(z)-\hb\sigma(z)\);
+    absolutely stable at \(\hb\) if all its roots satisfy \(|z|<1\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{Expansion}
+With \(w=\zeta-1\), \(\rho=w(2+w)\), and using
+\(\frac{w}{\log(1+w)}=1+\frac w2-\frac{w^2}{12}+\frac{w^3}{24}-\frac{19w^4}{720}+\cdots\),
+\[
+  \frac{\rho(\zeta)}{\log\zeta}
+  =(2+w)\Bigl[1+\frac w2-\frac{w^2}{12}+\frac{w^3}{24}-\frac{19w^4}{720}+\cdots\Bigr]
+  =2+2w+\frac13w^2+0\cdot w^3-\frac1{90}w^4+\cdots .
+\]
+
+\step{(a) Explicit (\(k'=k-1=1\))}
+Keep terms up to \(w\): \(\sigma=2+2w=2\zeta\).  The method is the
+\emph{mid-point rule}
+\[
+  y_{n+2}-y_n=2hf_{n+1}.
+\]
+The first omitted term is \(\frac13w^2\), so the order is \(2\) and the
+error constant is \(C_3=\frac13\).
+
+\step{(b) Implicit (\(k'=k=2\))}
+Keep terms up to \(w^2\):
+\(\sigma=2+2w+\frac13w^2=\frac13(\zeta^2+4\zeta+1)\).  This is
+\emph{Milne--Simpson},
+\[
+  y_{n+2}-y_n=\frac h3\bigl(f_{n+2}+4f_{n+1}+f_n\bigr).
+\]
+The \(w^3\) coefficient vanishes, so the order is \(4\), with
+\(C_5=-\frac1{90}\).
+
+\step{(c) Absolute stability of the mid-point rule}
+The stability polynomial is \(\pi(z,\hb)=z^2-2\hb z-1\), with roots
+\(z_{1,2}=\hb\pm\sqrt{\hb^2+1}\).  Their product is \(-1\), so
+\(|z_1||z_2|=1\), and both cannot be less than \(1\) in modulus.  Indeed
+for \(\hb>0\), \(z_1=\hb+\sqrt{\hb^2+1}>1\); for \(\hb<0\),
+\(z_2=\hb-\sqrt{\hb^2+1}<-1\); and for \(\hb=0\) the roots are \(\pm1\).
+Hence the method is absolutely stable for no real \(\hb\): the interval
+of absolute stability is empty.  (It is zero-stable, since the roots
+\(\pm1\) of \(\rho\) are simple, but only weakly stable.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Henrici's theorem}{Proof}{8}\label{q:old7}
+\begin{qbox}
+Let \(\rho\) have degree \(k\) with \(\rho(1)=0\), \(\rho'(1)\ne0\), and
+let \(0\le k'\le k\).  Prove that there is a unique \(\sigma\) of degree
+\(\le k'\) such that the method \((\rho,\sigma)\) has order
+\(\ge k'+1\).  (You may use: the order is \(p\) iff
+\(\varphi=\rho/\log\zeta-\sigma\) has a zero of order \(p\) at
+\(\zeta=1\).)
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Order lemma (Q\ref{q:orderlemma}): order \(p\) \(\iff\)
+    \(\varphi=\rho/\log\zeta-\sigma\) has a zero of order \(p\) at
+    \(\zeta=1\).
+  \item \(\rho\) and \(\log\zeta\) both have simple zeros at \(1\), so
+    \(\rho/\log\zeta\) is holomorphic there, with value \(\rho'(1)\).
+  \item Taylor coefficients are unique.
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(\rho\) and \(\log\zeta\) both have a simple zero at \(\zeta=1\), so
+\(\rho/\log\zeta\) is holomorphic near \(1\):
+\[
+  \frac{\rho(\zeta)}{\log\zeta}=\sum_{m\ge0}c_m(\zeta-1)^m .
+\]
+From \(\rho=\log\zeta\sum c_m(\zeta-1)^m\), differentiating and setting
+\(\zeta=1\) gives \(c_0=\rho'(1)\ne0\).  Define
+\(\sigma(\zeta)=\sum_{m=0}^{k'}c_m(\zeta-1)^m\).  Then
+\[
+  \varphi(\zeta)=\sum_{m>k'}c_m(\zeta-1)^m
+\]
+has a zero of order at least \(k'+1\) at \(\zeta=1\), so the order is at
+least \(k'+1\).  Also \(\sigma(1)=c_0=\rho'(1)\), so the method is
+consistent.  Conversely, any \(\sigma\) of degree \(\le k'\) giving
+order \(\ge k'+1\) must agree with the Taylor series of
+\(\rho/\log\zeta\) up to \((\zeta-1)^{k'}\); since Taylor coefficients
+are unique, \(\sigma\) is unique.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Simpson's three-eighths method}{Numerical}{8}\label{q:old2}
+\begin{qbox}
+For the three-step method
+\[
+  y_{n+3}-y_n=\frac{3h}8\bigl(f_{n+3}+3f_{n+2}+3f_{n+1}+f_n\bigr),
+\]
+\begin{enumerate}[label=(\alph*)]
+  \item show that it is consistent and zero-stable;
+  \item find its order and error constant;
+  \item explain why its order is the largest possible for a zero-stable
+    three-step method.
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item \(C_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-1)!}\sum j^{q-1}\beta_j\),
+    \(q\ge2\).
+  \item Weakly stable: zero-stable with roots other than \(1\) on the
+    unit circle.
+  \item First Dahlquist barrier: order of a zero-stable \(k\)-step
+    method \(\le k+1\) (\(k\) odd), \(\le k+2\) (\(k\) even), and
+    \(\le k\) if it is explicit.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Here \(\alpha=(-1,0,0,1)\), \(\beta=\frac38(1,3,3,1)\),
+\(\rho(\zeta)=\zeta^3-1\), \(\sigma(\zeta)=\frac38(\zeta^3+3\zeta^2+3\zeta+1)\).
+
+\step{(a)}
+\(\rho(1)=0\) and \(\rho'(1)=3=\sigma(1)=\frac38\cdot8\), so the method
+is consistent.  The roots of \(\rho\) are the cube roots of unity
+\(1,e^{\pm2\pi i/3}\): all have modulus \(1\) and are simple, so the
+root condition holds and the method is zero-stable (weakly stable,
+since roots other than \(1\) lie on the unit circle).
+
+\step{(b)}
+Use \(C_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-1)!}\sum j^{q-1}\beta_j\).
+First \(C_0=\rho(1)=0\) and \(C_1=\rho'(1)-\sigma(1)=3-3=0\).  For
+\(q\ge2\), computing each sum directly,
+\[
+  \sum_jj^q\alpha_j=3^q,
+  \qquad
+  \sum_jj^{q-1}\beta_j=\tfrac38\bigl(3^{q-1}+3\cdot2^{q-1}+3\bigr)\quad(q\ge2),
+\]
+and
+\begin{align*}
+  C_2&=\tfrac92-\tfrac38(3+6+3)=\tfrac92-\tfrac92=0,\\
+  C_3&=\tfrac{27}6-\tfrac38\cdot\tfrac{9+12+3}{2}=\tfrac92-\tfrac92=0,\\
+  C_4&=\tfrac{81}{24}-\tfrac38\cdot\tfrac{27+24+3}{6}=\tfrac{27}8-\tfrac{27}8=0,\\
+  C_5&=\tfrac{243}{120}-\tfrac38\cdot\tfrac{81+48+3}{24}
+      =\tfrac{81}{40}-\tfrac{33}{16}=-\tfrac3{80}\ne0 .
+\end{align*}
+So the order is \(4\) and the error constant is \(C_5=-\frac3{80}\).
+
+\step{(c)}
+By the first Dahlquist barrier, a zero-stable \(k\)-step method has
+order at most \(k+1\) when \(k\) is odd.  For \(k=3\) the maximum is
+\(4\), which this method attains.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{BDF2 from \(\sigma(\zeta)=\zeta^2\)}{Derivation}{8}\label{q:old3}
+\begin{qbox}
+Find the polynomial \(\rho\) of degree \(2\) such that the method with
+\(\sigma(\zeta)=\zeta^2\) has maximal order.  Write the method, find its
+order and error constant, and check zero-stability.  Also give the
+method normalised so that \(\alpha_2=1\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Given \(\sigma\), choose \(\rho\): expand
+    \(\log\zeta\cdot\sigma(\zeta)\) in powers of \(w=\zeta-1\) and keep
+    terms up to \(w^k\).
+  \item \(\log(1+w)=w-\frac{w^2}2+\frac{w^3}3-\cdots\).
+  \item Strongly stable: \(\zeta=1\) is the only root of \(\rho\) on
+    the unit circle.
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{Construction}
+For given \(\sigma\), expand \(\log\zeta\cdot\sigma(\zeta)\) in powers of
+\(w\) and truncate at degree \(k=2\):
+\[
+  \log(1+w)\,(1+w)^2
+  =\Bigl(w-\frac{w^2}2+\frac{w^3}3-\cdots\Bigr)(1+2w+w^2)
+  =w+\frac32w^2+\frac13w^3+\cdots .
+\]
+So
+\[
+  \rho=w+\frac32w^2=(\zeta-1)+\frac32(\zeta-1)^2
+  =\frac32\zeta^2-2\zeta+\frac12,
+\]
+and the method is
+\[
+  \frac32y_{n+2}-2y_{n+1}+\frac12y_n=hf_{n+2}
+  \qquad\text{(BDF2)}.
+\]
+
+\step{Order and error constant}
+\[
+  \varphi(\zeta)=\frac{\rho-\log\zeta\cdot\sigma}{\log\zeta}
+  =\frac{-\frac13w^3+\cdots}{w+\cdots}=-\frac13w^2+\cdots,
+\]
+so by the order lemma the order is \(2\) and \(C_3=-\frac13\).
+Normalised (divide by \(\frac32\)):
+\[
+  y_{n+2}-\frac43y_{n+1}+\frac13y_n=\frac23hf_{n+2},
+  \qquad C_3=-\frac29 .
+\]
+
+\step{Zero-stability}
+\(\rho(\zeta)=\frac12(3\zeta-1)(\zeta-1)\) has roots \(1\) and
+\(\frac13\): the root condition holds, and \(1\) is the only root on the
+unit circle, so the method is strongly stable.  Consistency:
+\(\rho(1)=0\), \(\rho'(1)=3-2=1=\sigma(1)\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Intervals of absolute stability}{Stability analysis}{8}\label{q:absint}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item Find the interval of absolute stability of the two-step
+    Adams--Bashforth method
+    \(y_{n+2}-y_{n+1}=\frac h2\bigl(3f_{n+1}-f_n\bigr)\).
+  \item Find the region of absolute stability of the trapezoidal rule
+    \(y_{n+1}-y_n=\frac h2(f_{n+1}+f_n)\) for \(y'=\lambda y\).  Is it
+    A-stable?
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Test equation \(y'=\lambda y\), \(\hb=\lambda h\);
+    stability polynomial \(\pi(z,\hb)=\rho(z)-\hb\,\sigma(z)\).
+  \item Absolutely stable at \(\hb\) \(\iff\) every root of
+    \(\pi(\cdot,\hb)\) has \(|z|<1\).
+  \item A real quadratic \(z^2+a_1z+a_0\) has both roots in \(|z|<1\)
+    if and only if \(|a_0|<1\) and \(|a_1|<1+a_0\) (Schur--Cohn /
+    Jury test).
+  \item A-stable: the region contains the whole left half-plane
+    \(\operatorname{Re}\hb<0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Adams--Bashforth 2}
+\(\rho(z)=z^2-z\), \(\sigma(z)=\frac12(3z-1)\), so
+\[
+  \pi(z,\hb)=z^2-\Bigl(1+\frac{3\hb}2\Bigr)z+\frac{\hb}2 .
+\]
+Here \(a_1=-\bigl(1+\frac32\hb\bigr)\), \(a_0=\frac12\hb\).  The
+conditions are:
+\begin{itemize}
+  \item \(|a_0|<1\): \(-2<\hb<2\).
+  \item \(|a_1|<1+a_0\), i.e.\
+    \(-\bigl(1+\frac{\hb}2\bigr)<1+\frac{3\hb}2<1+\frac{\hb}2\).
+    The right inequality gives \(\hb<0\); the left one gives
+    \(-2<2\hb\), i.e.\ \(\hb>-1\).
+\end{itemize}
+Hence the interval of absolute stability is
+\[
+  \boxed{-1<\hb<0}.
+\]
+(Check at the end points: \(\hb=0\) gives roots \(0,1\);
+\(\hb=-1\) gives \(z^2+\frac12z-\frac12=(z+1)(z-\frac12)\), a root
+\(-1\).)
+
+\step{(b) Trapezoidal rule}
+Applied to \(y'=\lambda y\):
+\(\bigl(1-\frac{\hb}2\bigr)y_{n+1}=\bigl(1+\frac{\hb}2\bigr)y_n\), so
+the single root is
+\[
+  z=\frac{1+\hb/2}{1-\hb/2}=\frac{2+\hb}{2-\hb}.
+\]
+\(|z|<1\iff|2+\hb|<|2-\hb|\iff\) \(\hb\) is closer to \(-2\) than to
+\(2\) \(\iff\operatorname{Re}\hb<0\).  So the region of absolute
+stability is the open left half-plane, and the interval is
+\((-\infty,0)\).  The method is A-stable.  In particular, for
+\(y'=-y\) (\(\lambda=-1\)) it is absolutely stable for every \(h>0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Absolute instability for small positive \(\hb\)}{Proof}{10}\label{q:old5}
+\begin{qbox}
+Prove that every consistent zero-stable LMM is absolutely unstable for
+all sufficiently small \(\hb>0\).  Explain why this is not a defect.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item \(\pi(e^{\hb},\hb)=\sum_qC_q\hb^{\,q}=O(\hb^{\,p+1})\) for a
+    method of order \(p\).
+  \item \(\pi(z,\hb)=(\alpha_k-\hb\beta_k)\prod_s(z-r_s(\hb))\), and
+    \(r_s(\hb)\to\zeta_s\) (roots of \(\rho\)) as \(\hb\to0\).
+  \item Zero-stability makes \(\zeta=1\) a simple root.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Let the order be \(p\ge1\).  Expanding the exponentials,
+\[
+  \pi(e^{\hb},\hb)=\rho(e^{\hb})-\hb\,\sigma(e^{\hb})
+  =\sum_{q\ge0}C_q\hb^{\,q}=O(\hb^{\,p+1}).
+\]
+Factorise \(\pi(z,\hb)=(\alpha_k-\hb\beta_k)\prod_{s=1}^k(z-r_s(\hb))\).
+As \(\hb\to0\), \(r_s(\hb)\to\zeta_s\), the roots of \(\rho\).
+Consistency gives \(\rho(1)=0\) and zero-stability makes this root
+simple, say \(\zeta_1=1\), \(\zeta_s\ne1\) for \(s\ge2\).  So in
+\[
+  \pi(e^{\hb},\hb)=(\alpha_k-\hb\beta_k)\prod_s\bigl(e^{\hb}-r_s(\hb)\bigr)
+\]
+every factor except \(e^{\hb}-r_1(\hb)\) tends to a non-zero limit.
+Hence \(|e^{\hb}-r_1(\hb)|\le K\hb^{\,p+1}\), and
+\[
+  |r_1(\hb)|\ge e^{\hb}-K\hb^{\,p+1}\ge1+\hb-K\hb^{\,p+1}>1
+\]
+once \(K\hb^{\,p}<1\).  So some root has modulus greater than \(1\): the
+method is absolutely unstable for small \(\hb>0\).
+
+This is not a defect: for \(\lambda>0\) the exact solution
+\(e^{\lambda x}\) grows, and \(r_1\approx e^{\hb}\) is the root that
+correctly reproduces this growth.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A convergent method is consistent}{Proof}{8}\label{q:old4}
+\begin{qbox}
+Prove that a convergent linear multistep method satisfies
+\(\rho(1)=0\) and \(\rho'(1)=\sigma(1)\).  You may assume that a
+convergent method is zero-stable.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Convergence: \(y_n\to y(x)\) as \(h\to0\), \(x_n=x\) fixed,
+    for all consistent starting values.
+  \item Test problems: \(y'=0,\ y(0)=1\) gives \(\rho(1)=0\);
+    \(y'=1,\ y(0)=0\) gives \(\rho'(1)=\sigma(1)\).
+  \item A convergent method is zero-stable (so \(\zeta=1\) is a simple
+    root of \(\rho\)).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{\(\rho(1)=0\)}
+Apply the method to \(y'=0\), \(y(0)=1\) (solution \(y\equiv1\)), with
+exact starting values \(y_0=\dots=y_{k-1}=1\).  The difference equation
+\(\sum_j\alpha_jy_{n+j}=0\) does not involve \(h\), so \(y_n\) does not
+depend on \(h\), and convergence (\(y_n\to1\) as \(h\to0\) with
+\(nh=x\) fixed, i.e.\ \(n\to\infty\)) means \(\lim_{n\to\infty}y_n=1\).
+Letting \(n\to\infty\) in the difference equation gives
+\(\sum_j\alpha_j=\rho(1)=0\).
+
+\step{\(\rho'(1)=\sigma(1)\)}
+Apply the method to \(y'=1\), \(y(0)=0\) (solution \(y=x\)):
+\[
+  \sum_j\alpha_jy_{n+j}=h\,\sigma(1).
+\]
+Since \(\rho(1)=0\) and the method is zero-stable, \(1\) is a simple root
+of \(\rho\), so \(\rho'(1)\ne0\).  Put \(K=\sigma(1)/\rho'(1)\) and
+\(y_n=Knh\).  Then
+\[
+  \sum_j\alpha_jK(n+j)h=Kh\bigl(n\rho(1)+\rho'(1)\bigr)=Kh\rho'(1)=h\sigma(1),
+\]
+so \(y_n\) solves the difference equation, with starting values
+\(Ksh\to0\).  Convergence forces \(y_n=Knh=Kx\to x\) for every \(x>0\),
+hence \(K=1\), i.e.\ \(\rho'(1)=\sigma(1)\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Short answers on multistep methods}{Short answer}{8}\label{q:old6}
+\begin{qbox}
+Answer briefly, with reasons.
+\begin{enumerate}[label=(\alph*)]
+  \item Can a zero-stable three-step method have order \(5\)?
+  \item Is the method
+    \(y_{n+2}-3y_{n+1}+2y_n=h(\beta_2f_{n+2}+\beta_1f_{n+1}+\beta_0f_n)\)
+    convergent for some choice of the \(\beta_j\)?
+  \item A \(k\)-step method has \(2k+2\) coefficients.  Why can it reach
+    order \(2k\) at most, and what does zero-stability cost?
+  \item State Dahlquist's equivalence theorem.
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Dahlquist equivalence: convergent \(\iff\) consistent \(+\)
+    zero-stable.
+  \item Barrier: zero-stable \(k\)-step order \(\le k+1\) (odd \(k\)),
+    \(\le k+2\) (even \(k\)).
+  \item Without zero-stability, \(2k\) is the maximum order (\(2k+1\)
+    free coefficients).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{(a)}
+No.  By the first Dahlquist barrier the order of a zero-stable
+\(k\)-step method is at most \(k+1\) for odd \(k\); for \(k=3\) that is
+\(4\).
+
+\step{(b)}
+No.  \(\rho(\zeta)=(\zeta-1)(\zeta-2)\) has the root \(2\) outside the
+unit disc, so the method is not zero-stable for any \(\sigma\), and
+zero-stability is necessary for convergence.
+
+\step{(c)}
+After normalising (\(\alpha_k=1\)) there are \(2k+1\) free coefficients,
+so we can impose \(C_0=\dots=C_{2k}=0\), giving order \(2k\).
+Zero-stability reduces the attainable order to \(k+1\) (odd \(k\)) or
+\(k+2\) (even \(k\)): roughly half.
+
+\step{(d)}
+An LMM applied to \(y'=f(x,y)\), with \(f\) Lipschitz in \(y\) and
+consistent starting values, is convergent if and only if it is
+consistent and zero-stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Two steps of Adams--Bashforth}{Numerical}{6}\label{q:ab2num}
+\begin{qbox}
+Solve \(y'=x+y\), \(y(0)=1\), by the two-step Adams--Bashforth method
+\(y_{n+2}=y_{n+1}+\frac h2\bigl(3f_{n+1}-f_n\bigr)\) with \(h=0.1\),
+taking \(y_1\) from the exact solution \(y=2e^x-x-1\).  Find \(y_2\)
+and \(y_3\) and their errors.  Is \(\hb=\lambda h\) inside the interval
+of absolute stability?
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item A \(k\)-step method needs \(k\) starting values; \(y_1\) must
+    come from a one-step method (or the exact solution) of adequate
+    order.
+  \item AB2 is explicit, order \(2\), error constant
+    \(C_3=\frac5{12}\); interval of absolute stability \((-1,0)\)
+    (Q\ref{q:absint}).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\(f(x,y)=x+y\), \(y_0=1\), \(y_1=2e^{0.1}-1.1=1.110342\).
+Then \(f_0=0+1=1\) and \(f_1=0.1+1.110342=1.210342\).
+
+\step{\(y_2\)}
+\[
+  y_2=y_1+\frac{0.1}2\bigl(3f_1-f_0\bigr)
+  =1.110342+0.05\,(3.631026-1)=1.110342+0.131551=1.241893 .
+\]
+\step{\(y_3\)}
+\(f_2=0.2+1.241893=1.441893\), so
+\begin{align*}
+  y_3&=y_2+0.05\,(3f_2-f_1)=1.241893+0.05\,(4.325679-1.210342)\\
+  &=1.241893+0.155767=1.397660 .
+\end{align*}
+\step{Errors}
+\begin{center}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\(x\) & AB2 & exact \(2e^x-x-1\) & error\\
+\midrule
+0.2 & 1.241893 & 1.242806 & \(9.1\times10^{-4}\)\\
+0.3 & 1.397660 & 1.399718 & \(2.1\times10^{-3}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+The local error per step is about \(C_3h^3y'''=\frac5{12}(0.001)(2e^x)
+\approx9\times10^{-4}\), as observed for the first step; errors then
+accumulate.
+
+\step{Absolute stability}
+Here \(\partial f/\partial y=\lambda=1>0\), so \(\hb=0.1\) is
+\emph{outside} \((-1,0)\): the computed solution grows.  This is
+correct behaviour, since the exact solution grows like \(e^x\)
+(Q\ref{q:old5}).
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Methods for \(y''=f(x,y)\)}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Consistency and zero-stability for \(y''=f\)}{Short answer}{5}\label{q:old10}
+\begin{qbox}
+Verify that Störmer's method satisfies the consistency conditions for
+\(y''=f\), and explain why the root condition for \(y''=f\) allows a
+double root of \(\rho\) on the unit circle.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Method \(\sum\alpha_jy_{n+j}=h^2\sum\beta_jf_{n+j}\);
+    \(C_0=\sum\alpha_j\), \(C_1=\sum j\alpha_j\),
+    \(C_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-2)!}\sum j^{q-2}\beta_j\).
+  \item Consistency: \(\rho(1)=\rho'(1)=0\), \(\rho''(1)=2\sigma(1)\).
+  \item Zero-stability for \(y''=f\): roots of \(\rho\) in
+    \(|\zeta|\le1\), roots on \(|\zeta|=1\) of multiplicity \(\le2\).
+  \item Convergent \(\iff\) consistent and zero-stable.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Störmer: \(\rho(\zeta)=(\zeta-1)^2\), \(\sigma(\zeta)=\zeta\).  Then
+\(\rho(1)=0\), \(\rho'(1)=0\), \(\rho''(1)=2=2\sigma(1)\): the
+consistency conditions \(C_0=C_1=C_2=0\) hold.
+
+Consistency for \(y''=f\) \emph{forces} \(\zeta=1\) to be a double root
+of \(\rho\) (since \(\rho(1)=\rho'(1)=0\)).  This mirrors the exact
+problem: \(y''=0\) has the solutions \(1\) and \(x\), and the difference
+equation \(\rho(E)y_n=0\) reproduces them as \(1\) and \(n=(x-a)/h\).
+Because the starting values must also approximate the initial slope
+(condition (ii) in the definition of convergence), the coefficient of
+the component \(n\) is \(O(h)\), so this component stays bounded: it is
+just the linear part \(x\,y'(a)\) of the solution.  A double root of
+modulus one is therefore harmless, whereas multiplicity \(3\) would add
+components like \(n^2\), which are not controlled in this way.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Störmer and Numerov from \(\rho(\zeta)=(\zeta-1)^2\)}{Derivation}{6}\label{q:numhenrici}
+\begin{qbox}
+For methods \(\rho(E)y_n=h^2\sigma(E)f_n\) for \(y''=f(x,y)\), the order
+is \(p\) if and only if
+\(\varphi(\zeta)=\rho(\zeta)/(\log\zeta)^2-\sigma(\zeta)\) has a zero of
+order \(p\) at \(\zeta=1\).  Taking \(\rho(\zeta)=(\zeta-1)^2\), use this
+to construct the explicit and the implicit methods of maximal order.
+Give their orders and error constants.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Henrici-type theorem for \(y''=f\): if \(\rho(1)=\rho'(1)=0\),
+    \(\rho''(1)\ne0\), then for each \(0\le k'\le k\) there is a unique
+    \(\sigma\) of degree \(\le k'\) giving order \(\ge k'+1\): truncate
+    the expansion of \(\rho/(\log\zeta)^2\) at \(w^{k'}\).
+  \item For an order-\(p\) method,
+    \(\varphi(\zeta)=C_{p+2}(\zeta-1)^p+\cdots\).
+  \item \(\dfrac{w^2}{\log^2(1+w)}=1+w+\dfrac{w^2}{12}+0\cdot w^3-\dfrac{w^4}{240}+\cdots\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+With \(w=\zeta-1\), \(\rho=w^2\), and
+\[
+  \frac{\rho(\zeta)}{(\log\zeta)^2}=\frac{w^2}{\log^2(1+w)}
+  =1+w+\frac{w^2}{12}+0\cdot w^3-\frac{w^4}{240}+\cdots .
+\]
+(From \(\log(1+w)=w\bigl(1-\frac w2+\frac{w^2}3-\cdots\bigr)\), so
+\(\frac{w^2}{\log^2(1+w)}=\bigl(1-\frac w2+\frac{w^2}3-\frac{w^3}4+\cdots\bigr)^{-2}\),
+expanded term by term.)
+
+\step{Explicit (\(k'=k-1=1\))}
+\(\sigma=1+w=\zeta\).  The method is \emph{Störmer's method}
+\[
+  y_{n+2}-2y_{n+1}+y_n=h^2f_{n+1}.
+\]
+The first omitted term is \(\frac1{12}w^2\), so \(p=2\) and
+\(C_4=\frac1{12}\); since \(\sigma(1)=1\), the normalised error
+constant is also \(\frac1{12}\).
+
+\step{Implicit (\(k'=k=2\))}
+\(\sigma=1+w+\frac{w^2}{12}=\frac1{12}\bigl(\zeta^2+10\zeta+1\bigr)\).
+The method is \emph{Numerov's method}
+\[
+  y_{n+2}-2y_{n+1}+y_n=\frac{h^2}{12}\bigl(f_{n+2}+10f_{n+1}+f_n\bigr).
+\]
+The \(w^3\) coefficient vanishes, so \(\varphi=-\frac1{240}w^4+\cdots\):
+the order is \(4\) and \(C_6=-\frac1{240}\) (again \(\sigma(1)=1\)).
+
+Both have \(\rho=(\zeta-1)^2\), a double root on the unit circle, which
+is allowed for \(y''=f\): they are zero-stable, consistent, and hence
+convergent.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A one-parameter family containing Störmer and Numerov}{Derivation}{8}\label{q:old8}
+\begin{qbox}
+Consider
+\[
+  y_{n+1}-2y_n+y_{n-1}=h^2\bigl[\beta f_{n+1}+(1-2\beta)f_n+\beta f_{n-1}\bigr].
+\]
+\begin{enumerate}[label=(\alph*)]
+  \item Show that it has order at least \(2\) for every \(\beta\), and
+    find the error constant.
+  \item For which \(\beta\) is the order higher?  Find that order and
+    the error constant.
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Symmetric methods (\(\alpha_j=\alpha_{k-j}\),
+    \(\beta_j=\beta_{k-j}\)) have all odd \(C_q=0\) when expanded about
+    the centre.
+  \item Order \(p\) for \(y''=f\): \(C_0=\dots=C_{p+1}=0\),
+    \(C_{p+2}\ne0\); error constant \(C_{p+2}/\sigma(1)\).
+  \item Störmer: \(\beta=0\), order 2; Numerov: \(\beta=\frac1{12}\),
+    order 4.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Expand about \(x_n\).  With
+\(y(x_{n\pm1})=\sum\frac{(\pm h)^q}{q!}y^{(q)}\) and the right-hand side
+weights \(\beta,1-2\beta,\beta\) at \(x_{n+1},x_n,x_{n-1}\), the method
+is symmetric, so all odd \(C_q\) vanish.  Using the two-step
+coefficients \(C_0,\dots,C_6\) derived for Störmer and Numerov in
+Note 4, with \(a_1=-2\), \(a_2=1\), \(b_0=b_2=\beta\),
+\(b_1=1-2\beta\):
+\begin{align*}
+  C_0&=1-2+1=0,\qquad C_1=1-1=0,\\
+  C_2&=\tfrac12(1+1)-(\beta+1-2\beta+\beta)=1-1=0,\\
+  C_4&=\tfrac1{24}\cdot2-\tfrac12\cdot2\beta=\tfrac1{12}-\beta,\\
+  C_6&=\tfrac1{720}\cdot2-\tfrac1{24}\cdot2\beta=\tfrac1{360}-\tfrac\beta{12}.
+\end{align*}
+
+\step{(a)}
+\(C_0=\dots=C_3=0\) for every \(\beta\), so the order is at least \(2\).
+If \(\beta\ne\frac1{12}\), the order is exactly \(2\) with
+\(C_4=\frac1{12}-\beta\).  (\(\beta=0\) gives Störmer with
+\(C_4=\frac1{12}\).)
+
+\step{(b)}
+For \(\beta=\frac1{12}\), \(C_4=C_5=0\) and
+\(C_6=\frac1{360}-\frac1{144}=-\frac1{240}\ne0\), so the order is \(4\).
+This is Numerov's method,
+\[
+  y_{n+1}-2y_n+y_{n-1}=\frac{h^2}{12}\bigl(f_{n+1}+10f_n+f_{n-1}\bigr),
+  \qquad C_6=-\frac1{240}.
+\]
+Since \(\sigma(1)=1\), the normalised error constants are the same.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Numerov's method for \(y''=y\)}{Numerical}{8}\label{q:old9}
+\begin{qbox}
+Use Numerov's method with \(h=0.1\) to approximate \(y(0.2)\) and
+\(y(0.3)\) for \(y''=y\), \(y(0)=1\), \(y'(0)=0\).  Obtain \(y_1\) from
+a fourth-order Taylor series.  Compare with the exact solution
+\(\cosh x\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Numerov:
+    \(y_{n+1}-2y_n+y_{n-1}=\frac{h^2}{12}(f_{n+1}+10f_n+f_{n-1})\),
+    order 4, error \(-\frac1{240}h^6y^{(6)}\) per step.
+  \item For linear \(f=g(x)y\) the implicit equation is solved
+    directly:
+    \(\bigl(1-\frac{h^2}{12}g_{n+1}\bigr)y_{n+1}
+    =\bigl(2+\frac{10h^2}{12}g_n\bigr)y_n
+    -\bigl(1-\frac{h^2}{12}g_{n-1}\bigr)y_{n-1}\).
+  \item Starting value from a Taylor series of matching order.
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{Starting value}
+\(y''=y\) gives \(y''(0)=1\), \(y'''(0)=y'(0)=0\), \(y^{(4)}(0)=1\), so
+\[
+  y_1=1+\frac{h^2}2+\frac{h^4}{24}=1.0050041667 .
+\]
+
+\step{Recurrence}
+With \(f=y\), Numerov is linear in \(y_{n+1}\):
+\[
+  \Bigl(1-\frac{h^2}{12}\Bigr)y_{n+1}
+  =\Bigl(2+\frac{10h^2}{12}\Bigr)y_n-\Bigl(1-\frac{h^2}{12}\Bigr)y_{n-1}.
+\]
+For \(h=0.1\): \(1-\frac{h^2}{12}=0.9991666667\) and
+\(2+\frac{10h^2}{12}=2.0166666667\).
+
+\step{Steps}
+\begin{align*}
+  y_2&=\frac{2.0166666667\times1.0050041667-0.9991666667\times1}{0.9991666667}
+     =1.0200667570,\\
+  y_3&=\frac{2.0166666667\times1.0200667570-0.9991666667\times1.0050041667}{0.9991666667}
+     =1.0453385226 .
+\end{align*}
+
+\step{Comparison}
+\begin{center}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\(x\) & Numerov & \(\cosh x\) & error\\
+\midrule
+0.2 & 1.0200667570 & 1.0200667556 & \(1.4\times10^{-9}\)\\
+0.3 & 1.0453385226 & 1.0453385141 & \(8.5\times10^{-9}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+The tiny errors reflect the order \(4\) of the method (local error
+\(-\frac1{240}h^6y^{(6)}\approx-4\times10^{-9}\) per step).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A tabulated solution and Numerov's method}{Numerical}{6}\label{q:numtable}
+\begin{qbox}
+A table of a function \(y=f(x)\) is given.
+\begin{center}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+\(x\) & 1 & 2 & 3 & 4 & 5\\
+\midrule
+\(y\) & 2.00000 & 8.25000 & 27.11111 & 64.06250 & 125.04000\\
+\bottomrule
+\end{tabular}
+\end{center}
+It is known that \(f\) satisfies
+\(\dfrac{d^2y}{dx^2}=\dfrac{n(n+1)}{x^2}\,y\), where \(n\) is a positive
+integer.
+\begin{enumerate}[label=(\alph*)]
+  \item Find \(n\), using Numerov's formula centred at \(x=4\).
+  \item Compute \(f(6)\) by Numerov's method with step size \(1\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Numerov with \(f=g(x)y\), \(g=c/x^2\), \(c=n(n+1)\):
+    \(y_{n+1}-2y_n+y_{n-1}=\frac{h^2}{12}\bigl(g_{n+1}y_{n+1}+10g_ny_n+g_{n-1}y_{n-1}\bigr)\).
+  \item The formula is linear in \(c\): one centre gives one equation
+    for \(c\).  It is only approximate (error \(O(h^6y^{(6)})\)), so
+    round to the nearest value of the form \(n(n+1)\).
+  \item To march: solve the same formula for \(y_{n+1}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Let \(c=n(n+1)\) and \(h=1\).
+
+\step{(a) Finding \(n\)}
+Centred at \(x=4\) (points \(3,4,5\)):
+\[
+  y_5-2y_4+y_3=\frac c{12}\Bigl(\frac{y_5}{25}+10\,\frac{y_4}{16}+\frac{y_3}{9}\Bigr).
+\]
+Left side: \(125.04-128.125+27.11111=24.02611\).  Bracket:
+\(5.00160+40.03906+3.01235=48.05301\).  Hence
+\[
+  c=\frac{12\times24.02611}{48.05301}=5.99990\approx6 .
+\]
+So \(n(n+1)=6\), and since \(n>0\), \(\boxed{n=2}\).  (Centring at
+\(x=2\) gives \(c\approx5.90\); the error of Numerov's formula is
+larger there because the solution varies faster relative to \(h=1\).
+Either way the nearest value \(n(n+1)\) is \(6\).)
+
+\step{(b) Computing \(f(6)\)}
+With \(c=6\), Numerov at \(x=5\) solved for \(y_6\):
+\[
+  \Bigl(1-\frac6{12\cdot36}\Bigr)y_6
+  =\Bigl(2+\frac{10\cdot6}{12\cdot25}\Bigr)y_5
+  -\Bigl(1-\frac6{12\cdot16}\Bigr)y_4,
+\]
+i.e.
+\[
+  0.986111\,y_6=2.2\times125.04-0.96875\times64.0625
+  =275.08800-62.06055=213.02745,
+\]
+so
+\[
+  \boxed{f(6)\approx216.0278}.
+\]
+(The data are \(y=x^3+x^{-2}\), the solution for \(n=2\); the exact
+value is \(216.02778\), so the error is about \(6\times10^{-5}\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Störmer and Numerov for a non-linear equation}{Numerical}{8}\label{q:numnonlin}
+\begin{qbox}
+For \(y''=6y^2\), \(y(0)=1\), \(y'(0)=-2\) (exact solution
+\(y=1/(1+x)^2\)), with \(h=0.1\):
+\begin{enumerate}[label=(\alph*)]
+  \item find \(y_1\) from the Taylor series up to \(h^4\);
+  \item find \(y_2\) by Störmer's method;
+  \item find \(y_2\) by Numerov's method, solving the non-linear
+    equation by Newton's method.
+\end{enumerate}
+Compare with the exact values.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Störmer \(y_{n+1}=2y_n-y_{n-1}+h^2f_n\) is explicit: no
+    iteration.
+  \item Numerov is implicit; for non-linear \(f\), solve
+    \(G(y_{n+1})=y_{n+1}-\frac{h^2}{12}f(x_{n+1},y_{n+1})-R_n=0\) by
+    Newton:
+    \(y^{(s+1)}=y^{(s)}-G(y^{(s)})/G'(y^{(s)})\), starting from the
+    Störmer-like predictor \(2y_n-y_{n-1}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Starting value}
+From \(y''=6y^2\): \(y''(0)=6\), \(y'''=12yy'\Rightarrow y'''(0)=-24\),
+\(y^{(4)}=12(y'^2+yy'')\Rightarrow y^{(4)}(0)=12(4+6)=120\).  So
+\[
+  y_1=1-0.2+\frac{6(0.01)}2-\frac{24(0.001)}6+\frac{120(0.0001)}{24}
+  =0.8265,
+\]
+against the exact \(1/1.21=0.826446\).
+
+\step{(b) Störmer}
+\[
+  y_2=2y_1-y_0+h^2\cdot6y_1^2=0.653+0.01\times6\times0.683102=0.693986 .
+\]
+
+\step{(c) Numerov}
+\(y_2-2y_1+y_0=\frac{h^2}{12}\bigl(6y_2^2+60y_1^2+6y_0^2\bigr)\), with
+\(60y_1^2=40.986135\), gives
+\[
+  G(z)=z-0.653-\frac{0.01}{12}\bigl(6z^2+46.986135\bigr)
+      =-0.005z^2+z-0.692155=0,
+  \qquad G'(z)=1-0.01z .
+\]
+Newton from \(z_0=2y_1-y_0=0.653\):
+\[
+  G(z_0)=-0.041287,\quad G'(z_0)=0.99347,\quad
+  z_1=0.653+\frac{0.041287}{0.99347}=0.694558,
+\]
+and \(z_2=0.694567\), unchanged to six decimals afterwards.  (The
+quadratic can also be solved directly:
+\(z=\bigl(1-\sqrt{1-0.02\times0.692155}\bigr)/0.01=0.694567\).)
+
+\step{Comparison}
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & \(y_2\) & error\\
+\midrule
+Störmer & 0.693986 & \(4.6\times10^{-4}\)\\
+Numerov & 0.694567 & \(1.2\times10^{-4}\)\\
+exact \(1/1.44\) & 0.694444 & --\\
+\bottomrule
+\end{tabular}
+\end{center}
+Numerov (order 4) is more accurate than Störmer (order 2); part of
+its remaining error comes from the starting value \(y_1\).
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Boundary Value Problems}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{A mixed boundary condition and tridiagonal form}{Derivation}{6}\label{q:old12}
+\begin{qbox}
+For \(y''=f(x)\) on \([0,1]\) with \(y'(0)-y(0)=1\), write the boundary
+equation at \(x_0=0\) using the second-order one-sided formula for
+\(y'(0)\).  Then eliminate \(y_2\) using the equation at \(x_1\) so that
+the system becomes tridiagonal.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Second-order formulas:
+    \(y''_i\approx\frac{y_{i-1}-2y_i+y_{i+1}}{h^2}\),
+    \(y'_i\approx\frac{y_{i+1}-y_{i-1}}{2h}\),
+    \(y'_0\approx\frac{-3y_0+4y_1-y_2}{2h}\),
+    \(y'_N\approx\frac{3y_N-4y_{N-1}+y_{N-2}}{2h}\), all \(O(h^2)\).
+  \item Row \(0\) then has an extra entry \(R_0y_2\).  If \(B_1\ne0\),
+    replace row \(0\) by row\(_0-\frac{R_0}{B_1}\)row\(_1\) to make the
+    matrix tridiagonal.
+\end{itemize}
+\end{rem}
+\begin{solution}
+With \(y'(x_0)\approx\frac{-3y_0+4y_1-y_2}{2h}\), the boundary row is
+\[
+  -y_0+\frac{-3y_0+4y_1-y_2}{2h}=1 .
+\]
+It contains \(R_0y_2\) with \(R_0=-\frac1{2h}\).  The row at \(x_1\) is
+\(\frac{y_0-2y_1+y_2}{h^2}=f_1\), with \(B_1=\frac1{h^2}\).  Form
+row\(_0-\frac{R_0}{B_1}\)row\(_1\)\(=\)row\(_0+\frac h2\)row\(_1\):
+\[
+  -y_0+\frac{-3y_0+4y_1-y_2}{2h}+\frac{y_0-2y_1+y_2}{2h}=1+\frac h2f_1 .
+\]
+The \(y_2\) terms cancel, leaving
+\[
+  \Bigl(-1-\frac1h\Bigr)y_0+\frac1h\,y_1=1+\frac h2f_1,
+\]
+which has non-zero entries only in columns \(0\) and \(1\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The Thomas algorithm and its stability}{Derivation / proof}{8}\label{q:thomas}
+\begin{qbox}
+For the tridiagonal system \(A_iy_{i-1}+C_iy_i+B_iy_{i+1}=F_i\),
+\(i=0,\dots,N\) (\(A_0=B_N=0\)):
+\begin{enumerate}[label=(\alph*)]
+  \item derive the recurrences
+    \(y_i=\alpha_{i+1}y_{i+1}+\beta_{i+1}\) of the Thomas algorithm;
+  \item show that if the matrix is strictly diagonally dominant,
+    \(|C_i|>|A_i|+|B_i|\), then no denominator vanishes and
+    \(|\alpha_i|<1\) for all \(i\);
+  \item explain why errors do not grow in the back substitution;
+  \item for the Crank--Nicolson scheme for \(u_t=u_{xx}\) with
+    Dirichlet conditions (Mitchell--Griffiths, Ch.~2, Example 3),
+    verify that diagonal dominance holds for every \(r>0\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\alpha_1=-\frac{B_0}{C_0}\), \(\beta_1=\frac{F_0}{C_0}\);
+    \(\alpha_{i+1}=\dfrac{-B_i}{C_i+\alpha_iA_i}\),
+    \(\beta_{i+1}=\dfrac{F_i-\beta_iA_i}{C_i+\alpha_iA_i}\);
+    \(y_N=\beta_{N+1}\), then \(y_i=\alpha_{i+1}y_{i+1}+\beta_{i+1}\)
+    backwards.
+  \item Equivalent to \(M=LU\) with \(L\) unit lower bidiagonal and
+    \(U\) upper bidiagonal.  Cost \(O(N)\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Derivation}
+Row \(0\): \(C_0y_0+B_0y_1=F_0\), so \(y_0=\alpha_1y_1+\beta_1\) with
+\(\alpha_1=-B_0/C_0\), \(\beta_1=F_0/C_0\).  Suppose
+\(y_{i-1}=\alpha_iy_i+\beta_i\).  Substituting into row \(i\),
+\[
+  A_i(\alpha_iy_i+\beta_i)+C_iy_i+B_iy_{i+1}=F_i
+  \ \Longrightarrow\
+  y_i=\frac{-B_i}{C_i+\alpha_iA_i}\,y_{i+1}+\frac{F_i-\beta_iA_i}{C_i+\alpha_iA_i}
+  =\alpha_{i+1}y_{i+1}+\beta_{i+1}.
+\]
+In the last row \(B_N=0\), so \(\alpha_{N+1}=0\) and
+\(y_N=\beta_{N+1}\).  The forward sweep computes all
+\(\alpha_i,\beta_i\); back substitution gives
+\(y_{N-1},\dots,y_0\).  Each step costs a fixed number of operations:
+\(O(N)\) in total.
+
+\step{(b) Diagonal dominance}
+Induction.  \(|\alpha_1|=|B_0|/|C_0|<1\) since \(|C_0|>|B_0|\).  If
+\(|\alpha_i|<1\), then
+\[
+  |C_i+\alpha_iA_i|\ge|C_i|-|\alpha_i||A_i|\ge|C_i|-|A_i|>|B_i|\ge0,
+\]
+so the denominator is non-zero, and
+\(|\alpha_{i+1}|=|B_i|/|C_i+\alpha_iA_i|<1\).  Hence the algorithm
+never divides by zero and \(|\alpha_i|<1\) for all \(i\).
+
+\step{(c) Error propagation}
+If \(y_{i+1}\) carries an error \(e_{i+1}\), back substitution gives
+\(e_i=\alpha_{i+1}e_{i+1}\), so \(|e_i|\le|e_{i+1}|\): errors are not
+amplified.  For the finite difference scheme of
+\(y''-q(x)y=f\) with \(q>0\), the rows
+\(y_{i-1}-(2+h^2q_i)y_i+y_{i+1}=h^2f_i\) are strictly diagonally
+dominant, so the Thomas algorithm is safe for every \(h\).
+
+\step{(d) Crank--Nicolson}
+Each time step solves
+\(-\frac r2U_{m-1}^{n+1}+(1+r)U_m^{n+1}-\frac r2U_{m+1}^{n+1}=d_m\),
+\(m=1,\dots,M-1\), with known right-hand side \(d_m\).  Here
+\(|C_m|=1+r\) and \(|A_m|+|B_m|=\frac r2+\frac r2=r\) (one of them is
+absent in the first and last rows).  Since \(1+r>r\) for every
+\(r>0\), the system is strictly diagonally dominant for all \(r\): the
+Thomas algorithm is always stable for Crank--Nicolson.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A tridiagonal system solved as a difference equation}{Derivation / numerical}{4}\label{q:tridde}
+\begin{qbox}
+Solve \(Ax=b\), where
+\[
+  A=\begin{bmatrix}
+    -\frac52&1&&\\
+    1&-\frac52&1&\\
+    &1&-\frac52&1\\
+    &&1&-\frac52
+  \end{bmatrix},
+  \qquad
+  b=\begin{bmatrix}-1\\0\\0\\0\end{bmatrix}.
+\]
+State the difference equation which replaces the matrix formulation,
+and solve the system by solving the difference equation.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item A constant tridiagonal system
+    \(cx_{i-1}+ax_i+bx_{i+1}=0\) is a linear difference equation; the
+    first and last rows become boundary conditions by introducing
+    \(x_0\) and \(x_{N+1}\).
+  \item Try \(x_i=m^i\): auxiliary equation \(bm^2+am+c=0\).  Distinct
+    roots: \(x_i=P\,m_1^i+Q\,m_2^i\); fix \(P,Q\) from the two boundary
+    conditions.
+  \item The same idea proves the eigenvalue formula for tridiagonal
+    matrices (Q\ref{q:tridproof}).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The difference equation}
+Introduce \(x_0=1\) and \(x_5=0\).  Then all four rows read
+\[
+  x_{i-1}-\tfrac52x_i+x_{i+1}=0,\qquad i=1,2,3,4,
+  \qquad x_0=1,\ x_5=0 .
+\]
+(Row \(1\): \(x_0-\frac52x_1+x_2=0\iff-\frac52x_1+x_2=-1\); row \(4\):
+\(x_3-\frac52x_4+x_5=0\iff x_3-\frac52x_4=0\).)
+
+\step{General solution}
+With \(x_i=m^i\): \(m^2-\frac52m+1=0\), so \(m=2\) or \(m=\frac12\), and
+\[
+  x_i=P\,2^i+Q\,2^{-i}.
+\]
+
+\step{Boundary conditions}
+\(x_0=P+Q=1\) and \(x_5=32P+\frac Q{32}=0\Rightarrow Q=-1024P\).  Then
+\(P(1-1024)=1\), so
+\[
+  P=-\frac1{1023},\qquad Q=\frac{1024}{1023},
+  \qquad
+  \boxed{x_i=\frac{2^{10-i}-2^i}{1023}}.
+\]
+
+\step{The solution}
+\[
+  x_1=\frac{510}{1023}=0.498534,\qquad
+  x_2=\frac{252}{1023}=0.246334,
+\]
+\[
+  x_3=\frac{120}{1023}=0.117302,\qquad
+  x_4=\frac{48}{1023}=0.046921 .
+\]
+Check, row 1: \(-\frac52(0.498534)+0.246334=-1.000001\approx-1\); row 4:
+\(0.117302-\frac52(0.046921)=0.000000\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A Dirichlet problem by finite differences}{Numerical}{10}\label{q:old11}
+\begin{qbox}
+Solve \(y''-y=0\), \(y(0)=0\), \(y(1)=1\), with the central difference
+scheme and \(h=\frac14\).  Solve the tridiagonal system by the Thomas
+algorithm and compare with the exact solution
+\(y=\sinh x/\sinh1\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item \(y''-q(x)y=f\): rows
+    \(y_{i-1}-(2+h^2q_i)y_i+y_{i+1}=h^2f_i\); boundary values move to
+    the right-hand side.
+  \item Thomas algorithm: express each unknown through the next
+    (forward sweep), then back-substitute.
+  \item Error of the central scheme: \(O(h^2)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{The system}
+\(\frac{y_{i-1}-2y_i+y_{i+1}}{h^2}-y_i=0\) gives
+\(y_{i-1}-d\,y_i+y_{i+1}=0\) with \(d=2+h^2=2.0625\), for \(i=1,2,3\),
+with \(y_0=0\), \(y_4=1\):
+\[
+  \begin{pmatrix}-d&1&0\\1&-d&1\\0&1&-d\end{pmatrix}
+  \begin{pmatrix}y_1\\y_2\\y_3\end{pmatrix}
+  =\begin{pmatrix}0\\0\\-1\end{pmatrix}.
+\]
+The matrix is strictly diagonally dominant (\(2.0625>2\)), so the
+solution is unique.
+
+\step{Forward sweep (express each unknown through the next)}
+\begin{align*}
+  \text{row 1:}&\quad y_1=\frac1d\,y_2=0.484848\,y_2,\\
+  \text{row 2:}&\quad y_2=\frac1{d-0.484848}\,y_3=0.633854\,y_3,\\
+  \text{row 3:}&\quad y_2-d\,y_3=-1\ \Rightarrow\
+    y_3=\frac1{d-0.633854}=0.699963 .
+\end{align*}
+
+\step{Back substitution}
+\(y_2=0.633854\times0.699963=0.443674\) and
+\(y_1=0.484848\times0.443674=0.215115\).
+
+\step{Comparison}
+\begin{center}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\(x\) & FD & exact & error\\
+\midrule
+0.25 & 0.215115 & 0.214952 & \(1.6\times10^{-4}\)\\
+0.50 & 0.443674 & 0.443409 & \(2.6\times10^{-4}\)\\
+0.75 & 0.699963 & 0.699724 & \(2.4\times10^{-4}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+The errors are \(O(h^2)\), as expected from the \(O(h^2)\) central
+difference.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Diagonal dominance and uniqueness}{Proof}{6}\label{q:old14}
+\begin{qbox}
+Prove that a strictly diagonally dominant matrix is non-singular.
+Deduce that the central difference scheme for \(y''-q(x)y=f(x)\) with
+Dirichlet conditions and \(q>0\) has a unique solution for every \(h\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Strictly diagonally dominant: \(|a_{ii}|>\sum_{j\ne i}|a_{ij}|\)
+    for every row.
+  \item Proof idea: if \(Ax=0\), look at the row where \(|x_i|\) is
+    largest.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Suppose \(Ax=0\), \(x\ne0\), and pick \(i\) with
+\(|x_i|=\max_j|x_j|>0\).  Row \(i\) gives
+\(a_{ii}x_i=-\sum_{j\ne i}a_{ij}x_j\), so
+\[
+  |a_{ii}||x_i|\le\sum_{j\ne i}|a_{ij}||x_j|\le\Bigl(\sum_{j\ne i}|a_{ij}|\Bigr)|x_i|<|a_{ii}||x_i|,
+\]
+a contradiction.  So \(A\) is non-singular.
+
+The scheme gives rows \(y_{i-1}-(2+h^2q_i)y_i+y_{i+1}=h^2f_i\).  The
+diagonal entry has modulus \(2+h^2q_i>2\), and the off-diagonal entries
+sum to at most \(2\) in modulus.  Hence the matrix is strictly
+diagonally dominant and the solution is unique, for every \(h>0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Newton's method for a non-linear BVP}{Numerical}{6}\label{q:old13}
+\begin{qbox}
+For \(y''=y^2\), \(y(0)=y(1)=1\), with \(h=\frac12\), write the
+discrete equation for the single unknown \(y_1\approx y(\frac12)\).
+Perform one Newton step from \(y_1^{(0)}=1\) and compare with the exact
+root of the discrete equation.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Non-linear BVP \(y''=f(x,y,y')\): the difference equations
+    \(G(Y)=0\) are solved by Newton,
+    \(Y^{(s+1)}=Y^{(s)}-J^{-1}G(Y^{(s)})\), with tridiagonal Jacobian
+    \(J\).
+  \item Newton converges quadratically near a simple root.
+\end{itemize}
+\end{rem}
+\begin{solution}
+The scheme \(y_0-2y_1+y_2=h^2y_1^2\) with \(y_0=y_2=1\) gives
+\[
+  G(y_1)=2-2y_1-\tfrac14y_1^2=0,
+  \qquad G'(y_1)=-2-\tfrac12y_1 .
+\]
+From \(y_1^{(0)}=1\): \(G(1)=-0.25\), \(G'(1)=-2.5\), so
+\[
+  y_1^{(1)}=1-\frac{G(1)}{G'(1)}=1-0.1=0.9 .
+\]
+The exact positive root is \(y_1=-4+2\sqrt6=0.898979\); one step already
+has error \(1.0\times10^{-3}\), and the next step would square it
+(quadratic convergence).  For larger \(N\) the Jacobian
+\(J=A-h^2\,\mathrm{diag}(2y_i)\) is tridiagonal and each step is a
+Thomas solve.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Reduction to homogeneous boundary conditions}{Short derivation}{5}\label{q:old15}
+\begin{qbox}
+For collocation applied to \(y''+p(x)y'+q(x)y=f(x)\) on \([0,1]\) with
+\(y(0)=1\), \(y'(1)=2\), find the linear function \(d(x)\) used to make
+the boundary conditions homogeneous, and the new right-hand side.  Why
+does the reduction fail for the pure Neumann conditions
+\(y'(0)=c_0\), \(y'(1)=c_1\)?
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item BCs \(a_0y(a)+b_0y'(a)=c_0\), \(a_1y(b)+b_1y'(b)=c_1\) with
+    \((a_0b_1-a_1b_0)+a_0a_1(b-a)\ne0\).
+  \item Homogenise: \(\tilde y=y-d\), with \(d\) linear satisfying the
+    BCs; then \(L\tilde y=f-L(d)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Here \(a_0=1,b_0=0\) at \(x=0\) and \(a_1=0,b_1=1\) at \(x=1\).  With
+\(d=\alpha x+\beta\): \(d(0)=\beta=1\) and \(d'(1)=\alpha=2\), so
+\(d(x)=2x+1\).  (The determinant condition
+\((a_0b_1-a_1b_0)+a_0a_1(b-a)=1\ne0\) holds.)  Then \(\tilde y=y-d\)
+satisfies \(\tilde y(0)=0\), \(\tilde y'(1)=0\) and
+\[
+  L\tilde y=f-L(d)=f(x)-2p(x)-(2x+1)q(x).
+\]
+For pure Neumann conditions \(a_0=a_1=0\), so the determinant
+\((a_0b_1-a_1b_0)+a_0a_1(b-a)=0\): a linear \(d\) cannot match two
+slope conditions unless \(c_0=c_1\), and then not uniquely.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Spectral collocation with a sine basis}{Numerical}{6}\label{q:speccol}
+\begin{qbox}
+Solve \(-y''+y=1\), \(y(0)=y(\pi)=0\), by collocation with
+\(y_N(x)=\sum_{i=1}^N\xi_i\sin(ix)\) at the points
+\(x_j=\frac{j\pi}{N+1}\), for \(N=2\) and \(N=3\).  Compare \(y_N(\pi/2)\)
+with the exact value, given
+\(y(x)=1-\dfrac{\cosh(x-\pi/2)}{\cosh(\pi/2)}\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item For \(-y''+q(x)y=f\) on \((0,\pi)\) with \(\psi_i=\sin(ix)\)
+    (satisfying the BCs, \(-\psi_i''=i^2\psi_i\)):
+    \[
+      \sum_{i=1}^N\xi_i\bigl[i^2+q(x_j)\bigr]\sin(ix_j)=f(x_j),
+      \qquad x_j=\frac{j\pi}{N+1},\ j=1,\dots,N .
+    \]
+  \item Symmetry: if \(q,f\) are symmetric about \(\pi/2\), the
+    solution is too, and the coefficients of \(\sin(ix)\) with \(i\)
+    even vanish.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Here \(q=1\), \(f=1\), so the coefficient of \(\xi_i\) is
+\((i^2+1)\sin(ix_j)\).
+
+\step{\(N=2\): points \(\frac\pi3,\frac{2\pi}3\)}
+\begin{align*}
+  2\xi_1\sin\tfrac\pi3+5\xi_2\sin\tfrac{2\pi}3&=1,\\
+  2\xi_1\sin\tfrac{2\pi}3+5\xi_2\sin\tfrac{4\pi}3&=1 .
+\end{align*}
+Since \(\sin\frac\pi3=\sin\frac{2\pi}3=\frac{\sqrt3}2\) and
+\(\sin\frac{4\pi}3=-\frac{\sqrt3}2\), subtracting gives \(\xi_2=0\),
+and then \(\sqrt3\,\xi_1=1\):
+\[
+  \xi_1=\frac1{\sqrt3}=0.577350,\qquad
+  y_2\bigl(\tfrac\pi2\bigr)=\xi_1=0.577350 .
+\]
+
+\step{\(N=3\): points \(\frac\pi4,\frac\pi2,\frac{3\pi}4\)}
+By symmetry \(\xi_2=0\).  The equations at \(\frac\pi4\) and
+\(\frac\pi2\) are
+\begin{align*}
+  2\xi_1\tfrac{\sqrt2}2+10\xi_3\tfrac{\sqrt2}2&=1
+    \iff 2\xi_1+10\xi_3=\sqrt2,\\
+  2\xi_1\cdot1+10\xi_3\cdot(-1)&=1 .
+\end{align*}
+Adding and subtracting:
+\[
+  \xi_1=\frac{1+\sqrt2}4=0.603553,\qquad
+  \xi_3=\frac{\sqrt2-1}{20}=0.020711,
+\]
+\[
+  y_3\bigl(\tfrac\pi2\bigr)=\xi_1\sin\tfrac\pi2+\xi_3\sin\tfrac{3\pi}2
+  =\xi_1-\xi_3=0.582843 .
+\]
+
+\step{Comparison}
+Exact: \(y(\pi/2)=1-1/\cosh(\pi/2)=0.601463\).  The errors are
+\(0.0241\) for \(N=2\) and \(0.0186\) for \(N=3\): adding basis
+functions improves the approximation.  (The right-hand side \(f=1\) is
+not zero at the end points, so the sine series converges slowly; for
+smooth data vanishing at the ends the convergence would be much
+faster.)
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Classification and Difference Operators}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Why \(B^2-AC\) decides the type}{Derivation}{6}\label{q:charderiv}
+\begin{qbox}
+For \(Au_{xx}+2Bu_{xy}+Cu_{yy}+Du_x+Eu_y+Fu=G\), suppose \(u\), \(u_x\),
+\(u_y\) are known along a curve.  Show that the second derivatives are
+not determined along the curve exactly when
+\(A\,dy^2-2B\,dx\,dy+C\,dx^2=0\), and deduce the classification.
+Apply it to \(t\,u_{xx}+2x\,u_{xt}+u_{tt}=0\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Characteristics: curves along which \(u_{xx},u_{xy},u_{yy}\) are
+    not determined by the data (and may be discontinuous).
+  \item \(\frac{dy}{dx}=\frac{B\pm\sqrt{B^2-AC}}A\): hyperbolic
+    (\(B^2-AC>0\), two real families), parabolic (\(=0\), one),
+    elliptic (\(<0\), none).
+  \item Only \(A,B,C\) decide the type; with variable coefficients
+    the type can change from point to point.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Three equations for three unknowns}
+Along the curve, \(u_x\) and \(u_y\) are known functions, so
+\[
+  d(u_x)=u_{xx}\,dx+u_{xy}\,dy,\qquad
+  d(u_y)=u_{xy}\,dx+u_{yy}\,dy .
+\]
+Together with the PDE (all lower-order terms are known along the
+curve), this is a linear system for \(u_{xx},u_{xy},u_{yy}\):
+\[
+  \begin{pmatrix}A&2B&C\\ dx&dy&0\\ 0&dx&dy\end{pmatrix}
+  \begin{pmatrix}u_{xx}\\u_{xy}\\u_{yy}\end{pmatrix}
+  =\begin{pmatrix}G-Du_x-Eu_y-Fu\\ d(u_x)\\ d(u_y)\end{pmatrix}.
+\]
+It fails to determine the second derivatives exactly when the
+determinant vanishes:
+\[
+  A(dy^2-0)-2B(dx\,dy-0)+C(dx^2)=0
+  \iff A\,dy^2-2B\,dx\,dy+C\,dx^2=0 .
+\]
+
+\step{Classification}
+Dividing by \(dx^2\) (\(A\ne0\)):
+\(A\bigl(\frac{dy}{dx}\bigr)^2-2B\frac{dy}{dx}+C=0\), so
+\[
+  \frac{dy}{dx}=\frac{B\pm\sqrt{B^2-AC}}A .
+\]
+Two real characteristic directions if \(B^2-AC>0\) (hyperbolic), one
+if \(B^2-AC=0\) (parabolic), none if \(B^2-AC<0\) (elliptic).
+
+\step{Example}
+\(t\,u_{xx}+2x\,u_{xt}+u_{tt}=0\): \(A=t\), \(B=x\), \(C=1\), so
+\(B^2-AC=x^2-t\).  The equation is hyperbolic for \(t<x^2\) (below the
+parabola), parabolic on \(t=x^2\), and elliptic for \(t>x^2\).  In the
+hyperbolic region the characteristics satisfy
+\(\frac{dt}{dx}=\frac{x\pm\sqrt{x^2-t}}{t}\) (for \(t\ne0\)).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Classify and find characteristics}{Short answer}{6}\label{q:old16}
+\begin{qbox}
+Classify each equation and, where real, find the characteristic
+directions \(dy/dx\).
+\begin{enumerate}[label=(\alph*)]
+  \item \(u_{xx}+4u_{xy}+4u_{yy}=0\);
+  \item \(u_{xx}-2u_{xy}-3u_{yy}+u_x=0\);
+  \item \(x\,u_{xx}+u_{yy}=0\).
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Compare with \(Au_{xx}+2Bu_{xy}+Cu_{yy}+\cdots\): note the
+    factor \(2\) on \(B\).
+  \item \(B^2-AC>0\) hyperbolic, \(=0\) parabolic, \(<0\) elliptic;
+    \(\frac{dy}{dx}=\frac{B\pm\sqrt{B^2-AC}}A\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Compare with \(Au_{xx}+2Bu_{xy}+Cu_{yy}+\cdots\) and use
+\(\frac{dy}{dx}=\frac{B\pm\sqrt{B^2-AC}}A\).
+\step{(a)}
+\(A=1\), \(B=2\), \(C=4\): \(B^2-AC=0\), \emph{parabolic}; one
+(double) characteristic direction \(dy/dx=2\).
+\step{(b)}
+\(A=1\), \(B=-1\), \(C=-3\): \(B^2-AC=1+3=4>0\), \emph{hyperbolic};
+\(dy/dx=-1\pm2\), i.e.\ \(1\) and \(-3\).  (The term \(u_x\) does not
+affect the type.)
+\step{(c)}
+\(A=x\), \(B=0\), \(C=1\): \(B^2-AC=-x\).  Elliptic for \(x>0\),
+parabolic on \(x=0\), hyperbolic for \(x<0\), where
+\(dy/dx=\pm\sqrt{-x}/x=\mp1/\sqrt{-x}\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The central second difference}{Derivation}{6}\label{q:old17}
+\begin{qbox}
+Using \(E=e^{hD}\) and \(\delta=E^{1/2}-E^{-1/2}\), show that
+\[
+  \delta^2=h^2D^2+\frac{h^4}{12}D^4+\frac{h^6}{360}D^6+\cdots,
+\]
+and deduce the leading truncation error of
+\(\frac{u_{m+1}-2u_m+u_{m-1}}{h^2}\approx u_{xx}\).  Then invert the
+series to get the first two terms of \(D^2\) in powers of \(\delta\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item \(E=e^{hD}\), \(\delta=E^{1/2}-E^{-1/2}=2\sinh\frac{hD}2\),
+    so \(D=\frac2h\sinh^{-1}\frac\delta2\).
+  \item \(D^2=\frac1{h^2}\bigl(\delta^2-\frac1{12}\delta^4+\frac1{90}\delta^6-\cdots\bigr)\).
+  \item \(\frac{\delta^2u_m}{h^2}=u_{xx}+\frac{h^2}{12}u_{xxxx}+O(h^4)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(\delta=2\sinh\frac{hD}2\), so
+\(\delta^2=4\sinh^2\frac{hD}2=2(\cosh hD-1)\).  With
+\(\cosh t=1+\frac{t^2}2+\frac{t^4}{24}+\frac{t^6}{720}+\cdots\),
+\[
+  \delta^2=h^2D^2+\frac{h^4D^4}{12}+\frac{h^6D^6}{360}+\cdots .
+\]
+Hence
+\(\frac{\delta^2u_m}{h^2}=u_{xx}+\frac{h^2}{12}u_{xxxx}+O(h^4)\): the
+truncation error is \(\frac{h^2}{12}u_{xxxx}\).  Inverting,
+\(h^2D^2=\delta^2-\frac{h^4D^4}{12}+\cdots=\delta^2-\frac{\delta^4}{12}+\cdots\)
+(to this order \(h^4D^4=\delta^4\)), so
+\(D^2=\frac1{h^2}\bigl(\delta^2-\frac1{12}\delta^4+\cdots\bigr)\), in
+agreement with Note 4.
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Parabolic Equations: Schemes, Truncation Error, Convergence, Stability}
+%#####################################################################
+
+Throughout, \(r=k/h^2\) and \(s=\sin\frac{\beta h}2\).
+
+%---------------------------------------------------------------------
+\Q{Two steps of the explicit scheme}{Numerical}{8}\label{q:old18}
+\begin{qbox}
+Solve \(u_t=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u(0,t)=u(1,t)=0\), by the
+explicit scheme with \(h=\frac14\), \(r=\frac14\).  Find \(U\) at
+\(x=\frac12\) after one and two time steps and compare with the exact
+solution \(e^{-\pi^2t}\sin\pi x\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Explicit (Schmidt) scheme:
+    \(U_m^{n+1}=(1-2r)U_m^n+r\bigl(U_{m+1}^n+U_{m-1}^n\bigr)\), i.e.\
+    \(U^{n+1}=(1+r\delta^2)U^n\); stable for \(r\le\frac12\).
+  \item \(\delta^2\sin(\pi x_m)=-4\sin^2\frac{\pi h}2\,\sin(\pi x_m)\):
+    \(\sin\pi x\) data stay proportional to \(\sin\pi x\).
+  \item Exact solution for \(u(x,0)=\sin\pi x\):
+    \(u=e^{-\pi^2t}\sin\pi x\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(k=rh^2=\frac1{64}\).  Initially \(U^0=(0,\ \sin\frac\pi4,\ 1,\ \sin\frac{3\pi}4,\ 0)=(0,0.707107,1,0.707107,0)\).
+\step{Step 1}
+\(U_m^1=(1-2r)U_m^0+r(U_{m+1}^0+U_{m-1}^0)=\frac12U_m^0+\frac14(U_{m+1}^0+U_{m-1}^0)\):
+\[
+  U_2^1=\tfrac12(1)+\tfrac14(0.707107+0.707107)=0.853553,
+  \quad
+  U_1^1=\tfrac12(0.707107)+\tfrac14(1)=0.603553 .
+\]
+\step{Step 2}
+\(U_2^2=\frac12(0.853553)+\frac14(2\times0.603553)=0.728553\).
+
+\step{Why the numbers are so clean}
+\(\sin\pi x_m\) is an eigenvector of the scheme: \(U_m^n=\xi^n\sin\pi x_m\)
+with \(\xi=1-4r\sin^2\frac{\pi h}2=1-\sin^2\frac\pi8=\cos^2\frac\pi8=0.853553\).
+
+\step{Comparison at \(x=\frac12\)}
+\begin{center}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\(t\) & explicit & exact & error\\
+\midrule
+\(1/64\) & 0.853553 & 0.857090 & \(3.5\times10^{-3}\)\\
+\(2/64\) & 0.728553 & 0.734603 & \(6.0\times10^{-3}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Higher-order explicit schemes and the choice \(r=\frac16\)}{Derivation}{8}\label{q:r16}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item Show that the local truncation error of the explicit scheme is
+    \(T_m^n=\frac12k^2\bigl(u_{tt}-\frac1{6r}u_{xxxx}\bigr)+\cdots\), and
+    deduce that \(r=\frac16\) gives a higher-order scheme.
+  \item From
+    \(u_m^{n+1}=\bigl[1+r\delta^2+\frac12r(r-\frac16)\delta^4+\cdots\bigr]u_m^n\),
+    derive the five-point explicit scheme obtained by keeping the
+    \(\delta^4\) term, and check that its coefficients add up to \(1\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(u_m^{n+1}=\exp(kD^2)u_m^n\) with
+    \(D^2=\frac1{h^2}\bigl(\delta^2-\frac1{12}\delta^4+\cdots\bigr)\).
+  \item LTE: substitute the exact solution into the scheme;
+    consistent if \(T/k\to0\).
+  \item For the heat equation \(u_{tt}=u_{xxxx}\) (differentiate
+    \(u_t=u_{xx}\)).
+  \item \(\delta^4U_m=U_{m+2}-4U_{m+1}+6U_m-4U_{m-1}+U_{m-2}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Truncation error}
+\(T_m^n=u_m^{n+1}-(1-2r)u_m^n-r(u_{m+1}^n+u_{m-1}^n)\).  Expanding
+about \((mh,nk)\),
+\[
+  u_m^{n+1}=u+ku_t+\tfrac12k^2u_{tt}+\cdots,\qquad
+  r\bigl(u_{m+1}^n+u_{m-1}^n\bigr)=2ru+ku_{xx}+\tfrac1{12}kh^2u_{xxxx}+\cdots,
+\]
+using \(rh^2=k\).  The \(u\) terms cancel (\(1-(1-2r)-2r=0\)), so
+\[
+  T_m^n=k(u_t-u_{xx})+\tfrac12k^2u_{tt}-\tfrac1{12}kh^2u_{xxxx}+\cdots
+  =\tfrac12k^2\Bigl(u_{tt}-\frac1{6r}u_{xxxx}\Bigr)+\cdots,
+\]
+since \(u_t=u_{xx}\) and \(kh^2=k^2/r\).  So \(T=O(k^2+kh^2)\) and
+\(T/k=O(k+h^2)\): consistent.  Because \(u_{tt}=u_{xxxx}\), the
+principal part is \(\frac12k^2\bigl(1-\frac1{6r}\bigr)u_{xxxx}\), which
+vanishes when \(r=\frac16\).  The scheme
+\(U_m^{n+1}=\frac23U_m^n+\frac16\bigl(U_{m+1}^n+U_{m-1}^n\bigr)\) then
+has \(T=O(k^3)\) (equivalently \(O(k^3+kh^4)\)).  This agrees with
+the series: the \(\delta^4\) coefficient \(\frac12r(r-\frac16)\) is zero
+at \(r=\frac16\).
+
+\step{(b) Five-point explicit scheme}
+Put \(c=\frac12r(r-\frac16)\) and keep
+\(U_m^{n+1}=(1+r\delta^2+c\,\delta^4)U_m^n\).  Expanding \(\delta^2\)
+and \(\delta^4\) and collecting:
+\begin{align*}
+  U_m:&\quad 1-2r+6c=\tfrac12\bigl(2-5r+6r^2\bigr),\\
+  U_{m\pm1}:&\quad r-4c=\tfrac23r(2-3r),\\
+  U_{m\pm2}:&\quad c=-\tfrac1{12}r(1-6r).
+\end{align*}
+So
+\[
+  U_m^{n+1}=\tfrac12(2-5r+6r^2)U_m^n+\tfrac23r(2-3r)\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+  -\tfrac1{12}r(1-6r)\bigl(U_{m+2}^n+U_{m-2}^n\bigr).
+\]
+Sum of coefficients: \((1-2r+6c)+2(r-4c)+2c=1\).  This must hold
+because a constant is an exact solution of the heat equation.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The fourth-order explicit formula: truncation error and stability}{Derivation / stability analysis}{8}\label{q:fourth}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercises 1 and 6.)  For the explicit
+formula
+\[
+  U_m^{n+1}=\tfrac12(2-5r+6r^2)U_m^n+\tfrac23r(2-3r)\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+  -\tfrac1{12}r(1-6r)\bigl(U_{m+2}^n+U_{m-2}^n\bigr),
+\]
+\begin{enumerate}[label=(\alph*)]
+  \item find the principal part of the truncation error;
+  \item find the von Neumann stability condition.
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item This formula is \((1+r\delta^2+c\,\delta^4)U^n\) with
+    \(c=\frac12r(r-\frac16)\) (Q\ref{q:r16}).
+  \item Exact:
+    \(u^{n+1}=\bigl[1+r\delta^2+c\,\delta^4+d\,\delta^6+\cdots\bigr]u^n\),
+    \(d=\frac16r\bigl(r^2-\frac12r+\frac1{15}\bigr)\).
+  \item \(\delta^6u=h^6\partial_x^6u+O(h^8)\);
+    \(\delta^2\to-4S\), \(\delta^4\to16S^2\) on a Fourier mode,
+    \(S=\sin^2\frac{\beta h}2\in[0,1]\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Truncation error}
+The exact solution satisfies
+\(u_m^{n+1}=\exp(kD^2)u_m^n=\bigl[1+r\delta^2+c\,\delta^4+d\,\delta^6+\cdots\bigr]u_m^n\),
+and the formula keeps only the terms up to \(\delta^4\).  So the
+principal part of the truncation error is
+\[
+  T=d\,\delta^6u_m^n+\cdots
+  =\frac r{180}\bigl(30r^2-15r+2\bigr)h^6\frac{\partial^6u}{\partial x^6}+\cdots
+  =\frac{kh^4}{180}\bigl(30r^2-15r+2\bigr)\frac{\partial^6u}{\partial x^6}+\cdots .
+\]
+For fixed \(r\), \(T/k=O(h^4)\): the formula is fourth order in space
+(hence its name).  The factor \(30r^2-15r+2\) has no real root
+(discriminant \(225-240<0\)), so no choice of \(r\) removes this term.
+
+\step{(b) Stability}
+With \(U_m^n=\xi^ne^{i\beta mh}\) and \(S=\sin^2\frac{\beta h}2\),
+\[
+  \xi=1-4rS+16cS^2=1-4rS+8r\bigl(r-\tfrac16\bigr)S^2 .
+\]
+\emph{\(\xi\le1\):} \(-4rS+8r(r-\frac16)S^2\le0\iff2(r-\frac16)S\le1\);
+the worst case \(S=1\) gives \(r\le\frac23\).
+
+\emph{\(\xi\ge-1\):} put \(g(S)=\frac12(\xi+1)=1-2rS+4r(r-\frac16)S^2\).
+If \(r\le\frac16\), \(g\) is concave, so its minimum is at an end point:
+\(g(0)=1\) and \(g(1)=4r^2-\frac83r+1>0\) (negative discriminant).  If
+\(r>\frac16\), the minimum of \(g\) over all \(S\) is
+\(1-\frac{r}{4(r-1/6)}\), which is \(\ge0\) since \(4r-\frac23\ge r\) for
+\(r\ge\frac29\); for \(\frac16<r<\frac29\) the vertex lies beyond
+\(S=1\), and again \(g(1)>0\).  So \(\xi\ge-1\) always holds.
+
+Hence the formula is stable if and only if
+\[
+  \boxed{0<r\le\tfrac23}.
+\]
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Explicit scheme in self-adjoint form}{Derivation}{6}\label{q:selfadj}
+\begin{qbox}
+For \(u_t=\partial_x\bigl(a(x)u_x\bigr)\) with \(a>0\), derive the
+explicit scheme
+\[
+  U_m^{n+1}=(1-2ra)U_m^n+r\bigl(a+\tfrac12ha'\bigr)U_{m+1}^n
+  +r\bigl(a-\tfrac12ha'\bigr)U_{m-1}^n,
+\]
+with \(a,a'\) evaluated at \(x_m\).  Give the equivalent half-point
+form, and a condition under which all coefficients are non-negative.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(u_t=a'u_x+au_{xx}\), so \(L=a'D+aD^2\) and
+    \(u^{n+1}=[1+kL+O(k^2)]u^n\).
+  \item \(DU_m\approx\frac{U_{m+1}-U_{m-1}}{2h}\),
+    \(D^2U_m\approx\frac{\delta^2U_m}{h^2}\).
+  \item Half-point form:
+    \(D(aD)U_m\approx\frac1{h^2}\bigl[a_{m+\frac12}(U_{m+1}-U_m)-a_{m-\frac12}(U_m-U_{m-1})\bigr]\).
+  \item Non-negative coefficients summing to \(1\) give stability by
+    the maximum principle.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Derivation}
+\(u_t=\partial_x(au_x)=a'u_x+au_{xx}\).  Neglecting \(O(k^2)\),
+\(u_m^{n+1}=\bigl[1+k(a'D+aD^2)\bigr]u_m^n\).  With central
+differences,
+\[
+  U_m^{n+1}=U_m^n+k\Bigl[\frac{a'}{2h}\bigl(U_{m+1}^n-U_{m-1}^n\bigr)
+  +\frac a{h^2}\bigl(U_{m+1}^n-2U_m^n+U_{m-1}^n\bigr)\Bigr].
+\]
+With \(k=rh^2\), the coefficient of \(U_{m+1}^n\) is
+\(ra+\frac12rha'\), that of \(U_{m-1}^n\) is \(ra-\frac12rha'\), and
+that of \(U_m^n\) is \(1-2ra\): the stated scheme.
+
+\step{Half-point form}
+Applying \(\delta\) twice with \(a\) at half points,
+\[
+  U_m^{n+1}=U_m^n+r\bigl[a_{m+\frac12}\bigl(U_{m+1}^n-U_m^n\bigr)
+  -a_{m-\frac12}\bigl(U_m^n-U_{m-1}^n\bigr)\bigr].
+\]
+Since \(a_{m\pm\frac12}=a\pm\frac12ha'+O(h^2)\), the two forms agree
+to this order.  For \(a\equiv1\) both reduce to the classical explicit
+scheme.
+
+\step{Non-negative coefficients}
+All coefficients are non-negative if
+\[
+  ra\le\tfrac12\quad\text{and}\quad h|a'|\le2a,
+\]
+which hold for \(r\le\frac1{2\max a}\) and \(h\) small enough.  They add
+up to \(1\), so then
+\(\max_m|U_m^{n+1}|\le\max_m|U_m^n|\): the scheme is stable (maximum
+principle).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Crank--Nicolson: derivation and truncation error}{Derivation}{8}\label{q:cnlte}
+\begin{qbox}
+Derive the Crank--Nicolson scheme for \(u_t=u_{xx}\) from
+\(u_m^{n+1}=\exp(kD^2)u_m^n\), and show that its local truncation error
+is
+\[
+  T=-\frac{k^3}{12}u_{ttt}-\frac{kh^2}{12}u_{xxxx}+\cdots=O(k^3+kh^2).
+\]
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Split symmetrically about \(t_{n+1/2}\):
+    \(\exp(-\frac12kD^2)u^{n+1}=\exp(\frac12kD^2)u^n\).
+  \item Crank--Nicolson:
+    \((1-\frac r2\delta^2)U_m^{n+1}=(1+\frac r2\delta^2)U_m^n\), i.e.\
+    \((1+r)U_m^{n+1}-\frac r2(U_{m+1}^{n+1}+U_{m-1}^{n+1})
+    =(1-r)U_m^n+\frac r2(U_{m+1}^n+U_{m-1}^n)\).
+  \item Expand about the half level: odd powers of \(\frac k2\) cancel.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Derivation}
+\(u^{n+1}=\exp(kD^2)u^n\iff\exp(-\frac12kD^2)u_m^{n+1}=\exp(\frac12kD^2)u_m^n\).
+Replace \(D^2\) by \(\delta^2/h^2\) and keep two terms of each
+exponential:
+\[
+  \bigl(1-\tfrac12r\delta^2\bigr)U_m^{n+1}=\bigl(1+\tfrac12r\delta^2\bigr)U_m^n .
+\]
+
+\step{Truncation error}
+\(T=u_m^{n+1}-u_m^n-\frac r2\bigl(\delta^2u_m^{n+1}+\delta^2u_m^n\bigr)\).
+Expand about \((mh,(n+\frac12)k)\), writing \(u\) for the value
+there:
+\[
+  u_m^{n+1}-u_m^n=ku_t+\frac{k^3}{24}u_{ttt}+\cdots,
+  \qquad
+  \tfrac12\bigl(u^{n+1}+u^n\bigr)=u+\frac{k^2}8u_{tt}+\cdots .
+\]
+Since \(\delta^2v=h^2v_{xx}+\frac{h^4}{12}v_{xxxx}+\cdots\),
+\[
+  \frac r2\bigl(\delta^2u^{n+1}+\delta^2u^n\bigr)
+  =r\,\delta^2\Bigl(u+\frac{k^2}8u_{tt}+\cdots\Bigr)
+  =ku_{xx}+\frac{kh^2}{12}u_{xxxx}+\frac{k^3}8u_{xxtt}+\cdots .
+\]
+Hence
+\[
+  T=k(u_t-u_{xx})+\frac{k^3}{24}u_{ttt}-\frac{k^3}8u_{xxtt}-\frac{kh^2}{12}u_{xxxx}+\cdots .
+\]
+With \(u_t=u_{xx}\) we have \(u_{xxtt}=u_{ttt}\), so
+\[
+  T=\Bigl(\frac1{24}-\frac18\Bigr)k^3u_{ttt}-\frac{kh^2}{12}u_{xxxx}
+  =-\frac{k^3}{12}u_{ttt}-\frac{kh^2}{12}u_{xxxx}+\cdots .
+\]
+\(T/k=O(k^2+h^2)\): Crank--Nicolson is second order in both time and
+space, compared with \(O(k+h^2)\) for the explicit scheme.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{One Crank--Nicolson step}{Numerical}{8}\label{q:old23}
+\begin{qbox}
+For \(u_t=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u(0,t)=u(1,t)=0\), take one
+Crank--Nicolson step with \(h=\frac14\), \(r=1\).  Solve the system
+and compare with the exact solution.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Crank--Nicolson amplification factor
+    \(\xi=\frac{1-2rs^2}{1+2rs^2}\), \(|\xi|<1\) for all \(r>0\).
+  \item Each step: a tridiagonal system (Thomas); use symmetry of the
+    data to reduce the unknowns.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Crank--Nicolson,
+\((1+r)U_m^{1}-\frac r2(U_{m+1}^1+U_{m-1}^1)=(1-r)U_m^0+\frac r2(U_{m+1}^0+U_{m-1}^0)\),
+with \(r=1\) reads
+\(2U_m^{1}-\frac12(U_{m+1}^1+U_{m-1}^1)=\frac12(U_{m+1}^0+U_{m-1}^0)\).
+Right-hand sides: \(m=1\): \(\frac12(1+0)=0.5\); \(m=2\):
+\(\frac12(0.707107\cdot2)=0.707107\); \(m=3\): \(0.5\).
+\[
+  \begin{pmatrix}2&-\frac12&0\\-\frac12&2&-\frac12\\0&-\frac12&2\end{pmatrix}
+  \begin{pmatrix}U_1\\U_2\\U_3\end{pmatrix}
+  =\begin{pmatrix}0.5\\0.707107\\0.5\end{pmatrix}.
+\]
+By symmetry \(U_1=U_3\).  Row 2: \(U_2=\frac12(0.707107+U_1)\).  Row 1:
+\(2U_1-\frac14(0.707107+U_1)=0.5\Rightarrow\frac74U_1=0.676777\), so
+\[
+  U_1=U_3=0.386730,\qquad U_2=0.546918 .
+\]
+Check: \(U_2=\xi\) with
+\(\xi=\frac{1-2r\sin^2(\pi/8)}{1+2r\sin^2(\pi/8)}=0.546918\).  Exact at
+\(t=k=\frac1{16}\), \(x=\frac12\): \(e^{-\pi^2/16}=0.539641\); error
+\(7.3\times10^{-3}\), even though \(r=1\) is twice the explicit limit.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Truncation error of the fully implicit scheme}{Derivation}{6}\label{q:old22}
+\begin{qbox}
+Find the principal part of the local truncation error of
+\(U_m^{n+1}-U_m^n=r\,\delta^2U_m^{n+1}\) for \(u_t=u_{xx}\), and state
+its order of consistency.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Fully implicit: \((1-r\delta^2)U_m^{n+1}=U_m^n\); expand about
+    the new level \((mh,(n+1)k)\).
+  \item Consistent if \(T/k\to0\); order \((p,q)\) if
+    \(T/k=O(k^p+h^q)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(T=u_m^{n+1}-u_m^n-r\delta^2u_m^{n+1}\).  Expand about
+\((mh,(n+1)k)\):
+\[
+  u_m^n=u-ku_t+\tfrac12k^2u_{tt}-\cdots,
+  \qquad
+  r\delta^2u_m^{n+1}=k\,u_{xx}+\tfrac1{12}kh^2u_{xxxx}+\cdots .
+\]
+Hence
+\[
+  T=k(u_t-u_{xx})-\tfrac12k^2u_{tt}-\tfrac1{12}kh^2u_{xxxx}+\cdots
+   =-\tfrac12k^2u_{tt}-\tfrac1{12}kh^2u_{xxxx}+\cdots,
+\]
+so \(T=O(k^2+kh^2)\) and \(T/k=O(k+h^2)\to0\): consistent, first order
+in time and second order in space.  (Unlike the explicit scheme, no
+choice of \(r\) cancels the principal part, because both terms have the
+same sign when \(u_{tt}=u_{xxxx}\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Consistency with a derivative boundary condition}{Analysis}{7}\label{q:consbc}
+\begin{qbox}
+Discuss the consistency of the scheme
+\[
+  u_k^{n+1}=(1-2r)u_k^n+r\bigl(u_{k+1}^n+u_{k-1}^n\bigr),\quad
+  k=1,\dots,M-1,\qquad r=\frac{\nu\Delta t}{\Delta x^2},
+\]
+\[
+  u_M^{n+1}=0,\qquad u_0^n=u_1^n,
+\]
+with the problem \(v_t=\nu v_{xx}\) on \((0,1)\), \(v(x,0)=f(x)\),
+\(v(1,t)=0\), \(v_x(0,t)=0\).  How can the boundary treatment be
+improved?
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item A scheme for an IBVP is consistent if the difference equation
+    \emph{and} each difference boundary condition are consistent with
+    the PDE and the corresponding boundary condition.
+  \item One-sided \(\frac{u_1-u_0}{\Delta x}\) approximates \(v_x(0)\)
+    with error \(\frac{\Delta x}2v_{xx}=O(\Delta x)\); the central
+    \(\frac{u_1-u_{-1}}{2\Delta x}\) with error \(O(\Delta x^2)\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Let \(v\) be a smooth exact solution and \(v_k^n=v(k\Delta x,n\Delta t)\).
+
+\step{Interior points}
+In the form approximating the PDE,
+\begin{align*}
+  \tau_k^n&=\frac{v_k^{n+1}-v_k^n}{\Delta t}
+  -\nu\frac{v_{k+1}^n-2v_k^n+v_{k-1}^n}{\Delta x^2}\\
+  &=(v_t-\nu v_{xx})+\frac{\Delta t}2v_{tt}-\frac{\nu\Delta x^2}{12}v_{xxxx}+\cdots
+  =O(\Delta t)+O(\Delta x^2),
+\end{align*}
+which tends to zero: the interior scheme is consistent, of order
+\((1,2)\).
+
+\step{Boundary \(x=1\)}
+\(u_M^{n+1}=0\) imposes \(v(1,t)=0\) exactly: zero truncation error.
+
+\step{Boundary \(x=0\)}
+\(u_0^n=u_1^n\) is the approximation \(\frac{u_1^n-u_0^n}{\Delta x}=0\)
+of \(v_x(0,t)=0\).  Its truncation error is
+\[
+  \frac{v(\Delta x,t)-v(0,t)}{\Delta x}-v_x(0,t)
+  =\frac{\Delta x}2v_{xx}(0,t)+O(\Delta x^2)=O(\Delta x)\to0 .
+\]
+So the boundary condition is consistent, but only first order.
+
+\step{Conclusion and improvement}
+The scheme is consistent with the IBVP.  The first-order boundary
+condition in general reduces the overall accuracy to
+\(O(\Delta x)\).  A second-order treatment uses a fictitious point:
+\(\frac{u_1^n-u_{-1}^n}{2\Delta x}=0\Rightarrow u_{-1}^n=u_1^n\), and the
+scheme at \(k=0\) becomes \(u_0^{n+1}=(1-2r)u_0^n+2ru_1^n\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Convergence of the explicit scheme}{Proof}{10}\label{q:old26}
+\begin{qbox}
+Prove that for \(u_t=u_{xx}\) on \([0,1]\) with Dirichlet conditions,
+the explicit scheme converges for \(0<r\le\frac12\), with
+\(\max_m|u_m^n-U_m^n|\le T\,A\,(k+h^2)\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Error \(z_m^n=u_m^n-U_m^n\) satisfies the scheme plus the
+    truncation error \(T_m^n=O(k^2+kh^2)\).
+  \item For \(r\le\frac12\) the coefficients \(1-2r,\ r,\ r\) are
+    non-negative and add to \(1\) (maximum principle).
+  \item Convergence: \(\max|z|\to0\) as \(h,k\to0\) with \(nk=T\) fixed.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Let \(z_m^n=u_m^n-U_m^n\).  Subtracting the scheme from the equation
+satisfied by the exact solution,
+\[
+  z_m^{n+1}=(1-2r)z_m^n+r(z_{m+1}^n+z_{m-1}^n)+T_m^n,
+  \qquad z_0^n=z_N^n=0,
+\]
+with \(|T_m^n|\le A(k^2+kh^2)\), where
+\(A=\max(\frac12\max|u_{tt}|,\frac1{12}\max|u_{xxxx}|)\).  For
+\(r\le\frac12\) all coefficients are non-negative and sum to \(1\), so
+with \(Z^{(n)}=\max_m|z_m^n|\),
+\[
+  Z^{(n+1)}\le Z^{(n)}+A(k^2+kh^2).
+\]
+Since \(Z^{(0)}=0\),
+\(Z^{(n)}\le nA(k^2+kh^2)=nk\,A(k+h^2)=T\,A(k+h^2)\to0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Convergence of the fully implicit scheme for all \(r\)}{Proof}{8}\label{q:implconv}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercise 5.)  Establish the convergence of
+the backward difference implicit formula
+\((1-r\delta^2)U_m^{n+1}=U_m^n\) for \(u_t=u_{xx}\) on \([0,1]\) with
+Dirichlet conditions, for all \(r>0\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Fully implicit:
+    \((1+2r)U_m^{n+1}=U_m^n+r\bigl(U_{m+1}^{n+1}+U_{m-1}^{n+1}\bigr)\).
+  \item LTE (Q\ref{q:old22}):
+    \(T=-\frac12k^2u_{tt}-\frac1{12}kh^2u_{xxxx}+\cdots\), so
+    \(|T_m^n|\le A(k^2+kh^2)\).
+  \item Same maximum-principle argument as for the explicit scheme
+    (Q\ref{q:old26}), but taken at the \emph{new} level.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Let \(z_m^n=u_m^n-U_m^n\), with \(z_0^n=z_M^n=0\) and \(z_m^0=0\).  The
+exact solution satisfies the scheme up to \(T_m^n\), so
+\[
+  (1+2r)z_m^{n+1}=z_m^n+r\bigl(z_{m+1}^{n+1}+z_{m-1}^{n+1}\bigr)+T_m^n,
+  \qquad |T_m^n|\le A(k^2+kh^2).
+\]
+Let \(Z^{(n)}=\max_m|z_m^n|\), and choose \(m^*\) with
+\(|z_{m^*}^{n+1}|=Z^{(n+1)}\).  Taking moduli at \(m^*\),
+\[
+  (1+2r)Z^{(n+1)}\le Z^{(n)}+r\bigl(Z^{(n+1)}+Z^{(n+1)}\bigr)+A(k^2+kh^2),
+\]
+so, for every \(r>0\),
+\[
+  Z^{(n+1)}\le Z^{(n)}+A(k^2+kh^2).
+\]
+Since \(Z^{(0)}=0\),
+\[
+  Z^{(n)}\le nA(k^2+kh^2)=T\,A\,(k+h^2)\to0
+  \quad\text{as }h,k\to0,\ nk=T .
+\]
+So the fully implicit scheme converges for every \(r>0\).  No
+restriction on \(r\) appears, because the coefficient \(1+2r\) of the
+unknown dominates the \(2r\) of its neighbours for every \(r\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Why ``unstable'' even when the solution decays}{Conceptual}{6}\label{q:old19}
+\begin{qbox}
+Repeat Q\ref{q:old18} with \(r=1\).  The computed solution still
+decays.  Explain why the explicit scheme is nevertheless called unstable
+for \(r=1\), and what would be seen in practice.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Stability is a property of the scheme for \emph{all} data,
+    i.e.\ all Fourier modes, not of one solution.
+  \item Lax equivalence: for a consistent scheme, stable \(\iff\)
+    convergent.
+\end{itemize}
+\end{rem}
+\begin{solution}
+With \(h=\frac14\) the grid supports the modes \(\sin(s\pi x)\),
+\(s=1,2,3\), with amplification factors
+\(\xi_s=1-4r\sin^2\frac{s\pi}8\).  For \(r=1\):
+\[
+  \xi_1=1-4\sin^2\tfrac\pi8=0.414,\qquad
+  \xi_2=1-4\sin^2\tfrac\pi4=-1,\qquad
+  \xi_3=1-4\sin^2\tfrac{3\pi}8=-2.414 .
+\]
+The initial data contain only the mode \(s=1\), which decays.  But
+rounding errors introduce small amounts of every mode, and the mode
+\(s=3\) is multiplied by \(-2.414\) at every step: after \(20\) steps
+it has grown by \((2.414)^{20}\approx4.5\times10^7\).  In practice a
+saw-tooth oscillation appears and swamps the solution.  Stability is a
+property of the scheme for \emph{all} data (all modes), not of one
+solution; here \(\max_s|\xi_s|>1\), which violates \(r\le\frac12\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The \(\theta\)-method}{Stability analysis}{10}\label{q:old20}
+\begin{qbox}
+For \(0\le\theta\le1\), consider
+\[
+  U_m^{n+1}-U_m^n=r\bigl[\theta\,\delta^2U_m^{n+1}+(1-\theta)\,\delta^2U_m^n\bigr].
+\]
+Find the amplification factor and show that the scheme is stable for
+all \(r>0\) if \(\theta\ge\frac12\), and for
+\(r\le\frac1{2(1-2\theta)}\) if \(\theta<\frac12\).  Identify the
+explicit, Crank--Nicolson and fully implicit schemes.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Von Neumann: put \(U_m^n=\xi^ne^{i\beta mh}\); stable if
+    \(|\xi|\le1\) for all \(\beta\) (\(|\xi|\le1+O(k)\) if the exact
+    solution may grow).
+  \item \(\delta^2e^{i\beta mh}=-4s^2e^{i\beta mh}\),
+    \(s=\sin\frac{\beta h}2\).
+  \item \(|\frac{1-a}{1+b}|\le1\) needs \(-1\le\frac{1-a}{1+b}\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Substituting \(U_m^n=\xi^ne^{i\beta mh}\) and using
+\(\delta^2e^{i\beta mh}=-4s^2e^{i\beta mh}\),
+\[
+  \xi-1=-4rs^2\bigl[\theta\xi+(1-\theta)\bigr]
+  \ \Longrightarrow\
+  \xi=\frac{1-4(1-\theta)rs^2}{1+4\theta rs^2}.
+\]
+Since \(rs^2\ge0\), \(\xi\le1\) always.  The condition \(\xi\ge-1\) is
+\[
+  1-4(1-\theta)rs^2\ge-1-4\theta rs^2
+  \iff 4rs^2(1-2\theta)\le2 .
+\]
+If \(\theta\ge\frac12\) the left side is \(\le0\): stable for all \(r\).
+If \(\theta<\frac12\), the worst case is \(s^2=1\), giving
+\(r\le\frac1{2(1-2\theta)}\).
+
+\(\theta=0\): explicit scheme, \(r\le\frac12\).
+\(\theta=\frac12\): Crank--Nicolson, unconditionally stable.
+\(\theta=1\): fully implicit, unconditionally stable.
+(For example \(\theta=\frac14\) requires \(r\le1\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A growing solution: \(u_t=u_{xx}+cu\)}{Stability analysis}{6}\label{q:old21}
+\begin{qbox}
+For \(u_t=u_{xx}+cu\) with \(c>0\), the explicit scheme is
+\(U_m^{n+1}=U_m^n+r\delta^2U_m^n+ck\,U_m^n\).  Show that \(|\xi|\) can
+exceed \(1\), but the scheme is still stable when \(r\le\frac12\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Lax--Richtmyer stability: \(\|A^n\|\le M\) (or
+    \(|\xi|^n\le Ke^{\beta nk}\)) for \(nk\le T\), independent of
+    \(h,k\).
+  \item \(1+ck\le e^{ck}\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(\xi=1-4rs^2+ck\).  For \(s=0\), \(\xi=1+ck>1\).  If \(r\le\frac12\),
+then \(1-4rs^2\in[-1,1]\), so
+\[
+  |\xi|\le1+ck\le e^{ck}
+  \quad\Longrightarrow\quad
+  |\xi|^n\le e^{cnk}=e^{cT}.
+\]
+The powers are bounded by a constant independent of \(h\) and \(k\)
+(for \(nk\le T\)), which is stability in the Lax--Richtmyer sense
+(\(K=1\), \(\beta=c\)).  The condition \(|\xi|\le1\) is only
+appropriate when the exact solution does not grow; here the exact modes
+grow like \(e^{ct}\), so \(|\xi|\le1+O(k)\) is the correct requirement.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Crank--Nicolson for \(v_t=v_{xx}-v\)}{Stability analysis}{7}\label{q:cnlower}
+\begin{qbox}
+Consider \(v_t=v_{xx}-v\), \(t>0\), \(x\in(-\infty,\infty)\).  Write the
+Crank--Nicolson scheme and analyse its stability.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Crank--Nicolson averages the whole right-hand side over levels
+    \(n\) and \(n+1\).
+  \item \(\delta^2e^{i\beta mh}=-4s^2e^{i\beta mh}\).
+  \item \(|1-a|<1+a\) for every \(a>0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The scheme}
+\[
+  \frac{U_m^{n+1}-U_m^n}k
+  =\frac12\Bigl[\frac{\delta^2U_m^{n+1}}{h^2}-U_m^{n+1}\Bigr]
+  +\frac12\Bigl[\frac{\delta^2U_m^n}{h^2}-U_m^n\Bigr],
+\]
+i.e.\ with \(r=k/h^2\),
+\[
+  \Bigl(1+\frac k2-\frac r2\delta^2\Bigr)U_m^{n+1}
+  =\Bigl(1-\frac k2+\frac r2\delta^2\Bigr)U_m^n .
+\]
+
+\step{Amplification factor}
+With \(U_m^n=\xi^ne^{i\beta mh}\),
+\[
+  \xi=\frac{1-\frac k2-2rs^2}{1+\frac k2+2rs^2}
+  =\frac{1-a}{1+a},\qquad a=\frac k2+2rs^2>0 .
+\]
+
+\step{Stability}
+For \(a>0\), \(|1-a|<1+a\), so \(|\xi|<1\) for all \(\beta\), all
+\(r>0\) and all \(k>0\).  The scheme is unconditionally stable.  This
+is consistent with the PDE: every Fourier mode
+\(e^{-(\beta^2+1)t}e^{i\beta x}\) of the exact solution decays, and the
+term \(-v\) only adds damping.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The matrix method: norm, spectral radius and the explicit scheme}{Proof}{8}\label{q:matexp}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item For \(\mathbf U_{j+1}=A\mathbf U_j+\mathbf f_j\), show that an
+    initial perturbation propagates as \(\mathbf e_j=A^j\mathbf e_0\),
+    and that \(\|A\|\le1\) implies stability.  Show by the example
+    \(A=\begin{pmatrix}-0.8&0\\0.4&0.7\end{pmatrix}\) that
+    \(\rho(A)<1\) does not imply \(\|A\|\le1\).
+  \item Prove that the explicit scheme with Dirichlet conditions is
+    stable in the matrix sense if and only if \(0<r\le\frac12\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Lax--Richtmyer: \(\|A^j\|\le M\) for \(jk\le T\).
+  \item \(\rho(A)\le\|A\|\) always; for real symmetric \(A\),
+    \(\|A\|_2=\rho(A)\).
+  \item \(\mathrm{tridiag}(c,a,b)\) of order \(N-1\):
+    \(\lambda_s=a+2\sqrt{bc}\cos\frac{s\pi}N\), \(s=1,\dots,N-1\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Propagation of errors}
+Repeated substitution gives
+\(\mathbf U_j=A^j\mathbf U_0+A^{j-1}\mathbf f_0+\dots+\mathbf f_{j-1}\).
+Replacing \(\mathbf U_0\) by \(\mathbf U_0^*\) changes only the first
+term, so \(\mathbf e_j=\mathbf U_j^*-\mathbf U_j=A^j\mathbf e_0\) and
+\(\|\mathbf e_j\|\le\|A^j\|\|\mathbf e_0\|\le\|A\|^j\|\mathbf e_0\|\).
+If \(\|A\|\le1\), then \(\|A^j\|\le1\): Lax--Richtmyer stable with
+\(M=1\).
+
+For the example, the matrix is triangular, so its eigenvalues are
+\(-0.8\) and \(0.7\), and \(\rho(A)=0.8<1\).  But
+\(\|A\|_1=\max(0.8+0.4,\ 0.7)=1.2>1\) and
+\(\|A\|_\infty=\max(0.8,\ 1.1)=1.1>1\).  \(A\) is not symmetric (not
+even normal), so its norm is not controlled by \(\rho(A)\).
+
+\step{(b) The explicit scheme}
+With known boundary values,
+\(\mathbf U_{j+1}=A\mathbf U_j+\mathbf f_j\), where
+\(A=\mathrm{tridiag}(r,\,1-2r,\,r)\) of order \(N-1\).  Its eigenvalues
+are
+\[
+  \lambda_s=(1-2r)+2r\cos\frac{s\pi}N=1-4r\sin^2\frac{s\pi}{2N},
+  \qquad s=1,\dots,N-1 .
+\]
+\(A\) is real symmetric, so \(\|A^j\|_2=\rho(A)^j\), and stability
+holds if and only if \(-1\le1-4r\sin^2\frac{s\pi}{2N}\le1\) for all
+\(s\).  The right inequality always holds.  The left one gives
+\(r\le\bigl(2\sin^2\frac{s\pi}{2N}\bigr)^{-1}\); since
+\(\sin^2\frac{(N-1)\pi}{2N}\to1\) as \(N\to\infty\), stability for all
+\(N\) requires
+\[
+  \boxed{0<r\le\tfrac12},
+\]
+the same as the von Neumann condition.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Matrix facts used in stability proofs}{Proof}{8}\label{q:matfacts}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~1, Examples 3, 6, 7 and Ch.~2, Example 5.)
+Prove:
+\begin{enumerate}[label=(\alph*)]
+  \item the eigenvalues of \(A\) are preserved under a similarity
+    transformation \(H^{-1}AH\) (\(|H|\ne0\));
+  \item if \(A\) is symmetric and positive real
+    (\((\mathbf x,A\mathbf x)>0\) for all real \(\mathbf x\ne0\)), its
+    eigenvalues are all positive;
+  \item \(A^TA\) has non-negative eigenvalues;
+  \item a calculation \(\mathbf U^{n+1}=C\mathbf U^n\) (\(C\) constant)
+    is stable if \(\rho(C)\le1\) and \(C\) is similar to a symmetric
+    matrix, \(\widetilde C=P^{-1}CP\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\det(XY)=\det X\det Y\).
+  \item A real symmetric matrix has real eigenvalues and real
+    orthonormal eigenvectors, and \(\|S\|_2=\rho(S)\).
+  \item Used in Q\ref{q:cnrobin} (\(D^{-1}QD\) symmetric) and for the
+    Robin problem in Section~\ref{sec:adi}.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a)}
+\(\det(H^{-1}AH-\lambda I)=\det\bigl(H^{-1}(A-\lambda I)H\bigr)
+=\det H^{-1}\det(A-\lambda I)\det H=\det(A-\lambda I)\).  The two
+characteristic polynomials are equal, so the eigenvalues (with
+multiplicities) are the same.  Eigenvectors change: if
+\(A\mathbf x=\lambda\mathbf x\), then
+\((H^{-1}AH)(H^{-1}\mathbf x)=\lambda H^{-1}\mathbf x\).
+
+\step{(b)}
+\(A\) symmetric, so each eigenvalue \(\lambda\) is real with a real
+eigenvector \(\mathbf v\ne0\).  Then
+\((\mathbf v,A\mathbf v)=\lambda(\mathbf v,\mathbf v)\), so
+\(\lambda=\dfrac{(\mathbf v,A\mathbf v)}{(\mathbf v,\mathbf v)}>0\).
+
+\step{(c)}
+\(A^TA\) is symmetric.  For an eigenpair
+\(A^TA\mathbf v=\mu\mathbf v\) (\(\mathbf v\) real),
+\(\mu\|\mathbf v\|^2=\mathbf v^TA^TA\mathbf v=\|A\mathbf v\|^2\ge0\), so
+\(\mu\ge0\).  (This is why \(\|A\|_2=\sqrt{\rho(A^TA)}\) makes sense.)
+
+\step{(d)}
+\(C=P\widetilde CP^{-1}\), so \(C^n=P\widetilde C^nP^{-1}\).  By (a),
+\(\rho(\widetilde C)=\rho(C)\le1\), and \(\widetilde C\) is symmetric, so
+\(\|\widetilde C^n\|_2=\rho(\widetilde C)^n\le1\).  Hence
+\[
+  \|C^n\|_2\le\|P\|_2\,\|\widetilde C^n\|_2\,\|P^{-1}\|_2\le\|P\|_2\|P^{-1}\|_2
+\]
+for all \(n\): the powers of \(C\) are uniformly bounded, which is
+stability (provided \(\|P\|\|P^{-1}\|\) is bounded independently of
+\(h\), as for \(P=D=\mathrm{diag}(\sqrt2,1,\dots,1,\sqrt2)\) in
+Q\ref{q:cnrobin}).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Spectral radius versus norm: calculations}{Numerical / proof}{8}\label{q:normcalc}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~1, Exercises 4--8.)
+\begin{enumerate}[label=(\alph*)]
+  \item Show that \(\rho(A^2)=\rho(A)^2\).
+  \item Find the spectral radius and spectral norm of
+    \(\begin{pmatrix}1&0&\alpha\\0&1&0\\0&0&1\end{pmatrix}\) and show that
+    they are equal only if \(\alpha=0\).
+  \item Show that \(\|A\|_2=\rho(A)\) for
+    \(A=\begin{pmatrix}2&1\\1&2\end{pmatrix}\), but \(\|A\|_2>\rho(A)\)
+    for \(A=\begin{pmatrix}2&1\\0&2\end{pmatrix}\).
+  \item Show that \(\|A\|_2^2\le\|A\|_\infty\|A\|_1\).
+  \item Show by calculation that
+    \(\begin{pmatrix}\frac12&0&0\\1&\frac12&0\\0&1&\frac12\end{pmatrix}^r\to0\)
+    as \(r\to\infty\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\rho(A)=\max|\lambda_i|\);
+    \(\|A\|_2=\sqrt{\rho(A^TA)}\); \(\|A\|_1\) = largest column sum,
+    \(\|A\|_\infty\) = largest row sum (of moduli).
+  \item \(\rho(A)\le\|A\|\) for every induced norm; equality in
+    \(\|\cdot\|_2\) for symmetric (normal) matrices.
+  \item \(A^r\to0\iff\rho(A)<1\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a)}
+If \(A\mathbf x=\lambda\mathbf x\), then \(A^2\mathbf x=\lambda^2\mathbf x\).
+More precisely, by the Schur form \(A=QTQ^*\) (\(T\) upper triangular
+with diagonal \(\lambda_i\)), \(A^2=QT^2Q^*\) and \(T^2\) has diagonal
+\(\lambda_i^2\).  So the eigenvalues of \(A^2\) are exactly
+\(\lambda_i^2\), and \(\rho(A^2)=\max|\lambda_i|^2=\rho(A)^2\).
+
+\step{(b)}
+The matrix is triangular with unit diagonal, so \(\rho=1\).  Next,
+\[
+  A^TA=\begin{pmatrix}1&0&\alpha\\0&1&0\\ \alpha&0&1+\alpha^2\end{pmatrix},
+\]
+with eigenvalue \(1\) and the eigenvalues of
+\(\begin{pmatrix}1&\alpha\\ \alpha&1+\alpha^2\end{pmatrix}\) (trace
+\(2+\alpha^2\), determinant \(1\)):
+\(\mu=\frac12\bigl(2+\alpha^2\pm|\alpha|\sqrt{\alpha^2+4}\bigr)\).  Hence
+\[
+  \|A\|_2=\sqrt{\mu_{\max}}=\frac{|\alpha|+\sqrt{\alpha^2+4}}2,
+\]
+(check by squaring), which equals \(1=\rho(A)\) only if \(\alpha=0\).
+
+\step{(c)}
+\(\begin{pmatrix}2&1\\1&2\end{pmatrix}\) is symmetric with eigenvalues
+\(1,3\): \(\|A\|_2=\rho(A)=3\).  For
+\(\begin{pmatrix}2&1\\0&2\end{pmatrix}\), \(\rho=2\), but
+\(A^TA=\begin{pmatrix}4&2\\2&5\end{pmatrix}\) has eigenvalues
+\(\frac{9\pm\sqrt{17}}2\), so
+\(\|A\|_2=\sqrt{(9+\sqrt{17})/2}=2.5616>2\).
+
+\step{(d)}
+\(\|A\|_2^2=\rho(A^TA)\le\|A^TA\|_\infty\le\|A^T\|_\infty\|A\|_\infty
+=\|A\|_1\|A\|_\infty\), since the row sums of \(A^T\) are the column
+sums of \(A\).
+
+\step{(e)}
+Write the matrix as \(\frac12I+N\), with \(N\) having ones on the
+subdiagonal; \(N^2\) has a single \(1\) in position \((3,1)\), and
+\(N^3=0\).  Since \(I\) and \(N\) commute, the binomial theorem gives
+\[
+  \Bigl(\tfrac12I+N\Bigr)^r=2^{-r}I+r\,2^{1-r}N+r(r-1)\,2^{1-r}N^2
+  =\begin{pmatrix}2^{-r}&0&0\\ r2^{1-r}&2^{-r}&0\\ r(r-1)2^{1-r}&r2^{1-r}&2^{-r}\end{pmatrix}.
+\]
+Every entry tends to zero because \(r^22^{-r}\to0\).  (Here
+\(\rho=\frac12<1\), although \(\|\cdot\|_1=\|\cdot\|_\infty=\frac32>1\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Eigenvalues of a tridiagonal matrix}{Proof}{8}\label{q:tridproof}
+\begin{qbox}
+Let \(A\) be the \(N\times N\) tridiagonal matrix with \(a\) on the
+diagonal, \(b\) above it and \(c\) below it, \(bc\ne0\).  Prove that
+its eigenvalues are
+\[
+  \lambda_s=a+2b\Bigl(\frac cb\Bigr)^{1/2}\cos\frac{s\pi}{N+1},
+  \qquad s=1,\dots,N,
+\]
+and find the eigenvectors.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Write \(A\mathbf v=\lambda\mathbf v\) as a difference equation
+    with \(v_0=v_{N+1}=0\).
+  \item \(v_j=m^j\) gives \(bm^2+(a-\lambda)m+c=0\): product of roots
+    \(m_1m_2=c/b\), sum \(m_1+m_2=(\lambda-a)/b\).
+  \item For \(b,c>0\):
+    \(\lambda_s=a+2\sqrt{bc}\cos\frac{s\pi}{N+1}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Step 1: difference equation}
+\(A\mathbf v=\lambda\mathbf v\), row by row, with \(v_0=v_{N+1}=0\):
+\[
+  cv_{j-1}+(a-\lambda)v_j+bv_{j+1}=0,\qquad j=1,\dots,N .
+\]
+\step{Step 2: general solution}
+\(v_j=m^j\) gives \(bm^2+(a-\lambda)m+c=0\), with roots \(m_1,m_2\).
+If \(m_1\ne m_2\), \(v_j=Bm_1^j+Cm_2^j\).
+
+\step{Step 3: equal roots are impossible}
+If \(m_1=m_2\), \(v_j=(B+Cj)m_1^j\); \(v_0=0\Rightarrow B=0\), and
+\(v_{N+1}=0\Rightarrow C=0\) (\(m_1\ne0\) since \(m_1m_2=c/b\ne0\)).
+Then \(\mathbf v=0\), impossible for an eigenvector.
+
+\step{Step 4: boundary conditions}
+\(v_0=0\Rightarrow C=-B\) (\(B\ne0\)); \(v_{N+1}=0\Rightarrow
+m_1^{N+1}=m_2^{N+1}\), so
+\[
+  \Bigl(\frac{m_1}{m_2}\Bigr)^{N+1}=1
+  \ \Longrightarrow\
+  \frac{m_1}{m_2}=e^{2is\pi/(N+1)},\qquad s=1,\dots,N
+\]
+(\(s=0\) is excluded because \(m_1\ne m_2\)).
+
+\step{Step 5: the roots}
+With \(m_1m_2=c/b\):
+\(m_1=\bigl(\frac cb\bigr)^{1/2}e^{is\pi/(N+1)}\),
+\(m_2=\bigl(\frac cb\bigr)^{1/2}e^{-is\pi/(N+1)}\).
+
+\step{Step 6: eigenvalues}
+\(m_1+m_2=\frac{\lambda-a}b\), so
+\[
+  \lambda_s=a+b\Bigl(\frac cb\Bigr)^{1/2}\bigl(e^{is\pi/(N+1)}+e^{-is\pi/(N+1)}\bigr)
+  =a+2b\Bigl(\frac cb\Bigr)^{1/2}\cos\frac{s\pi}{N+1}.
+\]
+\step{Step 7: eigenvectors}
+\(v_j=B(m_1^j-m_2^j)=2iB\bigl(\frac cb\bigr)^{j/2}\sin\frac{js\pi}{N+1}\);
+with \(2iB=1\),
+\[
+  \mathbf v_s=\Bigl[\Bigl(\tfrac cb\Bigr)^{1/2}\sin\tfrac{s\pi}{N+1},\
+  \Bigl(\tfrac cb\Bigr)\sin\tfrac{2s\pi}{N+1},\ \dots,\
+  \Bigl(\tfrac cb\Bigr)^{N/2}\sin\tfrac{Ns\pi}{N+1}\Bigr]^T .
+\]
+The \(N\) values of \(\lambda_s\) are distinct, so these are all the
+eigenvalues.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Eigenvectors of \(\mathrm{tridiag}(1,-2,1)\) of order 3}{Numerical}{4}\label{q:eig3}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~1, Exercise 1.)  Find the eigenvalues and
+eigenvectors of
+\(\begin{pmatrix}-2&1&0\\1&-2&1\\0&1&-2\end{pmatrix}\) and show that the
+eigenvectors are mutually orthogonal.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Q\ref{q:tridproof} with \(a=-2\), \(b=c=1\), \(N=3\):
+    \(\lambda_s=-2+2\cos\frac{s\pi}4\),
+    \((\mathbf v_s)_j=\sin\frac{js\pi}4\).
+  \item Eigenvectors of a symmetric matrix for distinct eigenvalues
+    are orthogonal.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\(\lambda_s=-2+2\cos\frac{s\pi}4\), \(s=1,2,3\):
+\[
+  \lambda_1=-2+\sqrt2,\qquad\lambda_2=-2,\qquad\lambda_3=-2-\sqrt2 .
+\]
+Eigenvectors \((\sin\frac{s\pi}4,\sin\frac{2s\pi}4,\sin\frac{3s\pi}4)\),
+scaled:
+\[
+  \mathbf v_1=(1,\sqrt2,1)^T,\qquad
+  \mathbf v_2=(1,0,-1)^T,\qquad
+  \mathbf v_3=(1,-\sqrt2,1)^T .
+\]
+Check for \(\mathbf v_1\): \(A\mathbf v_1=(-2+\sqrt2,\ 2-2\sqrt2,\ -2+\sqrt2)^T
+=(-2+\sqrt2)(1,\sqrt2,1)^T\).  Orthogonality:
+\[
+  \mathbf v_1\cdot\mathbf v_2=1-1=0,\qquad
+  \mathbf v_1\cdot\mathbf v_3=1-2+1=0,\qquad
+  \mathbf v_2\cdot\mathbf v_3=1-1=0 .
+\]
+This is expected: the matrix is symmetric with distinct eigenvalues.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Matrix stability of the fully implicit scheme}{Proof}{6}\label{q:old24}
+\begin{qbox}
+Show by the matrix method that the fully implicit scheme with Dirichlet
+conditions is unconditionally stable.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Fully implicit: \(A\mathbf U^{n+1}=\mathbf U^n+\mathbf b\),
+    \(A=\mathrm{tridiag}(-r,1+2r,-r)\).
+  \item Eigenvalues of \(A^{-1}\) are \(1/\lambda_s(A)\); symmetric
+    matrices have \(\|\cdot\|_2=\rho(\cdot)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+The scheme is \(A\mathbf U^{n+1}=\mathbf U^n+\mathbf b\) with
+\(A=\mathrm{tridiag}(-r,\,1+2r,\,-r)\) of size \(N-1\).  By the
+tridiagonal eigenvalue formula,
+\[
+  \lambda_s(A)=1+2r-2r\cos\frac{s\pi}N=1+4r\sin^2\frac{s\pi}{2N}\ \ge1 .
+\]
+\(A\) is real symmetric, so \(A^{-1}\) is symmetric with eigenvalues
+\(1/\lambda_s(A)\in(0,1)\).  Hence
+\(\|A^{-1}\|_2=\rho(A^{-1})<1\) for every \(r>0\), and
+\(\|(A^{-1})^n\|_2\le1\): unconditionally stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Matrix stability of Crank--Nicolson}{Proof}{6}\label{q:cnmat}
+\begin{qbox}
+Show by the matrix method that the Crank--Nicolson scheme with
+Dirichlet boundary conditions is unconditionally stable, and hence
+convergent for every \(r>0\).  Justify carefully why the eigenvalues of
+\(A^{-1}B\) are ratios of eigenvalues.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Crank--Nicolson: \(A\mathbf U^{n+1}=B\mathbf U^n\), with
+    \(A=\mathrm{tridiag}(-\frac r2,1+r,-\frac r2)\),
+    \(B=\mathrm{tridiag}(\frac r2,1-r,\frac r2)\).
+  \item In general the eigenvalues of \(A^{-1}B\) are \emph{not}
+    ratios of eigenvalues; here \(A\) and \(B\) are polynomials in the
+    same symmetric matrix.
+  \item Lax: consistent \(+\) stable \(\Rightarrow\) convergent.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Let \(T_0=\mathrm{tridiag}(1,-2,1)\) of order \(N-1\).  Then
+\[
+  A=I-\tfrac r2T_0,\qquad B=I+\tfrac r2T_0 .
+\]
+Both are polynomials in the same symmetric matrix \(T_0\), so they
+commute and share its eigenvectors \(\mathbf v_s\).  The eigenvalues of
+\(T_0\) are \(-2+2\cos\frac{s\pi}N=-4\sin^2\theta_s\),
+\(\theta_s=\frac{s\pi}{2N}\), so
+\[
+  A\mathbf v_s=(1+2r\sin^2\theta_s)\mathbf v_s,\qquad
+  B\mathbf v_s=(1-2r\sin^2\theta_s)\mathbf v_s,
+\]
+and therefore
+\[
+  A^{-1}B\,\mathbf v_s=\frac{1-2r\sin^2\theta_s}{1+2r\sin^2\theta_s}\,\mathbf v_s,
+  \qquad s=1,\dots,N-1 .
+\]
+Since \(2r\sin^2\theta_s>0\), each ratio has modulus less than \(1\).
+\(A^{-1}B\) is symmetric (a product of commuting symmetric matrices),
+so \(\|A^{-1}B\|_2=\rho(A^{-1}B)<1\) for every \(r>0\): the scheme is
+unconditionally stable.  It is also consistent
+(Q\ref{q:cnlte}), so by the Lax equivalence theorem it converges for
+every \(r>0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Stability of Crank--Nicolson by the energy method}{Proof}{6}\label{q:energy}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercise 9.)  Crank--Nicolson is used for
+\(u_t=u_{xx}\) with homogeneous Dirichlet conditions,
+\(Z_0^n=Z_M^n=0\).  With \(V_m=Z_m^{n+1}+Z_m^n\) and
+\(\|Z\|^2=\sum_mZ_m^2\), show that
+\[
+  \|Z^{n+1}\|^2-\|Z^n\|^2=-\frac r2\sum_{m=0}^{M-1}\bigl(V_{m+1}-V_m\bigr)^2,
+\]
+and deduce directly that the method is stable for all \(r>0\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Crank--Nicolson: \(Z^{n+1}-Z^n=\frac r2\delta^2(Z^{n+1}+Z^n)=\frac r2\delta^2V\).
+  \item \((a-b)(a+b)=a^2-b^2\).
+  \item Summation by parts, with \(V_0=V_M=0\):
+    \(\sum_{m=1}^{M-1}V_m\,\delta^2V_m=-\sum_{m=0}^{M-1}(V_{m+1}-V_m)^2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Multiply by \(V_m\) and sum}
+\(Z_m^{n+1}-Z_m^n=\frac r2\delta^2V_m\).  Multiplying by
+\(V_m=Z_m^{n+1}+Z_m^n\) and summing over \(m=1,\dots,M-1\),
+\[
+  \sum_m\bigl[(Z_m^{n+1})^2-(Z_m^n)^2\bigr]=\|Z^{n+1}\|^2-\|Z^n\|^2
+  =\frac r2\sum_{m=1}^{M-1}V_m\bigl(V_{m+1}-2V_m+V_{m-1}\bigr).
+\]
+\step{Summation by parts}
+\[
+  \sum_{m=1}^{M-1}V_m(V_{m+1}-V_m)-\sum_{m=1}^{M-1}V_m(V_m-V_{m-1}).
+\]
+Since \(V_0=V_M=0\), the first sum equals
+\(\sum_{m=0}^{M-1}V_m(V_{m+1}-V_m)\), and the second, with \(j=m-1\),
+equals \(\sum_{j=0}^{M-1}V_{j+1}(V_{j+1}-V_j)\).  Their difference is
+\(\sum_{m=0}^{M-1}(V_m-V_{m+1})(V_{m+1}-V_m)=-\sum_{m=0}^{M-1}(V_{m+1}-V_m)^2\).
+Hence
+\[
+  \|Z^{n+1}\|^2-\|Z^n\|^2=-\frac r2\sum_{m=0}^{M-1}(V_{m+1}-V_m)^2\le0 .
+\]
+\step{Stability}
+So \(\|Z^{n+1}\|\le\|Z^n\|\le\dots\le\|Z^0\|\) for every \(r>0\): any
+perturbation (or error) is never amplified, which is unconditional
+stability.  No eigenvalues are needed.
+
+(The exercise as extracted shows the factor \(r\); with
+\(V_m=Z_m^{n+1}+Z_m^n\) the factor is \(\frac r2\), as derived above and
+checked numerically.  The conclusion is the same.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A Neumann condition by a fictitious point}{Derivation}{5}\label{q:old25}
+\begin{qbox}
+For the explicit scheme with \(u_x(0,t)=0\), derive the equation at
+\(m=0\) using a fictitious point and central differences.  Compare its
+accuracy with the condition \(U_0^n=U_1^n\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Fictitious point: use the central difference in the BC to
+    eliminate \(U_{-1}\), then apply the scheme at \(m=0\).
+  \item Central \(O(h^2)\) versus one-sided \(O(h)\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Central difference: \(\frac{U_1^n-U_{-1}^n}{2h}=0\Rightarrow U_{-1}^n=U_1^n\).
+The scheme at \(m=0\),
+\(U_0^{n+1}=(1-2r)U_0^n+r(U_1^n+U_{-1}^n)\), becomes
+\[
+  U_0^{n+1}=(1-2r)U_0^n+2rU_1^n .
+\]
+The central approximation of \(u_x\) has error \(O(h^2)\), while
+\(U_0=U_1\), i.e.\ \(\frac{U_1-U_0}h=0\), has error
+\(\frac h2u_{xx}(0,t)=O(h)\).  So the fictitious-point treatment keeps
+the second-order spatial accuracy of the interior scheme.  The
+coefficients \(1-2r\) and \(2r\) are non-negative for \(r\le\frac12\),
+so the maximum-principle stability argument still applies.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Crank--Nicolson with derivative boundary conditions}{Proof}{10}\label{q:cnrobin}
+\begin{qbox}
+For \(u_t=u_{xx}\) on \(0\le x\le1\) with
+\(u_x-pu=f_0(t)\) at \(x=0\) and \(u_x+qu=f_1(t)\) at \(x=1\)
+(\(p,q\ge0\)), apply Crank--Nicolson at all points \(m=0,\dots,M\),
+eliminating fictitious values by central differences.  Show that the
+scheme is \(A\mathbf U^{n+1}=B\mathbf U^n+\mathbf k^n\) with
+\(A=I-\frac r2Q\), \(B=I+\frac r2Q\), find \(Q\), and prove that the
+scheme is unconditionally stable.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Fictitious points: \(U_{-1}=U_1-2hpU_0-2hf_0\),
+    \(U_{M+1}=U_{M-1}-2hqU_M+2hf_1\).
+  \item \(Q\) is not symmetric, but \(D^{-1}QD\) is, with
+    \(D=\mathrm{diag}(\sqrt2,1,\dots,1,\sqrt2)\): similar matrices have
+    the same eigenvalues.
+  \item \(\mu=\frac{1+x}{1-x}\) satisfies \(|\mu|\le1\iff x\le0\)
+    (\(x\) real).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The scheme}
+At the boundary points,
+\(\delta^2U_0=U_1-2U_0+U_{-1}=2U_1-2(1+ph)U_0-2hf_0\) and
+\(\delta^2U_M=2U_{M-1}-2(1+qh)U_M+2hf_1\).  So Crank--Nicolson at all
+\(M+1\) points gives \(A\mathbf U^{n+1}=B\mathbf U^n+\mathbf k^n\), with
+\(A=I-\frac r2Q\), \(B=I+\frac r2Q\),
+\[
+  Q=\begin{pmatrix}
+    -2(1+ph)&2&&&\\
+    1&-2&1&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&1&-2&1\\
+    &&&2&-2(1+qh)
+  \end{pmatrix}_{(M+1)\times(M+1)}
+\]
+and \(\mathbf k^n=rh\bigl(-(f_0^n+f_0^{n+1}),0,\dots,0,f_1^n+f_1^{n+1}\bigr)^T\).
+
+\step{Step 1: symmetrise}
+With \(D=\mathrm{diag}(\sqrt2,1,\dots,1,\sqrt2)\),
+\((D^{-1}QD)_{ij}=Q_{ij}d_j/d_i\): the corner pairs \((2,1)\) both
+become \(\sqrt2\), so \(\widetilde Q=D^{-1}QD\) is symmetric.  Then
+\[
+  D^{-1}(A^{-1}B)D=\bigl(I-\tfrac r2\widetilde Q\bigr)^{-1}\bigl(I+\tfrac r2\widetilde Q\bigr),
+\]
+which is symmetric (both factors are functions of \(\widetilde Q\)).
+So \(A^{-1}B\) has real eigenvalues, and in the norm
+\(\|\mathbf x\|_D=\|D^{-1}\mathbf x\|_2\) its norm equals its spectral
+radius: stability \(\iff\rho(A^{-1}B)\le1\).
+
+\step{Step 2: eigenvalues}
+If \(\lambda_j\) are the (real) eigenvalues of \(Q\), the eigenvalues
+of \(A^{-1}B\) are
+\(\mu_j=\frac{1+\frac12r\lambda_j}{1-\frac12r\lambda_j}\), and
+\(|\mu_j|\le1\) for all \(r>0\) if and only if \(\lambda_j\le0\).
+
+\step{Step 3: \(\lambda_j\le0\)}
+Let \(W=D^{-2}=\mathrm{diag}(\frac12,1,\dots,1,\frac12)\); \(WQ\) is
+symmetric and
+\[
+  -\mathbf x^TWQ\,\mathbf x=\sum_{j=0}^{M-1}(x_{j+1}-x_j)^2+ph\,x_0^2+qh\,x_M^2\ \ge0 .
+\]
+If \(Q\mathbf v=\lambda\mathbf v\) with \(\mathbf v\) real, then
+\(\lambda=\dfrac{\mathbf v^TWQ\mathbf v}{\mathbf v^TW\mathbf v}\le0\).
+Hence \(|\mu_j|\le1\) for all \(j\) and all \(r>0\): the scheme is
+unconditionally stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Stability of the two-dimensional explicit schemes}{Stability analysis}{7}\label{q:vn2d}
+\begin{qbox}
+For \(u_t=u_{x_1x_1}+u_{x_2x_2}\), show that the five-point explicit
+scheme \(U^{n+1}=[1+r(\delta_{x_1}^2+\delta_{x_2}^2)]U^n\) is stable if
+and only if \(r\le\frac14\), and that the nine-point scheme
+\(U^{n+1}=(1+r\delta_{x_1}^2)(1+r\delta_{x_2}^2)U^n\) is stable for
+\(r\le\frac12\).  What is the condition in \(d\) dimensions?
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Fourier mode \(e^{i(\beta lh+\gamma mh)}\);
+    \(s_1=\sin\frac{\beta h}2\), \(s_2=\sin\frac{\gamma h}2\).
+  \item Both schemes have LTE \(O(k^2+kh^2)\); they come from
+    truncating \(\exp(kD_1^2)\exp(kD_2^2)\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Five-point scheme}
+\(U_{l,m}^{n+1}=(1-4r)U_{l,m}^n+r\bigl(U_{l\pm1,m}^n+U_{l,m\pm1}^n\bigr)\).
+Substituting \(U_{l,m}^n=\xi^ne^{i(\beta l+\gamma m)h}\),
+\[
+  \xi=1-4r+2r(\cos\beta h+\cos\gamma h)=1-4r\bigl(s_1^2+s_2^2\bigr).
+\]
+\(\xi\le1\) always; \(\xi\ge-1\iff r\le\frac1{2(s_1^2+s_2^2)}\).  Since
+\(s_1^2+s_2^2\) can be as large as \(2\), stability holds for all modes
+if and only if \(\boxed{r\le\frac14}\).
+
+\step{Nine-point scheme}
+\(\xi=(1-4rs_1^2)(1-4rs_2^2)\).  Each factor lies in \([-1,1]\) when
+\(r\le\frac12\), so \(|\xi|\le1\): stable for \(r\le\frac12\), twice the
+five-point time step.
+
+\step{\(d\) dimensions}
+\(\xi=1-4r\sum_{i=1}^ds_i^2\), and the sum can reach \(d\), so the
+condition is \(r\le\frac1{2d}\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Truncation errors of the two-dimensional explicit formulas}{Derivation}{6}\label{q:te2d}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercise 11.)  Obtain the truncation
+errors of the two-dimensional explicit formulas
+\[
+  U^{n+1}=\bigl[1+r(\delta_{x_1}^2+\delta_{x_2}^2)\bigr]U^n
+  \qquad\text{and}\qquad
+  U^{n+1}=(1+r\delta_{x_1}^2)(1+r\delta_{x_2}^2)U^n,
+\]
+and show that when \(r=\frac16\) the second formula has truncation error
+\(O(k^3+kh^4)\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Exact: \(u^{n+1}=\exp(kD_1^2)\exp(kD_2^2)u^n=E_1E_2u^n\), with
+    \(E_i=1+r\delta_{x_i}^2+\frac12r(r-\frac16)\delta_{x_i}^4+d\,\delta_{x_i}^6+\cdots\).
+  \item \(\delta_{x_1}^2\delta_{x_2}^2u\approx h^4u_{x_1x_1x_2x_2}\);
+    \(r^2h^4=k^2\).
+  \item \(u_{tt}=(\nabla^2)^2u=u_{x_1^4}+2u_{x_1^2x_2^2}+u_{x_2^4}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Expansion of the exact operator}
+\[
+  E_1E_2=1+r(\delta_{x_1}^2+\delta_{x_2}^2)+r^2\delta_{x_1}^2\delta_{x_2}^2
+  +\tfrac12r\bigl(r-\tfrac16\bigr)(\delta_{x_1}^4+\delta_{x_2}^4)+\cdots,
+\]
+where the dots are terms of order \(\delta^6\) (\(\sim kh^4\) and
+\(k^3\) for fixed \(r\)).
+
+\step{Five-point formula}
+It omits \(r^2\delta_{x_1}^2\delta_{x_2}^2\) and the \(\delta^4\) terms, so
+\[
+  T=k^2u_{x_1x_1x_2x_2}+\tfrac12k^2\Bigl(1-\frac1{6r}\Bigr)\bigl(u_{x_1^4}+u_{x_2^4}\bigr)+\cdots
+  =\tfrac12k^2\Bigl[u_{tt}-\frac1{6r}\bigl(u_{x_1^4}+u_{x_2^4}\bigr)\Bigr]+\cdots,
+\]
+using \(r\,h^4=kh^2\), \(\frac12r(r-\frac16)h^4=\frac12k^2(1-\frac1{6r})\).
+Since \(u_{tt}\) contains \(2u_{x_1^2x_2^2}\), no value of \(r\) removes
+the \(k^2\) term: \(T=O(k^2+kh^2)\).
+
+\step{Nine-point (factored) formula}
+\((1+r\delta_{x_1}^2)(1+r\delta_{x_2}^2)=1+r(\delta_{x_1}^2+\delta_{x_2}^2)+r^2\delta_{x_1}^2\delta_{x_2}^2\)
+contains the cross term, so
+\[
+  T=\tfrac12k^2\Bigl(1-\frac1{6r}\Bigr)\bigl(u_{x_1^4}+u_{x_2^4}\bigr)+\cdots
+  =O(k^2+kh^2).
+\]
+For \(r=\frac16\) this term vanishes; so do the products
+\(r\delta_{x_1}^2\cdot\frac12r(r-\frac16)\delta_{x_2}^4\).  What remains
+starts with \(d(\delta_{x_1}^6+\delta_{x_2}^6)\), \(d=\frac1{3240}\),
+i.e.\ \(T=O(h^6)=O(k^3+kh^4)\) for fixed \(r\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Time-step limits in one, two and three dimensions}{Short answer}{5}\label{q:old27}
+\begin{qbox}
+With \(h=0.1\), what is the largest stable time step for the explicit
+scheme for the heat equation in 1D, 2D (five-point) and 3D?  What is it
+for the 2D nine-point scheme, and for Crank--Nicolson or ADI?
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Explicit heat equation in \(d\) dimensions: \(r\le\frac1{2d}\),
+    i.e.\ \(k\le\frac{h^2}{2d}\).
+  \item Crank--Nicolson and ADI: unconditionally stable.
+\end{itemize}
+\end{rem}
+\begin{solution}
+In \(d\) dimensions the explicit scheme needs \(r\le\frac1{2d}\), i.e.
+\(k\le\frac{h^2}{2d}\):
+\[
+  \text{1D: }k\le0.005,\qquad
+  \text{2D: }k\le0.0025,\qquad
+  \text{3D: }k\le0.00\overline{16}.
+\]
+The nine-point scheme has
+\(\xi=(1-4rs_1^2)(1-4rs_2^2)\), stable for \(r\le\frac12\), so
+\(k\le0.005\), twice the five-point limit.  Crank--Nicolson and the
+Peaceman--Rachford ADI scheme are unconditionally stable: no limit (the
+step is chosen for accuracy).
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Lecture 35: ADI, Three-Level and Du Fort--Frankel Schemes}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Peaceman--Rachford reproduces the factored scheme}{Proof}{6}\label{q:old28}
+\begin{qbox}
+Show that eliminating \(U^{n+1/2}\) from the Peaceman--Rachford
+equations
+\[
+  \bigl(1-\tfrac r2\delta_{x_1}^2\bigr)U^{n+1/2}=\bigl(1+\tfrac r2\delta_{x_2}^2\bigr)U^n,
+  \qquad
+  \bigl(1-\tfrac r2\delta_{x_2}^2\bigr)U^{n+1}=\bigl(1+\tfrac r2\delta_{x_1}^2\bigr)U^{n+1/2}
+\]
+gives the two-dimensional Crank--Nicolson-type scheme.  What assumption
+is needed?  Why is the split form preferred?
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item 2D Crank--Nicolson (factored):
+    \((1-\frac r2\delta_{x_1}^2)(1-\frac r2\delta_{x_2}^2)U^{n+1}
+    =(1+\frac r2\delta_{x_1}^2)(1+\frac r2\delta_{x_2}^2)U^n\).
+  \item Peaceman--Rachford: first half-step implicit in \(x_1\),
+    explicit in \(x_2\); second half-step the other way round.
+  \item Needs \(\delta_{x_1}^2\delta_{x_2}^2=\delta_{x_2}^2\delta_{x_1}^2\)
+    (constant coefficients, rectangle).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Apply \(\bigl(1-\frac r2\delta_{x_1}^2\bigr)\) to the second equation.
+If \(\delta_{x_1}^2\) and \(\delta_{x_2}^2\) commute,
+\[
+  \bigl(1-\tfrac r2\delta_{x_1}^2\bigr)\bigl(1-\tfrac r2\delta_{x_2}^2\bigr)U^{n+1}
+  =\bigl(1+\tfrac r2\delta_{x_1}^2\bigr)\bigl(1-\tfrac r2\delta_{x_1}^2\bigr)U^{n+1/2}
+  =\bigl(1+\tfrac r2\delta_{x_1}^2\bigr)\bigl(1+\tfrac r2\delta_{x_2}^2\bigr)U^n .
+\]
+(The commutation holds for constant coefficients on a rectangle.)
+
+The factored scheme couples all grid points at the new level through a
+large banded system.  The split form needs only tridiagonal solves: in
+the first half-step one tridiagonal system along each line in the
+\(x_1\)-direction, in the second along each line in the
+\(x_2\)-direction.  Each costs \(O(N)\) by the Thomas algorithm, so a
+full step costs \(O(N^2)\) for \(N^2\) unknowns.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Consistency of the Peaceman--Rachford half-steps}{Analysis}{5}\label{q:prhalf}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercise 14, first part.)  Show that if
+\(U^{n+1*}=U^{n+1/2}\), the individual formulas of the
+Peaceman--Rachford scheme
+\[
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U^{n+1*}=\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U^n,
+  \qquad
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U^{n+1}=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)U^{n+1*}
+\]
+are each consistent with \(u_t=u_{x_1x_1}+u_{x_2x_2}\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Each half-step advances by \(\frac k2\); consistency means
+    \(T/(\frac k2)\to0\).
+  \item \(\frac r2\delta_{x_i}^2v=\frac k2v_{x_ix_i}+\frac{kh^2}{24}v_{x_i^4}+\cdots\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{First half-step}
+Substitute the exact solution, with \(u^{n+1/2}\) for \(U^{n+1*}\), and
+expand about \((lh,mh,nk)\):
+\[
+  T_1=u^{n+\frac12}-u^n-\tfrac r2\delta_{x_1}^2u^{n+\frac12}-\tfrac r2\delta_{x_2}^2u^n .
+\]
+Here \(u^{n+\frac12}-u^n=\frac k2u_t+\frac{k^2}8u_{tt}+\cdots\),
+\(\frac r2\delta_{x_1}^2u^{n+\frac12}=\frac k2u_{x_1x_1}+\frac{k^2}4u_{x_1x_1t}+\frac{kh^2}{24}u_{x_1^4}+\cdots\)
+and \(\frac r2\delta_{x_2}^2u^n=\frac k2u_{x_2x_2}+\frac{kh^2}{24}u_{x_2^4}+\cdots\).
+So
+\[
+  T_1=\frac k2\bigl(u_t-u_{x_1x_1}-u_{x_2x_2}\bigr)+O(k^2+kh^2)=O(k^2+kh^2),
+\]
+and \(T_1/(\frac k2)=O(k+h^2)\to0\): consistent.
+
+\step{Second half-step}
+\(T_2=u^{n+1}-u^{n+\frac12}-\frac r2\delta_{x_2}^2u^{n+1}-\frac r2\delta_{x_1}^2u^{n+\frac12}\).
+Expand about \((lh,mh,(n+\frac12)k)\), writing \(u\) for the value
+there: \(u^{n+1}-u^{n+\frac12}=\frac k2u_t+\frac{k^2}8u_{tt}+\cdots\),
+\(\frac r2\delta_{x_2}^2u^{n+1}=\frac k2u_{x_2x_2}+\frac{k^2}4u_{x_2x_2t}+\frac{kh^2}{24}u_{x_2^4}+\cdots\),
+and \(\frac r2\delta_{x_1}^2u^{n+\frac12}=\frac k2u_{x_1x_1}+\frac{kh^2}{24}u_{x_1^4}+\cdots\).
+Hence
+\[
+  T_2=\frac k2\bigl(u_t-u_{x_1x_1}-u_{x_2x_2}\bigr)+O(k^2+kh^2)=O(k^2+kh^2),
+\]
+and \(T_2/(\frac k2)=O(k+h^2)\to0\): consistent.
+
+Each half-step is a first-order (in time) approximation; combined, the
+errors cancel to give the second-order Crank--Nicolson accuracy.
+(Compare the high-order Douglas split in Q\ref{q:mfcons}, whose
+half-steps are \emph{not} consistent.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Stability of the Peaceman--Rachford method}{Stability analysis}{8}\label{q:old29}
+\begin{qbox}
+Find the amplification factor of one full Peaceman--Rachford step and
+show that the method is unconditionally stable.  Is each half-step
+stable by itself?
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Fourier mode \(\xi^ne^{i(\beta lh+\gamma mh)}\), with
+    \(\delta_{x_1}^2\to-4s_1^2\), \(\delta_{x_2}^2\to-4s_2^2\).
+  \item \(\bigl|\frac{1-a}{1+a}\bigr|\le1\) for \(a\ge0\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Let \(U^n=\xi^ne^{i(\beta lh+\gamma mh)}\), \(s_1=\sin\frac{\beta h}2\),
+\(s_2=\sin\frac{\gamma h}2\), and \(\xi^*\) the half-step factor.  Then
+\[
+  (1+2rs_1^2)\,\xi^*=1-2rs_2^2,
+  \qquad
+  (1+2rs_2^2)\,\xi=(1-2rs_1^2)\,\xi^*,
+\]
+so
+\[
+  \xi=\frac{1-2rs_1^2}{1+2rs_1^2}\cdot\frac{1-2rs_2^2}{1+2rs_2^2}.
+\]
+Each factor has the Crank--Nicolson form \(\frac{1-a}{1+a}\) with
+\(a\ge0\), so \(|\xi|\le1\) for all \(r\), \(\beta\), \(\gamma\): the
+method is unconditionally stable.
+
+A half-step alone is not: \(\xi^*=\frac{1-2rs_2^2}{1+2rs_1^2}\) equals
+\(1-2r\) when \(s_1=0\), \(s_2=1\), which has modulus greater than \(1\)
+for \(r>1\).  Only the pair of half-steps is stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{One Peaceman--Rachford step}{Numerical}{6}\label{q:prnum}
+\begin{qbox}
+Solve \(u_t=u_{x_1x_1}+u_{x_2x_2}\) on the unit square, with
+\(u(x_1,x_2,0)=\sin\pi x_1\sin\pi x_2\) and \(u=0\) on the boundary, by
+one Peaceman--Rachford step with \(h=\frac13\) and \(r=1\).  Compare
+with the exact solution \(e^{-2\pi^2t}\sin\pi x_1\sin\pi x_2\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\bigl(1-\frac r2\delta_{x_1}^2\bigr)U^{*}=\bigl(1+\frac r2\delta_{x_2}^2\bigr)U^n\),
+    \(\bigl(1-\frac r2\delta_{x_2}^2\bigr)U^{n+1}=\bigl(1+\frac r2\delta_{x_1}^2\bigr)U^{*}\).
+  \item Written out: \((1+r)U_{l,m}^*-\frac r2(U_{l+1,m}^*+U_{l-1,m}^*)
+    =(1-r)U_{l,m}^n+\frac r2(U_{l,m+1}^n+U_{l,m-1}^n)\); a tridiagonal
+    system along each line \(x_2=\)const.
+  \item Amplification factor
+    \(\xi=\frac{1-2rs_1^2}{1+2rs_1^2}\cdot\frac{1-2rs_2^2}{1+2rs_2^2}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\(k=rh^2=\frac19\).  The interior points are \((l,m)\), \(l,m=1,2\), all
+with initial value \(\sin^2\frac\pi3=0.75\).  By symmetry all four
+values stay equal at every stage; call them \(U^*\) and \(U^1\).
+
+\step{First half-step (implicit in \(x_1\))}
+Along the line \(m=1\), with \(r=1\):
+\(2U_{l,1}^*-\frac12(U_{l+1,1}^*+U_{l-1,1}^*)=0\cdot U_{l,1}^0+\frac12(U_{l,2}^0+U_{l,0}^0)\).
+For \(l=1\): \(U_{0,1}^*=0\), \(U_{2,1}^*=U^*\), \(U_{1,2}^0=0.75\),
+\(U_{1,0}^0=0\):
+\[
+  2U^*-\tfrac12U^*=\tfrac12(0.75)\ \Longrightarrow\ 1.5\,U^*=0.375,
+  \qquad U^*=0.25 .
+\]
+(The \(2\times2\) system on each line is
+\(\begin{pmatrix}2&-\frac12\\-\frac12&2\end{pmatrix}\begin{pmatrix}U_{1}^*\\U_{2}^*\end{pmatrix}
+=\begin{pmatrix}0.375\\0.375\end{pmatrix}\).)
+
+\step{Second half-step (implicit in \(x_2\))}
+Along each line \(l=\)const:
+\(2U_{l,m}^1-\frac12(U_{l,m+1}^1+U_{l,m-1}^1)=\frac12(U_{l+1,m}^*+U_{l-1,m}^*)\),
+so \(1.5\,U^1=\frac12(0.25)=0.125\):
+\[
+  U^1=0.083333 .
+\]
+
+\step{Check and comparison}
+With \(s_1^2=s_2^2=\sin^2\frac\pi6=\frac14\),
+\(\xi=\bigl(\frac{1-\frac12}{1+\frac12}\bigr)^2=\frac19\), and
+\(0.75\times\frac19=0.083333\).  The exact value at \(t=\frac19\) is
+\(0.75\,e^{-2\pi^2/9}=0.083666\): an error of \(3.3\times10^{-4}\), although
+\(r=1\) is four times the explicit limit \(r\le\frac14\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Richardson's scheme is unstable: a determinant proof}{Proof}{6}\label{q:old30}
+\begin{qbox}
+The amplification matrix of the three-level scheme
+\(U^{n+1}=2r\delta^2U^n+U^{n-1}\) is
+\(G=\begin{pmatrix}-8rs^2&1\\1&0\end{pmatrix}\).  Without solving for the
+eigenvalues, prove that \(G\) has an eigenvalue of modulus greater than
+\(1\) whenever \(s\ne0\).
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Richardson: \(U_m^{n+1}=U_m^{n-1}+2r\delta^2U_m^n\); write as a
+    two-level system for \(W=(U,V)^T\), \(V^n=U^{n-1}\).
+  \item Amplification matrix
+    \(G=\begin{pmatrix}-8rs^2&1\\1&0\end{pmatrix}\); von Neumann:
+    \(\max|\lambda_i(G)|\le1\).
+  \item \(\lambda_1\lambda_2=\det G\), \(\lambda_1+\lambda_2=\mathrm{tr}\,G\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(\det G=\lambda_1\lambda_2=-1\) and
+\(\mathrm{trace}\,G=\lambda_1+\lambda_2=-8rs^2\).  The discriminant of
+\(\lambda^2+8rs^2\lambda-1\) is \(64r^2s^4+4>0\), so the eigenvalues are
+real and distinct.  Suppose both had modulus \(\le1\).  Since
+\(|\lambda_1||\lambda_2|=1\), both have modulus exactly \(1\); being
+real, they are \(\pm1\), and with product \(-1\) they are \(1\) and
+\(-1\).  Then the trace is \(0\), contradicting
+\(-8rs^2\ne0\).  Hence \(\max|\lambda_i|>1\) for every \(r>0\) and every
+mode with \(s\ne0\): the scheme is unconditionally unstable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Stability of the Du Fort--Frankel scheme}{Stability analysis}{10}\label{q:old31}
+\begin{qbox}
+Prove that the Du Fort--Frankel scheme
+\((1+2r)U_m^{n+1}=2r(U_{m+1}^n+U_{m-1}^n)+(1-2r)U_m^{n-1}\) is
+unconditionally stable.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Du Fort--Frankel:
+    \((1+2r)U_m^{n+1}=2r(U_{m+1}^n+U_{m-1}^n)+(1-2r)U_m^{n-1}\);
+    replace \(U_m^n\) in Richardson by \(\frac12(U_m^{n+1}+U_m^{n-1})\).
+  \item Characteristic equation
+    \((1+2r)\xi^2-4r\cos\theta\,\xi-(1-2r)=0\); product of roots
+    \(-\frac{1-2r}{1+2r}\).
+  \item The matrix-method proof is in Q\ref{q:dffmat}.
+\end{itemize}
+\end{rem}
+\begin{solution}
+Substitute \(U_m^n=\xi^ne^{i\beta mh}\), \(\theta=\beta h\):
+\[
+  (1+2r)\xi^2-4r\cos\theta\,\xi-(1-2r)=0,
+\]
+whose roots are the eigenvalues of the \(2\times2\) amplification
+matrix of the equivalent two-level system.  They are
+\[
+  \xi_{1,2}=\frac{2r\cos\theta\pm\sqrt{1-4r^2\sin^2\theta}}{1+2r}.
+\]
+\step{Case 1: \(4r^2\sin^2\theta\le1\) (real roots)}
+\[
+  |\xi_{1,2}|\le\frac{2r|\cos\theta|+\sqrt{1-4r^2\sin^2\theta}}{1+2r}
+  \le\frac{2r+1}{1+2r}=1 .
+\]
+\step{Case 2: \(4r^2\sin^2\theta>1\) (complex conjugate roots)}
+Then \(r>\frac12\), and
+\(|\xi|^2=|\xi_1\xi_2|=\bigl|\frac{-(1-2r)}{1+2r}\bigr|=\frac{2r-1}{2r+1}<1\).
+
+So \(|\xi_i|\le1\) for all \(r>0\) and all \(\theta\).  Roots of
+modulus one occur only for \(\theta=0\) or \(\pi\), where they are
+simple, so the powers of the amplification matrix stay bounded: the
+scheme is unconditionally stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Consistency of the Du Fort--Frankel scheme}{Derivation}{8}\label{q:old32}
+\begin{qbox}
+Show that the truncation error of the Du Fort--Frankel scheme (written
+as an approximation to \(u_t=u_{xx}\)) is
+\[
+  T=\Bigl(\frac kh\Bigr)^2u_{tt}+\frac{k^2}6u_{ttt}-\frac{h^2}{12}u_{xxxx}+\cdots .
+\]
+When is the scheme consistent?  What happens if \(k/h=c\) is held fixed?
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item \(u^{n+1}-u^{n-1}=2ku_t+\frac{k^3}3u_{ttt}+\cdots\),
+    \(u^{n+1}+u^{n-1}=2u+k^2u_{tt}+\cdots\).
+  \item Consistent with \(u_t=u_{xx}\) only if \(k/h\to0\); with
+    \(k/h=c\) fixed, consistent with \(u_t+c^2u_{tt}=u_{xx}\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+Write the scheme as
+\[
+  \frac{U_m^{n+1}-U_m^{n-1}}{2k}
+  =\frac{U_{m+1}^n-U_m^{n+1}-U_m^{n-1}+U_{m-1}^n}{h^2}.
+\]
+Using
+\(u^{n+1}-u^{n-1}=2ku_t+\frac{k^3}3u_{ttt}+\cdots\),
+\(u^{n+1}+u^{n-1}=2u+k^2u_{tt}+\cdots\) and
+\(u_{m+1}+u_{m-1}=2u+h^2u_{xx}+\frac{h^4}{12}u_{xxxx}+\cdots\),
+\[
+  T=u_t+\frac{k^2}6u_{ttt}-\Bigl[u_{xx}+\frac{h^2}{12}u_{xxxx}-\frac{k^2}{h^2}u_{tt}\Bigr]+\cdots
+   =\Bigl(\frac kh\Bigr)^2u_{tt}+\frac{k^2}6u_{ttt}-\frac{h^2}{12}u_{xxxx}+\cdots,
+\]
+since \(u_t=u_{xx}\).  So \(T\to0\) if and only if \(k/h\to0\).  With
+\(r=k/h^2\) fixed, \(k/h=rh\to0\), so the scheme is consistent.  But if
+\(k/h=c\) is fixed, \(T\to c^2u_{tt}\ne0\): the scheme is then
+consistent with the hyperbolic equation \(u_t+c^2u_{tt}=u_{xx}\), not
+with the heat equation.  Unconditional stability does not mean that any
+\(k\) gives a good answer.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Du Fort--Frankel with a large time step}{Numerical}{6}\label{q:old33}
+\begin{qbox}
+For \(u_t=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u(0,t)=u(1,t)=0\), take
+\(h=\frac14\), \(r=1\), and the exact value at \(t=k\) as the second
+starting level.  Compute \(U\) at \(x=\frac12\), \(t=2k\) by Du
+Fort--Frankel and compare with the exact value.  Explain the size of
+the error.
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item A three-level scheme needs \(U^0\) and \(U^1\).
+  \item For \(\sin\pi x\) data, \(U_{m+1}+U_{m-1}=2\cos(\pi h)U_m\).
+  \item Unconditional stability does not mean accuracy for every \(k\).
+\end{itemize}
+\end{rem}
+\begin{solution}
+\(k=\frac1{16}\).  The data stay proportional to \(\sin\pi x\):
+\(U_m^n=a_n\sin\pi x_m\), with \(U_{m+1}+U_{m-1}=2\cos\frac\pi4\,U_m\).
+The scheme gives
+\[
+  3a_{n+1}=2\cdot2\cos\tfrac\pi4\,a_n-a_{n-1}=2.828427\,a_n-a_{n-1}.
+\]
+With \(a_0=1\), \(a_1=e^{-\pi^2/16}=0.539641\):
+\[
+  a_2=\frac{2.828427\times0.539641-1}{3}=0.175445,
+\]
+so \(U(\tfrac12,2k)=0.175445\), against the exact
+\(e^{-2\pi^2/16}=0.291213\): an error of about \(40\%\).
+
+The reason is the consistency error \((k/h)^2u_{tt}\).  Here
+\(k/h=\frac14\), and for this mode \(u_{tt}=\pi^4u\approx97.4u\), so the
+extra term is about \(6.1u\), comparable with \(u_t=-\pi^2u\approx-9.9u\).
+The scheme is stable, but at this step size it is not accurate.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The three-level formula of maximum accuracy}{Derivation / stability analysis}{10}\label{q:maxacc}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Exercise 30.)  Show that the formula of
+maximum accuracy for \(u_t=u_{xx}\) involving the grid points
+\((mh,(n+1)k)\), \((mh,nk)\), \((mh,(n-1)k)\), \(((m\pm1)h,nk)\) (the
+points of the Du Fort--Frankel scheme) is
+\[
+  (1+6r)U_m^{n+1}=2(1-12r^2)U_m^n+12r^2\bigl(U_{m+1}^n+U_{m-1}^n\bigr)-(1-6r)U_m^{n-1}.
+\]
+Find its truncation error and show that it is stable provided
+\(r\le\frac1{2\sqrt3}\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Undetermined coefficients: expand every point about
+    \((mh,nk)\) and use \(u_t=u_{xx}\), \(u_{tt}=u_{xxxx}\),
+    \(u_{ttt}=u_{xxxxxx}\) to remove time derivatives.
+  \item For a real quadratic \(z^2+a_1z+a_0\): both roots in
+    \(|z|\le1\) iff \(|a_0|\le1\) and \(|a_1|\le1+a_0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Derivation}
+Seek \(\alpha_1U_m^{n+1}+\alpha_0U_m^n+\beta(U_{m+1}^n+U_{m-1}^n)+\alpha_{-1}U_m^{n-1}=0\).
+Expanding,
+\begin{align*}
+  u:&\quad \alpha_1+\alpha_0+2\beta+\alpha_{-1},\\
+  u_t=u_{xx}:&\quad (\alpha_1-\alpha_{-1})k+\beta h^2,\\
+  u_{tt}=u_{xxxx}:&\quad \tfrac12(\alpha_1+\alpha_{-1})k^2+\tfrac1{12}\beta h^4,\\
+  u_{ttt}=u_{xxxxxx}:&\quad \tfrac16(\alpha_1-\alpha_{-1})k^3+\tfrac1{360}\beta h^6 .
+\end{align*}
+Four coefficients (one fixed by scaling) allow three conditions: set
+the first three coefficients to zero.  Take \(\beta=-12r^2\).  Then
+\(\alpha_1-\alpha_{-1}=-\beta h^2/k=12r\) and
+\(\alpha_1+\alpha_{-1}=-\beta h^4/(6k^2)=2\), so
+\(\alpha_1=1+6r\), \(\alpha_{-1}=1-6r\), and
+\(\alpha_0=-(\alpha_1+\alpha_{-1}+2\beta)=-2(1-12r^2)\).  This is the
+stated formula.
+
+\step{Truncation error}
+The first non-zero term is the \(u_{xxxxxx}\) one:
+\[
+  T=\Bigl(\tfrac16\cdot12r\,k^3-\tfrac{12r^2}{360}h^6\Bigr)\frac{\partial^6u}{\partial x^6}+\cdots
+  =\Bigl(2r^2-\frac1{30}\Bigr)k^2h^2\frac{\partial^6u}{\partial x^6}+\cdots,
+\]
+using \(k=rh^2\).  The formula is \(12rk\,(u_t-u_{xx})+T\), so the
+normalised error is \(T/(12rk)=O(h^4)\) for fixed \(r\) (and it is of
+even higher order when \(r^2=\frac1{60}\)).
+
+\step{Stability}
+With \(U_m^n=\xi^ne^{i\beta mh}\) and \(S=\sin^2\frac{\beta h}2\),
+\(U_{m+1}+U_{m-1}=(2-4S)U_m\), so
+\[
+  (1+6r)\xi^2-2\bigl(1-24r^2S\bigr)\xi+(1-6r)=0 .
+\]
+Divide by \(1+6r\): \(a_0=\frac{1-6r}{1+6r}\), \(|a_0|<1\) for \(r>0\);
+and \(|a_1|\le1+a_0\) reads
+\[
+  \frac{2|1-24r^2S|}{1+6r}\le\frac2{1+6r}\iff|1-24r^2S|\le1\iff24r^2S\le2 .
+\]
+This must hold for all \(S\in[0,1]\): \(r^2\le\frac1{12}\), i.e.\
+\[
+  \boxed{r\le\frac1{2\sqrt3}}.
+\]
+(Equality \(|a_1|=1+a_0\) gives a root \(-1\), simple, which is
+allowed.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Short answers on Lecture 35}{Short answer}{6}\label{q:old34}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item Du Fort--Frankel contains \(U_m^{n+1}\) on both sides.  Is it
+    explicit or implicit?
+  \item What extra information does a three-level scheme need to start?
+  \item Richardson's scheme has truncation error \(O(k^2+h^2)\), better
+    than the explicit scheme.  Why is it useless?
+  \item In ADI, what does ``alternating direction implicit'' refer to?
+\end{enumerate}
+\end{qbox}
+\begin{rem}
+\begin{itemize}
+  \item Explicit: the only unknown at the new level in each equation.
+  \item Lax equivalence: consistent \(+\) stable \(\iff\) convergent.
+\end{itemize}
+\end{rem}
+\begin{solution}
+\step{(a)}
+Explicit: \(U_m^{n+1}\) is the only unknown at the new level in each
+equation, so it is obtained directly by dividing by \(1+2r\); no system
+has to be solved.
+
+\step{(b)}
+Two initial levels, \(U^0\) and \(U^1\).  \(U^1\) must be computed by a
+two-level method (for example one explicit or Crank--Nicolson step, or
+a Taylor expansion) of adequate accuracy.
+
+\step{(c)}
+It is unconditionally unstable (Q\ref{q:old30}): for every \(r>0\) some mode grows
+like \(|\lambda_2|^n\) with \(|\lambda_2|>1\).  By the Lax equivalence
+theorem it does not converge, whatever its truncation error.
+
+\step{(d)}
+Each half-step is implicit in one space direction and explicit in the
+other, and the implicit direction alternates between \(x_1\) and
+\(x_2\) from one half-step to the next.
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Block Matrices and the Du Fort--Frankel Scheme by the Matrix Method}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Eigenvalues of block matrices}{Proof / numerical}{8}\label{q:block}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item Let \(A=\begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}\),
+    where the \(n\times n\) blocks \(A_{ij}\) have a common set of
+    \(n\) linearly independent eigenvectors \(\mathbf v_k\), with
+    \(A_{ij}\mathbf v_k=\lambda_{ij}^{(k)}\mathbf v_k\).  Prove that the
+    eigenvalues of \(A\) are the eigenvalues of the \(2\times2\)
+    matrices \(\bigl[\lambda_{ij}^{(k)}\bigr]\), \(k=1,\dots,n\).
+  \item Use this to find the eigenvalues of
+    \(\begin{bmatrix}T&I\\I&T\end{bmatrix}\), where
+    \(T=\begin{bmatrix}0&1\\1&0\end{bmatrix}\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Theorem (Lecture 36): if all blocks \(A_{ij}\) (\(m\times m\)
+    blocks of size \(n\)) share \(n\) independent eigenvectors, the
+    eigenvalues of \(A\) are those of the \(m\times m\) matrices
+    \(\Lambda^{(k)}=\bigl[\lambda_{ij}^{(k)}\bigr]\): \(mn\) in total.
+  \item Look for eigenvectors of the form
+    \((\alpha_1\mathbf v,\alpha_2\mathbf v)^T\).
+  \item \(I\) has every vector as eigenvector (eigenvalue \(1\)); the
+    zero block has eigenvalue \(0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Proof}
+Fix \(k\) and write \(\mathbf v=\mathbf v_k\),
+\(\lambda_{ij}=\lambda_{ij}^{(k)}\).  For constants \(\alpha_1,\alpha_2\),
+\[
+  \begin{bmatrix}A_{11}&A_{12}\\A_{21}&A_{22}\end{bmatrix}
+  \begin{bmatrix}\alpha_1\mathbf v\\\alpha_2\mathbf v\end{bmatrix}
+  =\begin{bmatrix}(\lambda_{11}\alpha_1+\lambda_{12}\alpha_2)\mathbf v\\
+  (\lambda_{21}\alpha_1+\lambda_{22}\alpha_2)\mathbf v\end{bmatrix}.
+\]
+This equals \(\mu\,(\alpha_1\mathbf v,\alpha_2\mathbf v)^T\) if and only if
+\[
+  (\lambda_{11}-\mu)\alpha_1+\lambda_{12}\alpha_2=0,\qquad
+  \lambda_{21}\alpha_1+(\lambda_{22}-\mu)\alpha_2=0,
+\]
+which has a non-trivial solution \((\alpha_1,\alpha_2)\) if and only if
+\[
+  \det\begin{bmatrix}\lambda_{11}-\mu&\lambda_{12}\\\lambda_{21}&\lambda_{22}-\mu\end{bmatrix}=0,
+\]
+i.e.\ \(\mu\) is an eigenvalue of \(\bigl[\lambda_{ij}\bigr]\).  Each
+\(k\) gives \(2\) eigenvalues, with eigenvectors
+\((\alpha_1\mathbf v_k,\alpha_2\mathbf v_k)^T\); these \(2n\) vectors are
+linearly independent (the \(\mathbf v_k\) are), so all \(2n\)
+eigenvalues of \(A\) are obtained.
+
+\step{(b) Example}
+\(T\) and \(I\) share the eigenvectors \(\mathbf v_1=(1,1)^T\) (\(T\):
+\(1\)) and \(\mathbf v_2=(1,-1)^T\) (\(T\): \(-1\)); \(I\) has eigenvalue
+\(1\) for both.
+\[
+  k=1:\ \begin{bmatrix}1&1\\1&1\end{bmatrix}\to\mu=2,\,0;
+  \qquad
+  k=2:\ \begin{bmatrix}-1&1\\1&-1\end{bmatrix}\to\mu=0,\,-2 .
+\]
+So the eigenvalues are \(2,0,0,-2\).  (Check: the \(4\times4\) matrix has
+trace \(0\) and rank \(2\), and \((1,1,1,1)^T\) gives eigenvalue \(2\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Du Fort--Frankel: stability by the matrix method}{Stability analysis}{10}\label{q:dffmat}
+\begin{qbox}
+Investigate by the matrix method the stability of the Du Fort--Frankel
+scheme
+\[
+  U_m^{n+1}=\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)+\frac{1-2r}{1+2r}U_m^{n-1},
+  \qquad r=\frac k{h^2},
+\]
+for \(u_t=u_{xx}\), \(0<x<1\), \(t>0\), for fixed mesh length (\(Nh=1\)),
+with \(u\) known on \(x=0\) and \(x=1\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Reduce three levels to two: \(V^n=U^{n-1}\), \(W=(U,V)^T\),
+    \(W^{n+1}=BW^n+g^n\); stable if every eigenvalue of \(B\) has
+    modulus \(\le1\).
+  \item \(\mathrm{tridiag}(1,0,1)\) of order \(N-1\) has the distinct
+    eigenvalues \(2\cos\frac{k\pi}N\).
+  \item Block theorem (Q\ref{q:block}).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Matrix form}
+With \(U^n=(U_1^n,\dots,U_{N-1}^n)^T\),
+\[
+  U^{n+1}=\frac{2r}{1+2r}AU^n+\frac{1-2r}{1+2r}U^{n-1}+f_n,
+  \qquad A=\mathrm{tridiag}(1,0,1)_{(N-1)\times(N-1)},
+\]
+\(f_n=\frac{2r}{1+2r}(U_0^n,0,\dots,0,U_N^n)^T\).
+
+\step{Two-level form}
+With \(V^n=U^{n-1}\) and \(W=(U,V)^T\):
+\[
+  W^{n+1}=BW^n+g^n,\qquad
+  B=\begin{bmatrix}\dfrac{2r}{1+2r}A&\dfrac{1-2r}{1+2r}I\\[6pt] I&0\end{bmatrix},
+  \qquad g^n=\begin{bmatrix}f_n\\0\end{bmatrix}.
+\]
+The scheme is stable if every eigenvalue of \(B\) has modulus \(\le1\).
+
+\step{Eigenvalues of \(B\)}
+\(A\) has the \(N-1\) distinct eigenvalues
+\(\lambda_k=2\cos\frac{k\pi}N\), so it has \(N-1\) independent
+eigenvectors \(\mathbf v_k\), which are also eigenvectors of \(I\)
+(eigenvalue \(1\)) and \(0\) (eigenvalue \(0\)).  By the block theorem
+the eigenvalues \(\lambda\) of \(B\) are those of
+\(\begin{bmatrix}\frac{2r}{1+2r}\lambda_k&\frac{1-2r}{1+2r}\\1&0\end{bmatrix}\):
+\[
+  \lambda^2-\frac{2r\lambda_k}{1+2r}\lambda-\frac{1-2r}{1+2r}=0
+  \ \Longrightarrow\
+  \lambda=\frac{r\lambda_k\pm\bigl(1+(\lambda_k^2-4)r^2\bigr)^{1/2}}{1+2r},
+\]
+that is,
+\[
+  \lambda=\frac{2r\cos\frac{k\pi}N\pm\bigl(1-4r^2\sin^2\frac{k\pi}N\bigr)^{1/2}}{1+2r}.
+\]
+
+\step{Case I: \(0\le1-4r^2\sin^2\frac{k\pi}N<1\) (real roots)}
+Since \(|\cos\frac{k\pi}N|<1\),
+\(|\lambda|<\frac{2r+1}{1+2r}=1\).
+
+\step{Case II: \(1-4r^2\sin^2\frac{k\pi}N<0\) (complex roots)}
+\[
+  |\lambda|=\frac{\bigl(4r^2\cos^2\frac{k\pi}N+4r^2\sin^2\frac{k\pi}N-1\bigr)^{1/2}}{1+2r}
+  =\frac{(4r^2-1)^{1/2}}{1+2r}=\Bigl(\frac{2r-1}{2r+1}\Bigr)^{1/2}<1 .
+\]
+Hence all eigenvalues of \(B\) have modulus less than \(1\) for every
+\(r>0\): for a fixed mesh size the scheme is unconditionally stable.
+(It is consistent only if \(k/h\to0\), Q\ref{q:old32}.)
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Elliptic Equations and the Five-Point Formula}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Boundary value problems and the five-point formula}{Derivation}{8}\label{q:fivept}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item State the Dirichlet, Neumann and Robin problems for an
+    elliptic equation in a bounded region \(R\).
+  \item Derive the five-point replacement of Laplace's equation on a
+    square grid of spacing \(h\), and show that its local truncation
+    error is \(\frac{h^2}{12}\bigl(u_{x_1^4}+u_{x_2^4}\bigr)+\cdots\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(au_{x_1x_1}+2bu_{x_1x_2}+cu_{x_2x_2}=d\) is elliptic if
+    \(b^2-ac<0\); Laplace \(\nabla^2u=0\), Poisson \(\nabla^2u=f\).
+  \item \(u_{l+1,m}+u_{l-1,m}-2u_{l,m}=h^2u_{x_1x_1}+\frac{h^4}{12}u_{x_1^4}+\cdots\).
+  \item Five-point: \(U_{l+1,m}+U_{l-1,m}+U_{l,m+1}+U_{l,m-1}-4U_{l,m}=h^2f_{l,m}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) The three problems}
+\begin{itemize}
+  \item \emph{Dirichlet (first BVP):} \(u\) is prescribed on
+    \(\partial R\).
+  \item \emph{Neumann (second BVP):} \(\partial u/\partial n=f\) on
+    \(\partial R\), \(n\) the outward normal.
+  \item \emph{Robin (third BVP):} \(\alpha u+\beta\,\partial u/\partial
+    n=\gamma\) on \(\partial R\), with \(\alpha,\beta>0\).
+\end{itemize}
+
+\step{(b) Derivation}
+By Taylor's theorem about \((lh,mh)\),
+\[
+  u_{l\pm1,m}=u\pm hu_{x_1}+\frac{h^2}2u_{x_1x_1}\pm\frac{h^3}6u_{x_1^3}+\frac{h^4}{24}u_{x_1^4}\pm\cdots,
+\]
+and similarly for \(u_{l,m\pm1}\).  Adding all four, the odd terms
+cancel:
+\[
+  u_{l+1,m}+u_{l-1,m}+u_{l,m+1}+u_{l,m-1}-4u_{l,m}
+  =h^2\nabla^2u+\frac{h^4}{12}\bigl(u_{x_1^4}+u_{x_2^4}\bigr)+\cdots .
+\]
+Dividing by \(h^2\),
+\(\nabla^2u\approx\frac1{h^2}\bigl(u_{l+1,m}+u_{l-1,m}+u_{l,m+1}+u_{l,m-1}-4u_{l,m}\bigr)\),
+with local truncation error
+\(\frac{h^2}{12}\bigl(u_{x_1^4}+u_{x_2^4}\bigr)+\cdots=O(h^2)\).  The
+five-point replacement of Laplace's equation is
+\[
+  U_{l+1,m}+U_{l-1,m}+U_{l,m+1}+U_{l,m-1}-4U_{l,m}=0 .
+\]
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Difference coefficients from the Taylor-series system}{Derivation}{6}\label{q:taylorcoef}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~3, Example 3 and Exercise 4.)  Laplace's
+equation is replaced at \(P\) by
+\(L_hU=\alpha_0U_P-\sum_{i=1}^4\alpha_iU_{Q_i}=0\), where \(L_h\)
+approximates \(-\nabla^2\).
+\begin{enumerate}[label=(\alph*)]
+  \item For the neighbours \((h,0),(0,h),(-h,0),(0,-h)\) relative to
+    \(P\), show that the Taylor-series conditions give
+    \(\alpha_0=\frac4{h^2}\), \(\alpha_1=\dots=\alpha_4=\frac1{h^2}\).
+  \item Find \(\alpha_0,\dots,\alpha_4\) for the neighbours
+    \((2h,0),(0,h),(-2h,0),(0,-h)\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item For \(Q_i=P+(a_i,b_i)\):
+    \(u_{Q_i}=u+a_iu_{x_1}+b_iu_{x_2}+\frac12(a_i^2u_{x_1x_1}+2a_ib_iu_{x_1x_2}+b_i^2u_{x_2x_2})+\cdots\).
+  \item Require \(L_hu=-\nabla^2u+\)(higher order): match the
+    coefficients of \(u,u_{x_1},u_{x_2},u_{x_1x_1},u_{x_1x_2},u_{x_2x_2}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Conditions}
+\begin{align*}
+  L_hu&=\Bigl(\alpha_0-\sum\alpha_i\Bigr)u-\Bigl(\sum\alpha_ia_i\Bigr)u_{x_1}-\Bigl(\sum\alpha_ib_i\Bigr)u_{x_2}\\
+  &\quad-\tfrac12\Bigl(\sum\alpha_ia_i^2\Bigr)u_{x_1x_1}-\Bigl(\sum\alpha_ia_ib_i\Bigr)u_{x_1x_2}
+  -\tfrac12\Bigl(\sum\alpha_ib_i^2\Bigr)u_{x_2x_2}-\cdots .
+\end{align*}
+For \(L_hu\approx-(u_{x_1x_1}+u_{x_2x_2})\):
+\[
+  \alpha_0=\sum\alpha_i,\quad \sum\alpha_ia_i=\sum\alpha_ib_i=0,\quad
+  \sum\alpha_ia_ib_i=0,\quad \tfrac12\sum\alpha_ia_i^2=\tfrac12\sum\alpha_ib_i^2=1 .
+\]
+
+\step{(a) Square stencil}
+\((a_i,b_i)=(h,0),(0,h),(-h,0),(0,-h)\).  First-order conditions:
+\(h(\alpha_1-\alpha_3)=0\), \(h(\alpha_2-\alpha_4)=0\); the mixed one
+holds automatically (\(a_ib_i=0\)).  Second order:
+\(\frac12h^2(\alpha_1+\alpha_3)=1\Rightarrow\alpha_1=\alpha_3=\frac1{h^2}\),
+and likewise \(\alpha_2=\alpha_4=\frac1{h^2}\).  Then
+\(\alpha_0=\frac4{h^2}\): the five-point formula
+\(\frac1{h^2}(4U_P-\sum U_{Q_i})=0\).  Four neighbours are just enough
+for these five conditions (one is automatic).
+
+\step{(b) Stretched stencil}
+\((a_i,b_i)=(2h,0),(0,h),(-2h,0),(0,-h)\).  First order gives
+\(\alpha_1=\alpha_3\), \(\alpha_2=\alpha_4\).  Second order:
+\(\frac12(4h^2)(\alpha_1+\alpha_3)=1\Rightarrow\alpha_1=\alpha_3=\frac1{4h^2}\),
+and \(\frac12h^2(\alpha_2+\alpha_4)=1\Rightarrow\alpha_2=\alpha_4=\frac1{h^2}\).
+Hence
+\[
+  \alpha_0=\frac2{4h^2}+\frac2{h^2}=\frac5{2h^2},\qquad
+  \alpha_1=\alpha_3=\frac1{4h^2},\qquad \alpha_2=\alpha_4=\frac1{h^2}.
+\]
+(This agrees with the rectangular-mesh formula of Q\ref{q:rect} with
+\(h_1=2h\), \(h_2=h\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The five-point matrix: structure and eigenvalues}{Proof}{8}\label{q:fivemat}
+\begin{qbox}
+For Laplace's equation on the unit square with Dirichlet conditions
+and \(h=1/N\):
+\begin{enumerate}[label=(\alph*)]
+  \item show that the five-point equations form \(AU=b\), with \(A\) of
+    order \((N-1)^2\), block tridiagonal, and with band width \(2N-1\)
+    for the natural ordering (Mitchell--Griffiths, Ch.~3, Exercise 12);
+  \item show that the eigenvalues of \(A\) are
+    \(\lambda_{ij}=-4\bigl(\sin^2\frac{i\pi}{2N}+\sin^2\frac{j\pi}{2N}\bigr)\),
+    \(1\le i,j\le N-1\), and hence \(|A|\ne0\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(A=\mathrm{tridiag}(I,B,I)\), \(B=\mathrm{tridiag}(1,-4,1)\),
+    blocks of order \(N-1\).
+  \item \(\mathrm{tridiag}(1,0,1)\) of order \(N-1\): eigenvalues
+    \(2\cos\frac{j\pi}N\), eigenvectors \((\sin\frac{lj\pi}N)_l\).
+  \item \(2\cos\theta-2=-4\sin^2\frac\theta2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Structure}
+There are \((N-1)^2\) interior points, one unknown each, so \(A\) has
+order \((N-1)^2\).  Order the unknowns line by line:
+\(U=(U_{1,1},\dots,U_{1,N-1},U_{2,1},\dots,U_{N-1,N-1})^T\).  The
+equation at \((l,m)\) couples \(U_{l,m\pm1}\) (same block, positions
+\(\pm1\)) and \(U_{l\pm1,m}\) (neighbouring blocks, positions
+\(\pm(N-1)\)).  So
+\[
+  A=\begin{bmatrix}B&I&&\\I&B&I&\\&\ddots&\ddots&\ddots\\&&I&B\end{bmatrix},
+  \qquad B=\mathrm{tridiag}(1,-4,1),
+\]
+and \(b\) holds the boundary values.  The non-zero entries of each row
+lie within \(N-1\) positions of the diagonal, so the band width is
+\(2(N-1)+1=2N-1\).
+
+\step{(b) Eigenvalues}
+\(B=-4I+\mathrm{tridiag}(1,0,1)\) and \(I\) share the eigenvectors
+\(\mathbf v_i\), with eigenvalues \(\beta_i=-4+2\cos\frac{i\pi}N\) and
+\(1\).  By the block theorem (Q\ref{q:block}: if all the blocks share
+a complete set of eigenvectors, the eigenvalues of \(A\) are those of
+the matrices formed from the block eigenvalues), with \(N-1\) blocks
+per row, the eigenvalues of \(A\) are those of
+\(\mathrm{tridiag}(1,\beta_i,1)=\beta_iI+\mathrm{tridiag}(1,0,1)\),
+namely \(\beta_i+2\cos\frac{j\pi}N\):
+\[
+  \lambda_{ij}=-4+2\cos\frac{i\pi}N+2\cos\frac{j\pi}N
+  =-4\Bigl(\sin^2\frac{i\pi}{2N}+\sin^2\frac{j\pi}{2N}\Bigr).
+\]
+All \(\lambda_{ij}<0\), so none is zero: \(|A|\ne0\) and the discrete
+Dirichlet problem has a unique solution.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Rectangular mesh}{Derivation}{6}\label{q:rect}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~3, Exercise 1; exercise of Lecture 37.)
+Derive the five-point replacement of Laplace's equation at
+\((lh_1,mh_2)\):
+\[
+  \theta^{-1}(U_{l+1,m}+U_{l-1,m})+\theta(U_{l,m+1}+U_{l,m-1})-2(\theta+\theta^{-1})U_{l,m}=0,
+  \qquad\theta=\frac{h_1}{h_2},
+\]
+and show that its local truncation error is
+\(\frac1{12}\bigl(h_1^2u_{x_1^4}+h_2^2u_{x_2^4}\bigr)+\cdots\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(u_{l+1,m}+u_{l-1,m}-2u_{l,m}=h_1^2u_{x_1x_1}+\frac{h_1^4}{12}u_{x_1^4}+\cdots\);
+    similarly in \(x_2\) with \(h_2\).
+  \item Multiply the central-difference equation by \(h_1h_2\);
+    divide by \(h_1h_2\) to get the LTE of \(\nabla^2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Derivation}
+Central differences give
+\[
+  \frac{U_{l+1,m}-2U_{l,m}+U_{l-1,m}}{h_1^2}+\frac{U_{l,m+1}-2U_{l,m}+U_{l,m-1}}{h_2^2}=0 .
+\]
+Multiplying by \(h_1h_2\), with \(h_2/h_1=\theta^{-1}\), \(h_1/h_2=\theta\):
+\(\theta^{-1}(U_{l+1,m}-2U_{l,m}+U_{l-1,m})+\theta(U_{l,m+1}-2U_{l,m}+U_{l,m-1})=0\),
+which is the stated formula.
+
+\step{Truncation error}
+Substituting the exact solution and dividing by \(h_1h_2\):
+\[
+  \frac1{h_1^2}\Bigl(h_1^2u_{x_1x_1}+\frac{h_1^4}{12}u_{x_1^4}\Bigr)
+  +\frac1{h_2^2}\Bigl(h_2^2u_{x_2x_2}+\frac{h_2^4}{12}u_{x_2^4}\Bigr)+\cdots
+  =\nabla^2u+\frac1{12}\bigl(h_1^2u_{x_1^4}+h_2^2u_{x_2^4}\bigr)+\cdots .
+\]
+Since \(\nabla^2u=0\), the LTE is
+\(\frac1{12}\bigl(h_1^2u_{x_1^4}+h_2^2u_{x_2^4}\bigr)=O(h_1^2+h_2^2)\).
+For \(\theta=1\) it reduces to the square five-point formula.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Laplace and Poisson problems by the five-point formula}{Numerical}{8}\label{q:lapnum}
+\begin{qbox}
+On the unit square, with the five-point formula:
+\begin{enumerate}[label=(\alph*)]
+  \item solve \(\nabla^2u=0\) with \(u=\sin\pi x_1\) on \(x_2=1\) and
+    \(u=0\) on the other three sides, for \(h=\frac13\); compare with
+    \(u=\sin\pi x_1\,\sinh\pi x_2/\sinh\pi\);
+  \item solve \(\nabla^2u=-1\) with \(u=0\) on the boundary, for
+    \(h=\frac14\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(U_{l+1,m}+U_{l-1,m}+U_{l,m+1}+U_{l,m-1}-4U_{l,m}=h^2f_{l,m}\).
+  \item Use the symmetry of the data to reduce the number of
+    unknowns.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Laplace, \(h=\frac13\)}
+Interior points \((l,m)\), \(l,m=1,2\).  The data are symmetric about
+\(x_1=\frac12\), so \(U_{1,1}=U_{2,1}=a\), \(U_{1,2}=U_{2,2}=b\).  The
+top boundary values are \(\sin\frac\pi3=\sin\frac{2\pi}3=0.866025\).
+\begin{align*}
+  (1,1):&\quad a+0+b+0-4a=0\ \Rightarrow\ b=3a,\\
+  (1,2):&\quad b+0+0.866025+a-4b=0\ \Rightarrow\ a-3b=-0.866025 .
+\end{align*}
+So \(-8a=-0.866025\):
+\[
+  a=0.108253,\qquad b=0.324760 .
+\]
+Exact: \(u(\frac13,\frac13)=0.093688\), \(u(\frac13,\frac23)=0.299857\);
+errors \(0.015\) and \(0.025\), as expected for \(O(h^2)\) with
+\(h=\frac13\).
+
+\step{(b) Poisson, \(h=\frac14\)}
+Nine interior points; by symmetry about both centre lines and the
+diagonals there are three unknowns: corners \(q\) (e.g.\ \((1,1)\)),
+edge midpoints \(e\) (e.g.\ \((2,1)\)) and the centre \(c\).  With
+\(h^2f=-\frac1{16}\):
+\begin{align*}
+  (1,1):&\quad 2e-4q=-\tfrac1{16},\\
+  (2,1):&\quad 2q+c-4e=-\tfrac1{16},\\
+  (2,2):&\quad 4e-4c=-\tfrac1{16}.
+\end{align*}
+From the first, \(q=\frac e2+\frac1{64}\); from the third,
+\(c=e+\frac1{64}\).  Substituting in the second:
+\(e+\frac1{32}+e+\frac1{64}-4e=-\frac1{16}\Rightarrow2e=\frac7{64}\).
+Hence
+\[
+  e=\frac7{128}=0.0546875,\qquad q=\frac{11}{256}=0.0429688,\qquad
+  c=\frac9{128}=0.0703125 .
+\]
+(The exact centre value of this problem is about \(0.0737\).)
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{ADI Iterations: Dirichlet, Neumann and Robin Problems}\label{sec:adi}
+%#####################################################################
+
+Notation: \(Nh=1\) (or \(Mh=1\)); \(H\) and \(V\) are the matrices of
+\(-\delta_{x_1}^2\) and \(-\delta_{x_2}^2\); \(\lam\) is the iteration
+parameter.
+
+%---------------------------------------------------------------------
+\Q{Peaceman--Rachford ADI as an iteration for Laplace's equation}{Derivation / proof}{10}\label{q:priter}
+\begin{qbox}
+\begin{enumerate}[label=(\alph*)]
+  \item Show that if the Peaceman--Rachford scheme for
+    \(u_t=\nabla^2u\) (time-independent Dirichlet data) converges as
+    \(n\to\infty\), the limit satisfies the five-point Laplace
+    equation.
+  \item Write the iteration in matrix form
+    \(\bigl(\frac2{\lam}I+H\bigr)U^{n+1*}=\bigl(\frac2{\lam}I-V\bigr)U^n+K\),
+    \(\bigl(\frac2{\lam}I+V\bigr)U^{n+1}=\bigl(\frac2{\lam}I-H\bigr)U^{n+1*}+K\),
+    and show by eliminating \(U^{n+1*}\) that \(U^{n+1}=U^n=U\) gives
+    \((H+V)U=K\) (Mitchell--Griffiths, Ch.~3, Exercise 16).
+  \item Prove that the iteration converges for every choice of
+    \(\lam>0\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item For the unit square with \((N-1)^2\) interior points:
+    \(H=\mathrm{diag}(C,\dots,C)\), \(V=\mathrm{tridiag}(-J,2J,-J)\),
+    \(C=\mathrm{tridiag}(-1,2,-1)\) of order \(N-1\); \(HV=VH\).
+  \item Common eigenvectors \(\alpha_{p,q}\):
+    \(H\alpha_{p,q}=4\sin^2\frac{p\pi}{2N}\alpha_{p,q}\),
+    \(V\alpha_{p,q}=4\sin^2\frac{q\pi}{2N}\alpha_{p,q}\).
+  \item Iteration matrix
+    \(T_{n+1}=\bigl(\frac2{\lam}I+V\bigr)^{-1}\bigl(\frac2{\lam}I+H\bigr)^{-1}\bigl(\frac2{\lam}I-H\bigr)\bigl(\frac2{\lam}I-V\bigr)\);
+    converges iff \(\rho(T)<1\).
+  \item \(\lambda\) is now an \emph{iteration parameter}, not
+    \(k/h^2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Limit of the scheme}
+Eliminating \(U^{n+1*}\) from Peaceman--Rachford,
+\(\bigl(1-\frac\lambda2\delta_{x_1}^2\bigr)\bigl(1-\frac\lambda2\delta_{x_2}^2\bigr)U^{n+1}
+=\bigl(1+\frac\lambda2\delta_{x_1}^2\bigr)\bigl(1+\frac\lambda2\delta_{x_2}^2\bigr)U^n\).
+If \(U^{n+1}=U^n=U\), expanding both sides,
+\[
+  \Bigl(1-\tfrac\lambda2(\delta_{x_1}^2+\delta_{x_2}^2)+\tfrac{\lambda^2}4\delta_{x_1}^2\delta_{x_2}^2\Bigr)U
+  =\Bigl(1+\tfrac\lambda2(\delta_{x_1}^2+\delta_{x_2}^2)+\tfrac{\lambda^2}4\delta_{x_1}^2\delta_{x_2}^2\Bigr)U,
+\]
+so \(\lambda(\delta_{x_1}^2+\delta_{x_2}^2)U=0\), i.e.\
+\((\delta_{x_1}^2+\delta_{x_2}^2)U_{l,m}=0\): the five-point formula.
+
+\step{(b) Matrix form and its limit}
+Dividing each half-step by \(\lambda/2\) and moving boundary values to
+\(K\) gives the stated equations.  From the first,
+\(U^{n+1*}=\bigl(\frac2{\lam}I+H\bigr)^{-1}\bigl[\bigl(\frac2{\lam}I-V\bigr)U^n+K\bigr]\).
+Substituting in the second and multiplying by
+\(\bigl(\frac2{\lam}I+H\bigr)\), which commutes with
+\(\bigl(\frac2{\lam}I-H\bigr)\),
+\[
+  \Bigl(\tfrac2{\lam}I+H\Bigr)\Bigl(\tfrac2{\lam}I+V\Bigr)U^{n+1}
+  =\Bigl(\tfrac2{\lam}I-H\Bigr)\Bigl(\tfrac2{\lam}I-V\Bigr)U^n
+  +\Bigl(\tfrac2{\lam}I-H\Bigr)K+\Bigl(\tfrac2{\lam}I+H\Bigr)K .
+\]
+With \(U^{n+1}=U^n=U\), the \(\frac4{\lam^2}U\) and \(HVU\) terms
+cancel, leaving \(\frac4{\lam}(H+V)U=\frac4{\lam}K\), i.e.\
+\((H+V)U=K\).
+
+\step{(c) Convergence}
+\(U^{n+1}=T_{n+1}U^n+g_{n+1}\).  Since \(HV=VH\), they have common
+orthonormal eigenvectors \(\alpha_{p,q}\), \(1\le p,q\le N-1\), and
+\[
+  T_{n+1}\alpha_{p,q}
+  =\frac{\bigl(\frac2{\lam}-4\sin^2\frac{p\pi}{2N}\bigr)\bigl(\frac2{\lam}-4\sin^2\frac{q\pi}{2N}\bigr)}
+        {\bigl(\frac2{\lam}+4\sin^2\frac{p\pi}{2N}\bigr)\bigl(\frac2{\lam}+4\sin^2\frac{q\pi}{2N}\bigr)}\alpha_{p,q}
+  =\frac{(1-a)(1-b)}{(1+a)(1+b)}\alpha_{p,q},
+\]
+with \(a=2\lam\sin^2\frac{p\pi}{2N}>0\), \(b=2\lam\sin^2\frac{q\pi}{2N}>0\).
+Now
+\[
+  \frac{(1-a)(1-b)}{(1+a)(1+b)}=1-\frac{2(a+b)}{(1+a)(1+b)}\in(-1,1),
+\]
+since \(a+b>0\) and \(a+b<1+a+b+ab\).  So \(\rho(T_{n+1})<1\) for every
+\(\lam>0\).  The error \(e^n=U^n-U\) satisfies \(e^{n+1}=T_{n+1}e^n\),
+and all \(T_{n+1}\) share the eigenvectors \(\alpha_{p,q}\), so each
+component of the error is multiplied by a factor of modulus less than
+\(1\) at every iteration: the iteration converges.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The optimal fixed iteration parameter}{Derivation}{6}\label{q:optpar}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~3, Example 11.)  For the Peaceman--Rachford
+iteration on the unit square with \(h=1/M\), show that the fixed
+parameter which minimises the spectral radius of the iteration matrix
+is \(\lambda=\csc(\pi/M)\).  Find the resulting spectral radius for
+\(M=11\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Eigenvalues of \(T\):
+    \(\frac{(c-\mu_p)(c-\mu_q)}{(c+\mu_p)(c+\mu_q)}\), \(c=\frac2\lambda\),
+    \(\mu_p=4\sin^2\frac{p\pi}{2M}\in[\mu_{\min},\mu_{\max}]\).
+  \item \(\bigl|\frac{c-\mu}{c+\mu}\bigr|\) is largest at an end point of
+    \([\mu_{\min},\mu_{\max}]\).
+  \item Optimum: \(c=\sqrt{\mu_{\min}\mu_{\max}}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Minimising the spectral radius}
+\(\rho(T)=\bigl[\max_p\bigl|\frac{c-\mu_p}{c+\mu_p}\bigr|\bigr]^2\).  The
+function \(\mu\mapsto\frac{c-\mu}{c+\mu}\) is decreasing, so the maximum
+of its modulus over \([\mu_{\min},\mu_{\max}]\) is
+\(\max\bigl(\frac{c-\mu_{\min}}{c+\mu_{\min}},\frac{\mu_{\max}-c}{\mu_{\max}+c}\bigr)\).
+The first decreases and the second increases in \(c\), so the
+maximum is smallest when they are equal:
+\[
+  (c-\mu_{\min})(\mu_{\max}+c)=(\mu_{\max}-c)(c+\mu_{\min})
+  \iff c^2=\mu_{\min}\mu_{\max} .
+\]
+\step{The value}
+\(\mu_{\min}=4\sin^2\frac\pi{2M}\), \(\mu_{\max}=4\sin^2\frac{(M-1)\pi}{2M}=4\cos^2\frac\pi{2M}\), so
+\[
+  c=4\sin\frac\pi{2M}\cos\frac\pi{2M}=2\sin\frac\pi M,
+  \qquad
+  \lambda=\frac2c=\csc\frac\pi M .
+\]
+\step{\(M=11\)}
+\(\lambda=\csc\frac\pi{11}=3.5495\).  Then
+\(\frac{c-\mu_{\min}}{c+\mu_{\min}}=\frac{1-\tan(\pi/22)}{1+\tan(\pi/22)}=0.7486\),
+and \(\rho(T)=0.7486^2=0.5604\): each iteration reduces the error by
+a factor of about \(0.56\).  (Wachspress' varying parameters
+\(\lam\) do even better.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The Douglas--Rachford ADI method}{Derivation / analysis}{8}\label{q:dr}
+\begin{qbox}
+(Lecture 39; Mitchell--Griffiths, Ch.~2, Exercise 15.)  For
+\(u_t=\nabla^2u\), consider
+\((1-r\delta_{x_1}^2)(1-r\delta_{x_2}^2)U^{n+1}=(1+r^2\delta_{x_1}^2\delta_{x_2}^2)U^n\).
+\begin{enumerate}[label=(\alph*)]
+  \item Show that the split form
+    \((1-r\delta_{x_1}^2)U^{n+1*}=(1+r\delta_{x_2}^2)U^n\),
+    \((1-r\delta_{x_2}^2)U^{n+1}=U^{n+1*}-r\delta_{x_2}^2U^n\) gives the
+    combined formula.
+  \item Show that, used as an iteration, its limit is the five-point
+    Laplace equation.
+  \item Show that its truncation error is \(O(k^2+kh^2)\), and that,
+    with \(U^{n+1*}=U^{n+1}\), the split formulas are consistent.
+  \item Show that it is unconditionally stable.
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Douglas--Rachford \(=\) fully implicit
+    \(\bigl(1-r(\delta_{x_1}^2+\delta_{x_2}^2)\bigr)U^{n+1}=U^n\) plus the
+    small term \(r^2\delta_{x_1}^2\delta_{x_2}^2(U^{n+1}-U^n)\).
+  \item Fully implicit LTE: \(-\frac{k^2}2u_{tt}-\frac{kh^2}{12}(u_{x_1^4}+u_{x_2^4})\).
+  \item On a Fourier mode \(\delta_{x_i}^2\to-4S_i\), with
+    \(S_i=\sin^2\frac{\beta_ih}2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Split \(\Rightarrow\) combined}
+From the second equation
+\(U^{n+1*}=(1-r\delta_{x_2}^2)U^{n+1}+r\delta_{x_2}^2U^n\).  Applying
+\((1-r\delta_{x_1}^2)\) and using the first,
+\[
+  (1-r\delta_{x_1}^2)(1-r\delta_{x_2}^2)U^{n+1}
+  =(1+r\delta_{x_2}^2)U^n-r\delta_{x_2}^2(1-r\delta_{x_1}^2)U^n
+  =(1+r^2\delta_{x_1}^2\delta_{x_2}^2)U^n .
+\]
+\step{(b) Limit}
+With \(U^{n+1}=U^n=U\):
+\(\bigl(1-r(\delta_{x_1}^2+\delta_{x_2}^2)+r^2\delta_{x_1}^2\delta_{x_2}^2\bigr)U
+=(1+r^2\delta_{x_1}^2\delta_{x_2}^2)U\), so
+\((\delta_{x_1}^2+\delta_{x_2}^2)U=0\).
+
+\step{(c) Truncation error}
+Write the formula as
+\(\bigl[1-r(\delta_{x_1}^2+\delta_{x_2}^2)\bigr]U^{n+1}-U^n
++r^2\delta_{x_1}^2\delta_{x_2}^2(U^{n+1}-U^n)=0\).  The first part is
+the fully implicit scheme, with \(T=-\frac{k^2}2u_{tt}-\frac{kh^2}{12}(u_{x_1^4}+u_{x_2^4})+\cdots\).
+The extra term is
+\(r^2h^4\,k\,u_{x_1x_1x_2x_2t}+\cdots=k^3u_{x_1x_1x_2x_2t}+\cdots\).
+So \(T=O(k^2+kh^2)\), and \(T/k=O(k+h^2)\): consistent.
+
+With \(U^{n+1*}=U^{n+1}\): the first split formula becomes
+\(u^{n+1}-u^n-r\delta_{x_1}^2u^{n+1}-r\delta_{x_2}^2u^n=k(u_t-\nabla^2u)+O(k^2+kh^2)\),
+consistent; the second becomes
+\(-r\delta_{x_2}^2(u^{n+1}-u^n)=-k^2u_{x_2x_2t}+\cdots\), which divided by
+\(k\) tends to zero: also consistent.
+
+\step{(d) Stability}
+With \(S_i=\sin^2\frac{\beta_ih}2\),
+\[
+  \xi=\frac{1+16r^2S_1S_2}{(1+4rS_1)(1+4rS_2)}
+  =\frac{1+16r^2S_1S_2}{1+4r(S_1+S_2)+16r^2S_1S_2}\in(0,1]
+\]
+for every \(r>0\): unconditionally stable.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The Neumann problem: discretization and ADI convergence}{Derivation / proof}{10}\label{q:neumann}
+\begin{qbox}
+Consider \(\nabla^2u=0\) on \(0\le x_1,x_2\le1\) with
+\(\partial u/\partial n=g(x_1,x_2)\) (outward normal) on the boundary,
+and \(Mh=1\).
+\begin{enumerate}[label=(\alph*)]
+  \item Using fictitious points, derive the difference equations at a
+    corner and at a side point, and show that the system is
+    \(AU=2hG\) with \(A\) of order \((M+1)^2\).
+  \item Show that \(A\) is singular and explain why.
+  \item Prove that the Peaceman--Rachford ADI iteration for this
+    problem converges for any fixed value of the iteration parameter
+    (in the sense explained).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item All \((M+1)^2\) points are unknown.  Along \(x_1=0\) the
+    central difference of \(\partial u/\partial n=-u_{x_1}\) gives
+    \(u_{-1,m}=u_{1,m}+2hg_{0,m}\).
+  \item \(A=X+Y\), \(X=\mathrm{diag}(\widetilde C,\dots,\widetilde C)\),
+    \(\widetilde C=\) tridiag\((-1,2,-1)\) with first row \((2,-2)\) and
+    last row \((-2,2)\); \(Y\) the same along \(x_2\).
+  \item Eigenvalues of \(\widetilde C\): \(4\sin^2\frac{p\pi}{2M}\),
+    \(p=0,\dots,M\), eigenvectors \(\bigl(\cos\frac{lp\pi}M\bigr)_l\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Boundary equations}
+At the corner \((0,0)\), the five-point formula is
+\(u_{1,0}+u_{-1,0}+u_{0,1}+u_{0,-1}-4u_{0,0}=0\).  Central differences
+for the outward normal derivatives give
+\(u_{-1,0}=u_{1,0}+2hg_{0,0}\) and \(u_{0,-1}=u_{0,1}+2hg_{0,0}\), so
+\[
+  4u_{0,0}-2u_{1,0}-2u_{0,1}=2h\cdot2g_{0,0}.
+\]
+At a side point \((0,m)\):
+\(4u_{0,m}-2u_{1,m}-u_{0,m+1}-u_{0,m-1}=2hg_{0,m}\); similarly on the
+other sides.  With the \(x_1\) index running fastest,
+\[
+  A=\begin{bmatrix}B&-2I&&\\-I&B&-I&\\&\ddots&\ddots&\ddots\\&&-2I&B\end{bmatrix},
+  \qquad
+  B=\begin{bmatrix}4&-2&&\\-1&4&-1&\\&\ddots&\ddots&\ddots\\&&-2&4\end{bmatrix}_{(M+1)\times(M+1)}
+\]
+and \(G\) has entries \(2g\) at the corners, \(g\) at other boundary
+points and \(0\) inside.
+
+\step{(b) Singularity}
+Every row of \(A\) sums to zero (corner \(4-2-2\), side \(4-2-1-1\),
+interior \(4-1-1-1-1\)), so \(A\mathbf1=0\): \(A\) is singular.  This
+reflects the continuous problem: a solution of the Neumann problem is
+determined only up to an additive constant, and it exists only if
+\(\oint_{\partial R}g\,ds=0\) (a discrete version is derived in
+Q\ref{q:neu9}).
+
+\step{(c) Convergence}
+The iteration is
+\(\bigl(\frac2{\lam}I+X\bigr)U^{n+1*}=\bigl(\frac2{\lam}I-Y\bigr)U^n+2hG\),
+\(\bigl(\frac2{\lam}I+Y\bigr)U^{n+1}=\bigl(\frac2{\lam}I-X\bigr)U^{n+1*}+2hG\).
+
+\emph{Limit.} From the first equation,
+\(U^{n+1*}=\bigl(\frac2{\lam}I+X\bigr)^{-1}\bigl[\bigl(\frac2{\lam}I-Y\bigr)U^n+2hG\bigr]\).
+Substituting in the second and multiplying by
+\(\bigl(\frac2{\lam}I+X\bigr)\), which commutes with
+\(\bigl(\frac2{\lam}I-X\bigr)\),
+\begin{align*}
+  \Bigl(\tfrac2{\lam}I+X\Bigr)\Bigl(\tfrac2{\lam}I+Y\Bigr)U^{n+1}
+  &=\Bigl(\tfrac2{\lam}I-X\Bigr)\Bigl(\tfrac2{\lam}I-Y\Bigr)U^n\\
+  &\quad+\Bigl[\Bigl(\tfrac2{\lam}I-X\Bigr)+\Bigl(\tfrac2{\lam}I+X\Bigr)\Bigr]2hG .
+\end{align*}
+With \(U^{n+1}=U^n=U\), expanding both products, the
+\(\frac4{\lam^2}U\) and \(XYU\) terms cancel and
+\(\frac4{\lam}(X+Y)U=\frac4{\lam}\,2hG\), i.e.\ \(AU=2hG\): the limit is a
+solution of the difference equations.
+
+\emph{Error propagation.}  The iteration matrix is
+\(S=\bigl(\frac2{\lam}I+Y\bigr)^{-1}\bigl(\frac2{\lam}I+X\bigr)^{-1}\bigl(\frac2{\lam}I-X\bigr)\bigl(\frac2{\lam}I-Y\bigr)\).
+\(X\) and \(Y\) act along different directions, so \(XY=YX\), with
+common eigenvectors \(\beta_{p,q}\) (\(0\le p,q\le M\)):
+\(X\beta_{p,q}=4\sin^2\frac{p\pi}{2M}\beta_{p,q}\),
+\(Y\beta_{p,q}=4\sin^2\frac{q\pi}{2M}\beta_{p,q}\).  Hence
+\[
+  S\beta_{p,q}=\frac{(1-a)(1-b)}{(1+a)(1+b)}\beta_{p,q},
+  \qquad a=2\lam\sin^2\frac{p\pi}{2M}\ge0,\ b=2\lam\sin^2\frac{q\pi}{2M}\ge0 .
+\]
+For \((p,q)\ne(0,0)\), \(a+b>0\) and the modulus is less than \(1\).
+For \(p=q=0\) the eigenvalue is \(1\), with eigenvector \(\mathbf1\), the
+null vector of \(A\).  So every error component except the constant one
+decays: when the data are compatible, the iteration converges, for any
+fixed \(\lambda>0\), to a solution of \(AU=2hG\), the additive constant
+being fixed by the initial guess.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A Neumann problem with \(h=\frac12\)}{Numerical / proof}{8}\label{q:neu9}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~3, Example 1.)  For the Neumann problem of
+Q\ref{q:neumann} with \(h=\frac12\), assemble the \(9\times9\) system
+\(AU=2hG\).  Show that scaling the nine equations by
+\(\frac14,\frac12,\frac14,\frac12,1,\frac12,\frac14,\frac12,\frac14\)
+makes the coefficient matrix symmetric, verify that \(A\) is singular,
+and deduce the discrete compatibility condition
+\(\sum_{i=1}^9g_i=0\) (with \(g_5=0\)).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Number the points \(1,\dots,9\) row by row from \((0,0)\);
+    point 5 is the centre.
+  \item \(AU=\mathbf b\) with \(A\) singular is solvable iff
+    \(\mathbf w^T\mathbf b=0\) for every \(\mathbf w\) with
+    \(\mathbf w^TA=0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The system}
+With points \(1\)--\(3\) on \(x_2=0\), \(4\)--\(6\) on \(x_2=\frac12\),
+\(7\)--\(9\) on \(x_2=1\), the five-point formula with fictitious points
+(\(u_{-1,m}=u_{1,m}+2hg_{0,m}\), etc.) gives, at a corner,
+\(4u_c-2u-2u=2h\cdot2g_c\), at a side point
+\(4u_s-2u_{\text{inner}}-u-u=2hg_s\), and at the centre the ordinary
+five-point equation.  Hence
+\[
+  A=\begin{bmatrix}
+   4&-2&0&-2&0&0&0&0&0\\
+   -1&4&-1&0&-2&0&0&0&0\\
+   0&-2&4&0&0&-2&0&0&0\\
+   -1&0&0&4&-2&0&-1&0&0\\
+   0&-1&0&-1&4&-1&0&-1&0\\
+   0&0&-1&0&-2&4&0&0&-1\\
+   0&0&0&-2&0&0&4&-2&0\\
+   0&0&0&0&-2&0&-1&4&-1\\
+   0&0&0&0&0&-2&0&-2&4
+  \end{bmatrix},
+\]
+and \(2hG=G=(2g_1,g_2,2g_3,g_4,0,g_6,2g_7,g_8,2g_9)^T\) (\(2h=1\)).
+
+\step{Symmetrisation}
+Let \(W=\mathrm{diag}(\frac14,\frac12,\frac14,\frac12,1,\frac12,\frac14,\frac12,\frac14)\).
+Row \(i\) of \(WA\) is row \(i\) of \(A\) times \(w_i\).  For example
+\((WA)_{12}=\frac14(-2)=-\frac12=\frac12(-1)=(WA)_{21}\), and
+\((WA)_{25}=\frac12(-2)=-1=1\cdot(-1)=(WA)_{52}\); the same holds for
+every pair (corner--side: \(-\frac12\); side--centre: \(-1\)).  So
+\(WA\) is symmetric.
+
+\step{Singularity}
+Each row of \(A\) sums to zero, so \(A\mathbf1=0\) and \(A\) is
+singular (rank \(8\)).
+
+\step{Compatibility}
+Since \(WA\) is symmetric, \(\mathbf1^TWA=(WA\mathbf1)^T=0\): the vector
+\(\mathbf w=W\mathbf1=(\frac14,\frac12,\frac14,\frac12,1,\frac12,\frac14,\frac12,\frac14)^T\)
+satisfies \(\mathbf w^TA=0\).  So \(AU=G\) is solvable only if
+\(\mathbf w^TG=0\):
+\[
+  \tfrac14(2g_1+2g_3+2g_7+2g_9)+\tfrac12(g_2+g_4+g_6+g_8)
+  =\tfrac12\sum_{i\ne5}g_i=0
+  \iff\sum_{i=1}^9g_i=0\quad(g_5=0).
+\]
+This is the discrete form of \(\oint_{\partial R}\frac{\partial u}{\partial n}ds=0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The Robin problem: matrices and convergence}{Derivation / proof}{10}\label{q:robin}
+\begin{qbox}
+For \(\nabla^2u=0\) on \(0\le x_1,x_2\le1\) with
+\(u_{x_1}-p_1u=f_0(x_2)\) on \(x_1=0\), \(u_{x_1}+q_1u=f_1(x_2)\) on
+\(x_1=1\), and similarly with \(p_2,q_2,g_0,g_1\) on \(x_2=0,1\)
+(\(p_i,q_i>0\)), \(Nh=1\):
+\begin{enumerate}[label=(\alph*)]
+  \item derive the matrices \(E\) and \(V_1\) of the system
+    \(AU=hG\), \(A=H_1+V_1\), \(H_1=\mathrm{diag}(E,\dots,E)\);
+  \item prove that the Peaceman--Rachford iteration converges for
+    every \(\lam>0\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Fictitious points:
+    \(u_{-1,m}=u_{1,m}-2hp_1u_{0,m}-2hf_{0,m}\),
+    \(u_{N+1,m}=u_{N-1,m}-2hq_1u_{N,m}+2hf_{1,m}\).
+  \item \(W=\mathrm{diag}(\frac12,1,\dots,1,\frac12)\) makes \(WE\)
+    symmetric positive definite, so \(E\) has real positive
+    eigenvalues (Q\ref{q:matfacts}).
+  \item \(\bigl|\frac{1-a}{1+a}\bigr|<1\) for \(a>0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) The matrices}
+The \(x_1\)-part of the five-point formula (times \(-1\)) at \((0,m)\)
+is \(2u_{0,m}-u_{1,m}-u_{-1,m}=2(1+hp_1)u_{0,m}-2u_{1,m}+2hf_{0,m}\),
+and at \((N,m)\) it is \(-2u_{N-1,m}+2(1+hq_1)u_{N,m}-2hf_{1,m}\).  So,
+ordering with the \(x_1\) index fastest,
+\[
+  E=\begin{bmatrix}2(1+hp_1)&-2&&\\-1&2&-1&\\&\ddots&\ddots&\ddots\\&&-2&2(1+hq_1)\end{bmatrix}_{(N+1)\times(N+1)}
+\]
+\[
+  V_1=\begin{bmatrix}2(1+hp_2)I&-2I&&\\-I&2I&-I&\\&\ddots&\ddots&\ddots\\&&-2I&2(1+hq_2)I\end{bmatrix},
+\]
+and \(G_{l,m}=2\bigl(-f_{0,m}[l=0]+f_{1,m}[l=N]-g_{0,l}[m=0]+g_{1,l}[m=N]\bigr)\).
+
+\step{(b) Eigenvalues of \(E\) are positive}
+\(WE\) has rows \((1+hp_1,-1)\), \((-1,2,-1)\), \((-1,1+hq_1)\): it is
+symmetric, and
+\[
+  \mathbf x^T(WE)\mathbf x=hp_1x_0^2+hq_1x_N^2+\sum_{l=0}^{N-1}(x_{l+1}-x_l)^2>0
+  \quad(\mathbf x\ne0),
+\]
+since a zero sum forces \(\mathbf x\) constant and then
+\(hp_1x_0^2>0\).  \(E=W^{-1}(WE)\) is similar to
+\(W^{-1/2}(WE)W^{-1/2}\), symmetric positive definite, so its
+eigenvalues \(\mu_p\) are real and positive and it has a complete set
+of eigenvectors.  Likewise for the \(x_2\) matrix (eigenvalues
+\(\nu_q>0\)).
+
+\step{Convergence}
+\(H_1\) acts along \(x_1\) and \(V_1\) along \(x_2\), so they commute,
+with common eigenvectors.  The iteration matrix has eigenvalues
+\[
+  \frac{\bigl(\frac2{\lam}-\mu_p\bigr)\bigl(\frac2{\lam}-\nu_q\bigr)}{\bigl(\frac2{\lam}+\mu_p\bigr)\bigl(\frac2{\lam}+\nu_q\bigr)}
+  =\frac{1-a}{1+a}\cdot\frac{1-b}{1+b},
+  \qquad a=\tfrac12\lam\mu_p>0,\ b=\tfrac12\lam\nu_q>0,
+\]
+each factor of modulus less than \(1\).  So \(\rho<1\) and the
+iteration converges to the unique solution of \((H_1+V_1)U=hG\)
+(unique because all eigenvalues \(\mu_p+\nu_q\) of \(A\) are positive,
+unlike the Neumann case).
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{Hyperbolic Equations: The Wave Equation}
+%#####################################################################
+
+Throughout, \(u_{tt}=u_{xx}\) (or \(u_{tt}=\nabla^2u\)) and \(r=k/h\)
+(written \(p\) in Mitchell--Griffiths).
+
+%---------------------------------------------------------------------
+\Q{The explicit scheme: derivation, starting values and truncation error}{Derivation}{8}\label{q:waveexp}
+\begin{qbox}
+For \(u_{tt}=u_{xx}\), \(0<x<1\), with \(u(x,0)=f(x)\),
+\(u_t(x,0)=g(x)\), \(u(0,t)=u(1,t)=0\):
+\begin{enumerate}[label=(\alph*)]
+  \item derive the explicit scheme
+    \(U_m^{n+1}=2(1-r^2)U_m^n+r^2(U_{m+1}^n+U_{m-1}^n)-U_m^{n-1}\);
+  \item derive the formula for the first time level
+    \(U_m^1=(1-r^2)f_m+\frac{r^2}2(f_{m+1}+f_{m-1})+kg_m\);
+  \item show that the truncation error is \(O(k^2+h^2)\), and that the
+    leading term vanishes when \(r=1\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\frac1{k^2}\delta_t^2u=u_{tt}+\frac{k^2}{12}u_{tttt}+\cdots\),
+    \(\frac1{h^2}\delta_x^2u=u_{xx}+\frac{h^2}{12}u_{xxxx}+\cdots\).
+  \item Three levels are the minimum (second order in \(t\)); the start
+    needs two levels.
+  \item Central difference for \(u_t(x,0)\):
+    \(U_m^{-1}=U_m^1-2kg_m\).
+  \item Consistent (hyperbolic) if \(T/k^2\to0\) for the scheme
+    multiplied through by \(k^2\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) The scheme}
+At \((mh,nk)\),
+\(\frac1{k^2}\bigl(U_m^{n+1}-2U_m^n+U_m^{n-1}\bigr)=\frac1{h^2}\bigl(U_{m+1}^n-2U_m^n+U_{m-1}^n\bigr)\).
+Multiplying by \(k^2\) (\(r^2=k^2/h^2\)) and solving for \(U_m^{n+1}\)
+gives the stated explicit three-level formula.
+
+\step{(b) First level}
+\(U_m^0=f_m\).  From
+\(\frac{U_m^1-U_m^{-1}}{2k}=g_m+O(k^2)\), \(U_m^{-1}=U_m^1-2kg_m\).
+Putting \(n=0\) in the scheme:
+\(U_m^1=2(1-r^2)f_m+r^2(f_{m+1}+f_{m-1})-U_m^1+2kg_m\), so
+\[
+  U_m^1=(1-r^2)f_m+\frac{r^2}2(f_{m+1}+f_{m-1})+kg_m .
+\]
+
+\step{(c) Truncation error}
+For the exact solution,
+\[
+  \frac{\delta_t^2u}{k^2}-\frac{\delta_x^2u}{h^2}
+  =(u_{tt}-u_{xx})+\frac1{12}\bigl(k^2u_{tttt}-h^2u_{xxxx}\bigr)+\cdots
+  =\frac1{12}\bigl(k^2u_{tttt}-h^2u_{xxxx}\bigr)+\cdots=O(k^2+h^2).
+\]
+Since \(u_{tttt}=u_{xxxx}\), the leading term is
+\(\frac{h^2}{12}(r^2-1)u_{xxxx}\), which vanishes for \(r=1\) (see
+Q\ref{q:dalembert}).  So the scheme is consistent.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Stability of the explicit scheme by the amplification matrix: the CFL condition}{Stability analysis}{6}\label{q:cfl}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~4, Exercise 10.)  Write the explicit scheme
+as the two-level system
+\(U_m^{n+1}=2(1-r^2)U_m^n+r^2(U_{m+1}^n+U_{m-1}^n)-V_m^n\),
+\(V_m^{n+1}=U_m^n\).  Obtain the amplification matrix and show that the
+scheme is stable if \(r\le1\).  What is the CFL condition?
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Von Neumann for a system: all eigenvalues of the amplification
+    matrix have modulus \(\le1\).
+  \item \(U_{m+1}+U_{m-1}=2\cos\beta h\,U_m=(2-4S)U_m\) on a mode,
+    \(S=\sin^2\frac{\beta h}2\).
+  \item CFL: the numerical domain of dependence must contain the
+    exact one.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Amplification matrix}
+With \((U,V)_m^n=(U^n,V^n)e^{i\beta mh}\):
+\[
+  \begin{bmatrix}U\\V\end{bmatrix}^{n+1}
+  =\underbrace{\begin{bmatrix}2-4r^2S&-1\\1&0\end{bmatrix}}_{G}
+  \begin{bmatrix}U\\V\end{bmatrix}^{n}.
+\]
+\step{Eigenvalues}
+\(\det(G-\lambda I)=\lambda^2-(2-4r^2S)\lambda+1=0\).  The product of
+the roots is \(1\).  If the roots are real and distinct, one exceeds
+\(1\) in modulus.  So we need complex (or coincident) roots:
+\(|2-4r^2S|\le2\iff r^2S\le1\); then \(|\lambda_1|=|\lambda_2|=1\).  For
+all modes (\(S\le1\)) this gives \(\boxed{r\le1}\).  (Coincident roots
+\(\lambda=-1\) occur only for \(r=1\), \(S=1\), i.e.\ \(\beta h=\pi\), a mode
+not present on the grid with zero boundary values.)
+
+\step{CFL}
+The exact solution at \((x,t_n)\) depends on the data in
+\([x-t_n,x+t_n]\); the scheme uses \([x-nh,x+nh]\).  The CFL
+(Courant--Friedrichs--Lewy) condition
+\([x-nk,x+nk]\subseteq[x-nh,x+nh]\) is \(k\le h\), i.e.\ \(r\le1\): here
+it coincides with the stability condition.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Two steps of the explicit scheme}{Numerical}{6}\label{q:wavenum}
+\begin{qbox}
+Solve \(u_{tt}=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u_t(x,0)=0\),
+\(u(0,t)=u(1,t)=0\), by the explicit scheme with \(h=\frac14\) and
+\(r=\frac12\).  Find \(U\) at \(t=k\) and \(t=2k\), and compare with
+\(u=\cos\pi t\sin\pi x\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(U_m^1=(1-r^2)f_m+\frac{r^2}2(f_{m+1}+f_{m-1})+kg_m\).
+  \item \(U_m^{n+1}=2(1-r^2)U_m^n+r^2(U_{m+1}^n+U_{m-1}^n)-U_m^{n-1}\);
+    stable for \(r\le1\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\(k=rh=\frac18\), \(r^2=\frac14\).  \(U^0=(0,\ 0.707107,\ 1,\ 0.707107,\ 0)\);
+by symmetry \(U_1=U_3\).
+
+\step{\(t=k\)}
+\(U_m^1=\frac34f_m+\frac18(f_{m+1}+f_{m-1})\):
+\[
+  U_2^1=\tfrac34(1)+\tfrac18(1.414214)=0.926777,\qquad
+  U_1^1=\tfrac34(0.707107)+\tfrac18(1)=0.655330 .
+\]
+\step{\(t=2k\)}
+\(U_m^2=\frac32U_m^1+\frac14(U_{m+1}^1+U_{m-1}^1)-U_m^0\):
+\[
+  U_2^2=1.390165+0.327665-1=0.717830,\qquad
+  U_1^2=0.982995+0.231694-0.707107=0.507583 .
+\]
+\step{Comparison}
+\begin{center}
+\begin{tabular}{@{}ccccc@{}}
+\toprule
+\(t\) & \(U(\frac12)\) & exact & \(U(\frac14)\) & exact\\
+\midrule
+\(\frac18\) & 0.926777 & 0.923880 & 0.655330 & 0.653281\\
+\(\frac14\) & 0.717830 & 0.707107 & 0.507583 & 0.500000\\
+\bottomrule
+\end{tabular}
+\end{center}
+Errors of about \(1\%\) at \(t=\frac14\), consistent with
+\(O(k^2+h^2)\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The case \(r=1\) and d'Alembert's solution}{Proof}{6}\label{q:dalembert}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~4, Example 12.)  On a square grid (\(k=h\),
+\(r=1\)) the explicit scheme is
+\(U_m^{n+1}=U_{m+1}^n+U_{m-1}^n-U_m^{n-1}\).  Show that every function
+\(F(x+t)+G(x-t)\) satisfies it exactly, and deduce that the scheme
+reproduces d'Alembert's solution
+\(u=\frac12\bigl[f(x+t)+f(x-t)+\int_{x-t}^{x+t}g(\xi)\,d\xi\bigr]\) up to the
+error of the starting values.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item General solution of \(u_{tt}=u_{xx}\): \(F(x+t)+G(x-t)\);
+    characteristics \(x\pm t=\)const.
+  \item For \(k=h\), the grid points lie on characteristics.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{Exactness}
+Let \(u=F(x+t)+G(x-t)\), \(x=mh\), \(t=nk=nh\).  Then
+\begin{align*}
+  u_{m+1}^n+u_{m-1}^n-u_m^{n-1}
+  &=F(x+t+h)+G(x-t+h)+F(x+t-h)+G(x-t-h)\\
+  &\quad-F(x+t-h)-G(x-t+h)\\
+  &=F(x+t+h)+G(x-t-h)=u_m^{n+1}.
+\end{align*}
+So the scheme has zero truncation error for every solution of the wave
+equation (consistent with Q\ref{q:waveexp}(c)).
+
+\step{Starting values}
+The scheme is therefore exact provided \(U^0\) and \(U^1\) are exact.
+\(U^0=f\) is exact; \(U_m^1=\frac12(f_{m+1}+f_{m-1})+kg_m\) (the formula
+of Q\ref{q:waveexp} with \(r=1\)), while d'Alembert gives
+\(u(x,k)=\frac12[f(x+h)+f(x-h)]+\frac12\int_{x-h}^{x+h}g\,d\xi\).  These
+agree except that the integral is replaced by the mid-point value
+\(\frac12\cdot2h\,g(x)=kg_m\), an error \(O(h^3)\).  Telescoping along the
+characteristics, the numerical solution equals d'Alembert's formula
+with the integral replaced by a mid-point sum, which tends to the exact
+solution as \(h\to0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Implicit \(\theta\)-schemes: stability}{Stability analysis}{8}\label{q:thetawave}
+\begin{qbox}
+For
+\(\delta_t^2U_m^n=r^2\delta_x^2\bigl[\theta U_m^{n+1}+(1-2\theta)U_m^n+\theta U_m^{n-1}\bigr]\),
+\(0\le\theta\le1\), show that the scheme is unconditionally stable for
+\(\theta\ge\frac14\), and stable for \(r^2\le\frac1{1-4\theta}\) when
+\(0\le\theta<\frac14\).  Show that \(\theta=\frac14\) gives
+\(\bigl(1-\frac14r^2\delta_x^2\bigr)\delta_t^2U_m^n=r^2\delta_x^2U_m^n\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\theta U^{n+1}+(1-2\theta)U^n+\theta U^{n-1}=U^n+\theta\delta_t^2U^n\).
+  \item Characteristic equation \(a\xi^2-2b\xi+a=0\): product of roots
+    \(1\); stable iff \(|b|\le a\).
+  \item \(\theta=0\) is the explicit scheme (\(r\le1\)).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+With \(U_m^n=\xi^ne^{i\beta mh}\), \(S=\sin^2\frac{\beta h}2\):
+\[
+  \xi-2+\xi^{-1}=-4r^2S\bigl[\theta\xi+(1-2\theta)+\theta\xi^{-1}\bigr],
+\]
+\[
+  \bigl(1+4r^2S\theta\bigr)\xi^2-2\bigl(1-2r^2S(1-2\theta)\bigr)\xi+\bigl(1+4r^2S\theta\bigr)=0 .
+\]
+The product of the roots is \(1\), so stability requires complex (or
+equal) roots: \(|1-2r^2S(1-2\theta)|\le1+4r^2S\theta\).  The inequality
+\(1-2r^2S(1-2\theta)\le1+4r^2S\theta\) always holds; the other,
+\(-1+2r^2S(1-2\theta)\le1+4r^2S\theta\), is
+\[
+  r^2S(1-4\theta)\le1 .
+\]
+For \(\theta\ge\frac14\) it holds for all \(r\): unconditional stability.
+For \(\theta<\frac14\) the worst case is \(S=1\):
+\(r^2\le\frac1{1-4\theta}\).
+
+\step{\(\theta=\frac14\)}
+\(\frac14U^{n+1}+\frac12U^n+\frac14U^{n-1}=U^n+\frac14\delta_t^2U^n\), so the
+scheme is \(\delta_t^2U=r^2\delta_x^2\bigl(U^n+\frac14\delta_t^2U^n\bigr)\),
+i.e.\ \(\bigl(1-\frac14r^2\delta_x^2\bigr)\delta_t^2U_m^n=r^2\delta_x^2U_m^n\)
+(the von Neumann scheme).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Consistency of the \(\theta=\frac14\) scheme written out}{Analysis}{6}\label{q:quartercons}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~4, Exercise 11.)  Show that
+\begin{align*}
+  -(U_{m+1}^{n+1}+U_{m-1}^{n+1})+2\Bigl(1+\frac2{r^2}\Bigr)U_m^{n+1}
+  &=2(U_{m+1}^n+U_{m-1}^n)-4\Bigl(1-\frac2{r^2}\Bigr)U_m^n\\
+  &\quad+(U_{m+1}^{n-1}+U_{m-1}^{n-1})-2\Bigl(1+\frac2{r^2}\Bigr)U_m^{n-1}
+\end{align*}
+is a consistent approximation to \(u_{tt}=u_{xx}\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\theta=\frac14\) scheme:
+    \(\delta_t^2U=\frac{r^2}4\delta_x^2\bigl(U^{n+1}+2U^n+U^{n-1}\bigr)\).
+  \item \(\frac12(u^{n+1}+u^{n-1})=u+\frac{k^2}2u_{tt}+\cdots\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{It is the \(\theta=\frac14\) scheme}
+Multiply \(\delta_t^2U=\frac{r^2}4\delta_x^2(U^{n+1}+2U^n+U^{n-1})\) by
+\(\frac4{r^2}\) and collect each time level:
+\[
+  -\delta_x^2U^{n+1}+\tfrac4{r^2}U^{n+1}=2\delta_x^2U^n+\tfrac8{r^2}U^n+\delta_x^2U^{n-1}-\tfrac4{r^2}U^{n-1}.
+\]
+Writing \(\delta_x^2U_m=U_{m+1}+U_{m-1}-2U_m\): the left side is
+\(-(U_{m+1}^{n+1}+U_{m-1}^{n+1})+2(1+\frac2{r^2})U_m^{n+1}\); the right side
+is \(2(U_{m+1}^n+U_{m-1}^n)-4(1-\frac2{r^2})U_m^n+(U_{m+1}^{n-1}+U_{m-1}^{n-1})-2(1+\frac2{r^2})U_m^{n-1}\).
+This is the given formula.
+
+\step{Truncation error}
+\(\delta_t^2u=k^2u_{tt}+\frac{k^4}{12}u_{tttt}+\cdots\), and
+\(\frac{r^2}4\delta_x^2(u^{n+1}+2u^n+u^{n-1})=r^2\delta_x^2\bigl(u+\frac{k^2}4u_{tt}+\cdots\bigr)
+=k^2u_{xx}+\frac{k^2h^2}{12}u_{xxxx}+\frac{k^4}4u_{xxtt}+\cdots\).  With
+\(u_{tt}=u_{xx}\) (so \(u_{tttt}=u_{xxtt}=u_{xxxx}\)):
+\[
+  T=k^2(u_{tt}-u_{xx})+\Bigl(\frac{k^4}{12}-\frac{k^4}4-\frac{k^2h^2}{12}\Bigr)u_{xxxx}+\cdots
+  =-\frac{k^2}{12}\bigl(2k^2+h^2\bigr)u_{xxxx}+\cdots .
+\]
+\(T/k^2=O(k^2+h^2)\to0\): consistent (and unconditionally stable, by
+Q\ref{q:thetawave}).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{One step of the implicit scheme with \(\theta=\frac12\)}{Numerical}{6}\label{q:wavetheta}
+\begin{qbox}
+Solve \(u_{tt}=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u_t(x,0)=0\),
+\(u(0,t)=u(1,t)=0\), by the implicit scheme with \(\theta=\frac12\),
+\(h=\frac14\), \(r=k/h=1\), for one time step.  Compare with the exact
+solution.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\theta=\frac12\): \(\delta_t^2U=\frac{r^2}2\delta_x^2(U^{n+1}+U^{n-1})\);
+    unconditionally stable.
+  \item \(u_t(x,0)=0\Rightarrow U^{-1}=U^1\); then
+    \(\bigl(1-\frac{r^2}2\delta_x^2\bigr)U^1=U^0\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The first step}
+With \(n=0\) and \(U_m^{-1}=U_m^1\):
+\(2U_m^1-2U_m^0=\frac{r^2}2\delta_x^2(2U_m^1)\), i.e.
+\[
+  (1+r^2)U_m^1-\frac{r^2}2\bigl(U_{m+1}^1+U_{m-1}^1\bigr)=U_m^0 .
+\]
+With \(r=1\): \(2U_m^1-\frac12(U_{m+1}^1+U_{m-1}^1)=U_m^0\), \(m=1,2,3\).
+
+\step{Solving}
+By symmetry \(U_1^1=U_3^1=a\), \(U_2^1=b\):
+\[
+  2a-\tfrac12b=0.707107,\qquad 2b-a=1 .
+\]
+So \(b=\frac{1+a}2\), \(\frac74a=0.957107\):
+\[
+  a=0.546918,\qquad b=0.773459 .
+\]
+(Check: \(U^1=\xi\,U^0\) with \(\xi=\frac1{1+2r^2\sin^2(\pi/8)}=0.773459\).)
+
+\step{Comparison}
+\(t=k=\frac14\): exact \(\cos\frac\pi4\sin\pi x\), i.e.\ \(0.5\) and
+\(0.707107\).  The errors (\(0.047\), \(0.066\)) are large because
+\(k=\frac14\) is a large step for a solution with period \(2\); the
+scheme is stable but its phase error grows with \(k\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{The wave equation in two space dimensions}{Stability analysis}{8}\label{q:wave2d}
+\begin{qbox}
+For \(u_{tt}=u_{x_1x_1}+u_{x_2x_2}\) with \(h_1=h_2=h\), \(r=k/h\):
+\begin{enumerate}[label=(\alph*)]
+  \item show that the explicit scheme
+    \(\delta_t^2U=r^2(\delta_{x_1}^2+\delta_{x_2}^2)U\) is stable for
+    \(r\le\frac1{\sqrt2}\);
+  \item state and prove the stability conditions of the implicit
+    scheme
+    \(\bigl[1-\theta r^2(\delta_{x_1}^2+\delta_{x_2}^2)\bigr]\delta_t^2U=r^2(\delta_{x_1}^2+\delta_{x_2}^2)U\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Explicit:
+    \(U^{n+1}_{l,m}=2(1-2r^2)U_{l,m}^n+r^2(U_{l\pm1,m}^n+U_{l,m\pm1}^n)-U_{l,m}^{n-1}\),
+    order \(O(k^2+h^2)\).
+  \item On a mode, \(\delta_{x_1}^2+\delta_{x_2}^2\to-4(S_1+S_2)\),
+    \(S_1+S_2\le2\).
+  \item Implicit: \(\theta\ge\frac14\) unconditional;
+    \(r^2\le\frac1{2(1-4\theta)}\) for \(0\le\theta<\frac14\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Let \(U_{l,m}^n=\xi^ne^{i(\beta_1l+\beta_2m)h}\),
+\(S_i=\sin^2\frac{\beta_ih}2\) and \(\Sigma=S_1+S_2\in[0,2]\), so that
+\((\delta_{x_1}^2+\delta_{x_2}^2)\to-4\Sigma\) and \(\delta_t^2\to\xi-2+\xi^{-1}\).
+
+\step{(a) Explicit}
+\(\xi-2+\xi^{-1}=-4r^2\Sigma\), i.e.\
+\[
+  \xi^2-2\bigl(1-2r^2\Sigma\bigr)\xi+1=0 .
+\]
+The product of the roots is \(1\).  If the roots were real and distinct,
+one would have modulus greater than \(1\); so stability requires
+complex (or equal) roots, \(|1-2r^2\Sigma|\le1\iff r^2\Sigma\le1\), and then
+\(|\xi_1|=|\xi_2|=1\).  This must hold for all modes; since \(\Sigma\) can be
+\(2\), we need \(2r^2\le1\):
+\[
+  r\le\frac1{\sqrt2}.
+\]
+
+\step{(b) Implicit}
+\(\bigl(1+4\theta r^2\Sigma\bigr)(\xi-2+\xi^{-1})=-4r^2\Sigma\), i.e.\
+\[
+  \bigl(1+4\theta r^2\Sigma\bigr)\xi^2-2\bigl(1-2r^2\Sigma(1-2\theta)\bigr)\xi+\bigl(1+4\theta r^2\Sigma\bigr)=0 .
+\]
+Again the product of the roots is \(1\), so stability requires
+\(|1-2r^2\Sigma(1-2\theta)|\le1+4\theta r^2\Sigma\).  The upper inequality
+always holds; the lower one,
+\(-1+2r^2\Sigma(1-2\theta)\le1+4\theta r^2\Sigma\), is
+\[
+  r^2\Sigma(1-4\theta)\le1 .
+\]
+For \(\theta\ge\frac14\) it holds for all \(r\): unconditionally stable.
+For \(0\le\theta<\frac14\) the worst case \(\Sigma=2\) gives
+\(r^2\le\frac1{2(1-4\theta)}\).  An ADI method can be developed for this
+scheme by factorising the operator on the left.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{A nine-point explicit scheme for the two-dimensional wave equation}{Stability analysis}{8}\label{q:wave9}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~4, Exercise 12.)  Using the nine-point
+replacement
+\(\nabla^2u\approx\frac1{h^2}\bigl(\delta_{x_1}^2+\delta_{x_2}^2+\frac16\delta_{x_1}^2\delta_{x_2}^2\bigr)u\),
+derive an explicit scheme for \(u_{tt}=\nabla^2u\), and determine its
+stability and CFL conditions.
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item \(\delta_{x_1}^2\delta_{x_2}^2\) uses the four diagonal
+    neighbours: the stencil is the full \(3\times3\) square.
+  \item On a mode: \(\delta_{x_i}^2\to-4S_i\),
+    \(\delta_{x_1}^2\delta_{x_2}^2\to16S_1S_2\).
+  \item CFL: the numerical domain of dependence (here a square) must
+    contain the exact one (a disc of radius \(t\)).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{The scheme}
+\(\delta_t^2U_{l,m}^n=r^2\bigl(\delta_{x_1}^2+\delta_{x_2}^2+\frac16\delta_{x_1}^2\delta_{x_2}^2\bigr)U_{l,m}^n\),
+i.e.\ \(U^{n+1}=2U^n-U^{n-1}+r^2\bigl(\delta_{x_1}^2+\delta_{x_2}^2+\frac16\delta_{x_1}^2\delta_{x_2}^2\bigr)U^n\),
+which involves the nine points \((l+i,m+j)\), \(i,j\in\{-1,0,1\}\), at
+level \(n\).
+
+\step{Stability}
+\(\xi-2+\xi^{-1}=-r^2\Phi\), with
+\(\Phi=4S_1+4S_2-\frac{16}6S_1S_2=4S_1+4S_2-\frac83S_1S_2\ge0\), i.e.\
+\(\xi^2-(2-r^2\Phi)\xi+1=0\).  The product of the roots is \(1\), so
+stability requires complex (or equal) roots:
+\(|2-r^2\Phi|\le2\iff r^2\Phi\le4\), for all \(S_1,S_2\in[0,1]\).  Since \(\partial\Phi/\partial S_1=4-\frac83S_2>0\)
+(and similarly for \(S_2\)), the maximum is at \(S_1=S_2=1\):
+\(\Phi_{\max}=8-\frac83=\frac{16}3\).  Hence
+\[
+  r^2\le\frac34,\qquad \boxed{r\le\frac{\sqrt3}2\approx0.866}.
+\]
+\step{CFL}
+After \(n\) steps the scheme uses data in the square
+\(|x_1-X_1|,|x_2-X_2|\le nh\); the exact solution depends on the disc of
+radius \(nk\).  The disc lies in the square iff \(k\le h\): CFL
+condition \(r\le1\).  Stability (\(r\le\frac{\sqrt3}2\)) is the stricter
+requirement.  (For the five-point scheme the numerical domain is the
+diamond \(|x_1|+|x_2|\le nh\), so CFL gives \(r\le\frac1{\sqrt2}\), the same as
+its stability condition; the nine-point scheme allows a larger time
+step.)
+\end{solution}
+
+%#####################################################################
+\Needspace{32\baselineskip}
+\section{The Heat Equation: Comparison of Methods}
+%#####################################################################
+
+%---------------------------------------------------------------------
+\Q{Four methods for the heat equation}{Numerical}{10}\label{q:heat4}
+\begin{qbox}
+Solve \(u_t=u_{xx}\), \(u(x,0)=\sin\pi x\), \(u(0,t)=u(1,t)=0\), with
+\(h=\frac14\), \(k=\frac1{64}\) (\(r=\frac14\)), up to \(t=2k\), by
+(i) Crank--Nicolson, (ii) the explicit (Schmidt) method, (iii) Du
+Fort--Frankel (with \(U^1\) from the explicit method), and (iv) the
+Douglas method.  Compare the values at \(x=\frac12\) with the exact
+\(e^{-\pi^2t}\sin\pi x\).
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Explicit \(U^{n+1}=(1+r\delta^2)U^n\), \(O(k+h^2)\), \(r\le\frac12\).
+  \item Crank--Nicolson
+    \((1-\frac r2\delta^2)U^{n+1}=(1+\frac r2\delta^2)U^n\), \(O(k^2+h^2)\),
+    unconditionally stable.
+  \item Du Fort--Frankel
+    \((1+2r)U_m^{n+1}=2r(U_{m+1}^n+U_{m-1}^n)+(1-2r)U_m^{n-1}\),
+    \(O(k^2+h^2+k^2/h^2)\), unconditionally stable.
+  \item Douglas
+    \(\bigl[1-\frac12(r-\frac16)\delta^2\bigr]U^{n+1}=\bigl[1+\frac12(r+\frac16)\delta^2\bigr]U^n\),
+    \(O(k^2+h^4)\), unconditionally stable.
+  \item For \(\sin\pi x\) data: \(\delta^2\to-4s\), \(s=\sin^2\frac{\pi h}2\);
+    two-level schemes give \(U_m^n=\xi^n\sin\pi x_m\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+Interior points \(x=\frac14,\frac12,\frac34\);
+\(U^0=(0.707107,1,0.707107)\); \(s=\sin^2\frac\pi8=0.146447\), so
+\(4rs=0.146447\).
+
+\step{(ii) Explicit}
+\(\xi=1-4rs=0.853553\) (Q\ref{q:old18}):
+\[
+  U^1=(0.603553,0.853553,0.603553),\qquad
+  U^2=(0.515165,0.728553,0.515165).
+\]
+
+\step{(i) Crank--Nicolson}
+With \(U_1=U_3=a\), \(U_2=b\), the first step
+\((1+r)U_m^1-\frac r2(U_{m+1}^1+U_{m-1}^1)=(1-r)U_m^0+\frac r2(U_{m+1}^0+U_{m-1}^0)\)
+reads
+\[
+  1.25a-0.125b=0.655330,\qquad -0.25a+1.25b=0.926777,
+\]
+so \(a=0.610619\), \(b=0.863545\) (determinant \(1.53125\)).  This agrees
+with \(\xi=\frac{1-2rs}{1+2rs}=0.863545\).  The second step gives
+\(U^2=(0.527297,0.745710,0.527297)\).
+
+\step{(iv) Douglas}
+\(\frac12(r-\frac16)=\frac1{24}\), \(\frac12(r+\frac16)=\frac5{24}\):
+\[
+  \xi=\frac{1-\frac{20}{24}s}{1+\frac4{24}s}=\frac{0.8779612}{1.0244078}=0.857043,
+\]
+\(U^1=(0.606021,0.857043,0.606021)\),
+\(U^2=(0.519386,0.734522,0.519386)\).
+
+\step{(iii) Du Fort--Frankel}
+With \(r=\frac14\): \(1.5U_m^2=0.5(U_{m+1}^1+U_{m-1}^1)+0.5U_m^0\), using
+the explicit \(U^1\):
+\[
+  U_2^2=\frac{0.5(1.207107)+0.5}{1.5}=0.735702,\qquad
+  U_1^2=\frac{0.5(0.853553)+0.5(0.707107)}{1.5}=0.520220 .
+\]
+
+\step{Comparison at \(x=\frac12\), \(t=\frac1{32}\)} (exact \(0.734603\))
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Method & \(U\) & error\\
+\midrule
+Explicit & 0.728553 & \(6.0\times10^{-3}\)\\
+Crank--Nicolson & 0.745710 & \(1.1\times10^{-2}\)\\
+Du Fort--Frankel & 0.735702 & \(1.1\times10^{-3}\)\\
+Douglas & 0.734522 & \(8.1\times10^{-5}\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+Douglas (\(O(k^2+h^4)\)) is by far the most accurate.  Crank--Nicolson
+is worse than the explicit scheme here: both carry the spatial error of
+\(\delta^2\) (which slows the decay), but for the explicit scheme with
+\(r=\frac14\) the time error (which speeds it up) partly cancels it.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Crank--Nicolson versus Douglas at the optimal \(r\)}{Numerical / analysis}{10}\label{q:mgdouglas}
+\begin{qbox}
+(Mitchell--Griffiths, Ch.~2, Example 2 and Exercise 7.)  Solve
+\(u_t=u_{xx}\), \(u(x,0)=\sin x\) (\(0\le x\le\pi\)), \(u(0,t)=u(\pi,t)=0\),
+by Crank--Nicolson and by the Douglas formula, with \(h=\pi/20\) and
+\(r=1/\sqrt{20}\).
+\begin{enumerate}[label=(\alph*)]
+  \item Show that the truncation error of the Douglas formula is
+    \(\frac{kh^4}{240}(1-20r^2)u_{xxxxxx}+\cdots\), so that
+    \(r=1/\sqrt{20}\) minimises it.
+  \item Show that both formulas are unconditionally stable.
+  \item Compute \(U\) at \(x=\frac\pi2\) after \(10\) steps and compare
+    with the exact solution \(e^{-t}\sin x\).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Douglas:
+    \(\bigl[1-\frac12(r-\frac16)\delta^2\bigr]U^{n+1}=\bigl[1+\frac12(r+\frac16)\delta^2\bigr]U^n\);
+    \(\xi=\dfrac{1-2(r+\frac16)S}{1+2(r-\frac16)S}\).
+  \item \(\sin x_m\) is an eigenvector of \(\delta^2\):
+    \(\delta^2\sin x_m=-4\sin^2\frac h2\,\sin x_m\).
+  \item \(u_{tt}=u_{xxxx}\), \(u_{ttt}=u_{xxxxxx}\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Truncation error}
+Expanding
+\(T=u^{n+1}-u^n-\frac12(r-\frac16)\delta^2u^{n+1}-\frac12(r+\frac16)\delta^2u^n\)
+about \((mh,nk)\) and using the heat equation to replace time
+derivatives, the terms up to order \(kh^2\) and \(k^2\) cancel (this is
+the purpose of the \(\pm\frac16\)); the first surviving term is
+\[
+  T=\frac{kh^4}{240}\bigl(1-20r^2\bigr)\frac{\partial^6u}{\partial x^6}+\cdots .
+\]
+(Checked by a symbolic expansion.)  So \(T/k=O(h^4)\) in general, and
+for \(r^2=\frac1{20}\) the leading term vanishes and the error is of
+still higher order: \(r=1/\sqrt{20}\) gives the minimum truncation error.
+
+\step{(b) Stability}
+Crank--Nicolson: \(\xi=\frac{1-2rS}{1+2rS}\in(-1,1]\) for \(r>0\).
+Douglas: the denominator \(1+2(r-\frac16)S\ge1-\frac S3>0\).  Then
+\(\xi\le1\iff-2(r+\frac16)S\le2(r-\frac16)S\iff r\ge0\), and
+\(\xi\ge-1\iff2\ge\bigl[2(r+\frac16)-2(r-\frac16)\bigr]S=\frac23S\), true.  So
+both are stable for all \(r>0\).
+
+\step{(c) Numbers}
+\(h=\frac\pi{20}\), \(k=rh^2=0.0055173\), \(S=\sin^2\frac\pi{40}=0.0061558\).
+\[
+  \xi_{CN}=\frac{1-2rS}{1+2rS}=0.9945092,\qquad
+  \xi_{D}=\frac{1-2(r+\frac16)S}{1+2(r-\frac16)S}=0.9944979,
+  \qquad e^{-k}=0.9944979 .
+\]
+After \(10\) steps (\(t=0.055173\)), at \(x=\frac\pi2\):
+\begin{center}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+ & \(U(\frac\pi2)\) & error\\
+\midrule
+Crank--Nicolson & 0.9464288 & \(1.1\times10^{-4}\)\\
+Douglas & 0.9463216 & \(1.3\times10^{-10}\)\\
+exact \(e^{-t}\) & 0.9463216 & --\\
+\bottomrule
+\end{tabular}
+\end{center}
+At the optimal \(r\) the Douglas formula is essentially exact for this
+smooth solution.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Two-dimensional ADI forms of the Douglas scheme}{Analysis}{8}\label{q:mfcons}
+\begin{qbox}
+(Lecture notes; Mitchell--Griffiths, Ch.~2, Exercise 14, second part.)
+For \(u_t=u_{x_1x_1}+u_{x_2x_2}\), let \(a=\frac12(r-\frac16)\),
+\(b=\frac12(r+\frac16)\), and consider the split (Mitchell--Fairweather,
+or high-order Douglas, ADI) scheme
+\[
+  (1-a\delta_{x_1}^2)U^{n+1*}=(1+b\delta_{x_2}^2)U^n,\qquad
+  (1-a\delta_{x_2}^2)U^{n+1}=(1+b\delta_{x_1}^2)U^{n+1*}.
+\]
+\begin{enumerate}[label=(\alph*)]
+  \item Show that eliminating \(U^{n+1*}\) gives the factored
+    Douglas scheme
+    \((1-a\delta_{x_1}^2)(1-a\delta_{x_2}^2)U^{n+1}=(1+b\delta_{x_1}^2)(1+b\delta_{x_2}^2)U^n\).
+  \item Show that, with \(U^{n+1*}=U^{n+1/2}\), the individual
+    formulas are \emph{not} consistent (contrast Q\ref{q:prhalf}).
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item Eliminating the intermediate value needs
+    \(\delta_{x_1}^2\delta_{x_2}^2=\delta_{x_2}^2\delta_{x_1}^2\).
+  \item \(a\,\delta^2u=\frac k2u_{xx}-\frac{h^2}{12}u_{xx}+\cdots\) and
+    \(b\,\delta^2u=\frac k2u_{xx}+\frac{h^2}{12}u_{xx}+\cdots\).
+  \item In the notes this split is labelled ``Douglas--Rachford ADI'';
+    the genuine Douglas--Rachford split is that of Q\ref{q:dr}.
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a) Elimination}
+\(U^{n+1*}=(1-a\delta_{x_1}^2)^{-1}(1+b\delta_{x_2}^2)U^n\), so
+\((1-a\delta_{x_2}^2)U^{n+1}=(1+b\delta_{x_1}^2)(1-a\delta_{x_1}^2)^{-1}(1+b\delta_{x_2}^2)U^n\).
+Applying \((1-a\delta_{x_1}^2)\), which commutes with the other
+operators,
+\((1-a\delta_{x_1}^2)(1-a\delta_{x_2}^2)U^{n+1}=(1+b\delta_{x_1}^2)(1+b\delta_{x_2}^2)U^n\).
+
+\step{(b) The half-steps}
+First formula with \(u^{n+1/2}\), expanded about \((lh,mh,nk)\):
+\[
+  T_1=u^{n+\frac12}-u^n-a\delta_{x_1}^2u^{n+\frac12}-b\delta_{x_2}^2u^n
+  =\frac k2\bigl(u_t-\nabla^2u\bigr)+\frac{h^2}{12}\bigl(u_{x_1x_1}-u_{x_2x_2}\bigr)+\cdots .
+\]
+Dividing by the time step \(\frac k2\):
+\(\frac{T_1}{k/2}\to\frac{h^2}{6k}\bigl(u_{x_1x_1}-u_{x_2x_2}\bigr)=\frac1{6r}\bigl(u_{x_1x_1}-u_{x_2x_2}\bigr)\ne0\)
+as \(h,k\to0\) with \(r\) fixed: not consistent.  The second formula
+gives the same term with the opposite sign,
+\(-\frac{h^2}{12}(u_{x_1x_1}-u_{x_2x_2})\); the two errors cancel when the
+half-steps are combined, so the full step is accurate even though
+neither half is a consistent approximation on its own.
+\end{solution}
+
+%---------------------------------------------------------------------
+\Q{Short answers on Note 6}{Short answer}{8}\label{q:short6}
+\begin{qbox}
+Answer briefly, with reasons.
+\begin{enumerate}[label=(\alph*)]
+  \item In the ADI iteration for Laplace's equation, what is the role
+    of \(\lambda\)?  How should it be chosen?
+  \item Why is the discrete Neumann problem singular while the Robin
+    problem is not?
+  \item Is a scheme that satisfies the CFL condition necessarily
+    stable?
+  \item Why does the Du Fort--Frankel scheme need care although it is
+    unconditionally stable?
+  \item Why is a three-level scheme natural for the wave equation, and
+    what extra data does it need?
+  \item Which of Peaceman--Rachford, Douglas--Rachford and the Douglas
+    scheme are second order in time?
+\end{enumerate}
+\end{qbox}
+
+\begin{rem}
+\begin{itemize}
+  \item ADI iteration converges for every \(\lambda>0\); optimum
+    \(\frac2\lambda=\sqrt{\mu_{\min}\mu_{\max}}\).
+  \item CFL is necessary, not sufficient, for convergence.
+  \item Orders: PR \(O(k^2+h^2)\), DR \(O(k+h^2)\), Douglas
+    \(O(k^2+h^4)\).
+\end{itemize}
+\end{rem}
+
+\begin{solution}
+\step{(a)}
+\(\lambda\) is an iteration (acceleration) parameter, no longer
+\(k/h^2\).  The iteration converges for every \(\lambda>0\)
+(Q\ref{q:priter}); the best fixed value is
+\(\frac2\lambda=\sqrt{\mu_{\min}\mu_{\max}}\), i.e.\ \(\lambda=\csc\frac\pi M\) on
+the unit square (Q\ref{q:optpar}); varying \(\lam\) (Wachspress) is
+better still.
+
+\step{(b)}
+For Neumann data every row of \(A\) sums to zero, so \(A\mathbf1=0\):
+the solution is fixed only up to a constant, and the data must satisfy
+a compatibility condition.  The Robin terms \(hp_i,hq_i>0\) add to the
+boundary diagonal entries, making \(A\) positive definite in the
+weighted sense, hence non-singular (Q\ref{q:robin}).
+
+\step{(c)}
+No.  CFL is necessary but not sufficient.  For the nine-point wave
+scheme, CFL allows \(r\le1\), but stability needs \(r\le\frac{\sqrt3}2\)
+(Q\ref{q:wave9}).
+
+\step{(d)}
+It is consistent with \(u_t=u_{xx}\) only if \(k/h\to0\); if \(k/h\) is
+fixed it approximates \(u_t+c^2u_{tt}=u_{xx}\) (Q\ref{q:old32}).  So
+large steps give stable but wrong answers.
+
+\step{(e)}
+The equation is second order in \(t\), and \(\delta_t^2\) needs three
+levels.  The two initial conditions \(u(x,0)=f\) and \(u_t(x,0)=g\)
+provide \(U^0\) and, through \(U^{-1}=U^1-2kg\), the level \(U^1\).
+
+\step{(f)}
+Peaceman--Rachford (\(O(k^2+h^2)\)) and Douglas (\(O(k^2+h^4)\)) are
+second order in time; Douglas--Rachford is a perturbation of the fully
+implicit scheme and is only first order (\(O(k^2+kh^2)\) truncation
+error, i.e.\ \(O(k+h^2)\) accuracy).
+\end{solution}
+
+
+\end{document}

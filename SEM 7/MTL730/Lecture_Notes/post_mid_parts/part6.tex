@@ -1,0 +1,685 @@
+% CONTINUES: rational points on the circle $x^2+y^2=1$, via lines of rational slope through $(-1,0)$.
+% --- page 62 ---
+
+The line through $(-1,0)$ of slope $t$ is $y=t(x+1)$. Substituting into the circle gives
+\[
+    \bigl(t(x+1)\bigr)^2+x^2=1,
+\]
+which expands to the quadratic
+\[
+    x^2(1+t^2)+2t^2 x+(t^2-1)=0.
+\]
+One root is the known intersection $x=-1$. Factoring,
+\[
+    (x+1)\bigl((1+t^2)x-(1-t^2)\bigr)
+    =x^2(1+t^2)+2t^2 x+(t^2-1),
+\]
+so the other root is
+\[
+    x=\frac{1-t^2}{1+t^2}.
+\]
+The corresponding $y$-coordinate is
+\[
+    y=t(x+1)=t\left(\frac{1-t^2}{1+t^2}+1\right)
+    =\frac{2t}{1+t^2}.
+\]
+Thus every rational slope produces a rational point, and every rational point other than $(-1,0)$ arises this way:
+\[
+    \left\{
+        \left(\frac{1-t^2}{1+t^2},\,\frac{2t}{1+t^2}\right)
+        : t\in\mathbb{Q}
+    \right\}
+    \cup\{(-1,0)\}.
+\]
+Sending $t\to\infty$ (the vertical line through $(-1,0)$) returns the missing point: the two coordinates tend to $-1$ and $0$.
+
+\subsection{The group law}
+
+The name is historical. Arc lengths of ellipses lead to elliptic integrals, and elliptic integrals lead to the curves below.
+
+\begin{keybox}
+\begin{definition}[Elliptic curve]
+For us, an elliptic curve is an equation
+\[
+    y^2=x^3+ax+b,
+\]
+where $a,b\in\R$ satisfy $4a^3+27b^2\neq 0$. The condition ensures that the cubic has no repeated root, so the curve is nonsingular.
+\end{definition}
+\end{keybox}
+
+% --- page 63 ---
+
+Over $\R$ the real locus has one of the two shapes in Figure~\ref{fig:ec-real}, according to the number of real roots of the cubic. A cross marks a root.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=0.78cm,y=0.78cm,line cap=round,line join=round]
+    % one real component: y^2 = x^3 - x + 1, root about -1.325
+    \begin{scope}
+        \draw[->] (-2.15,0) -- (2.15,0);
+        \draw (0,-1.85) -- (0,1.85);
+        \draw[domain=-1.32472:1.85,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-\x+1))});
+        \draw[domain=-1.32472:1.85,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-\x+1))});
+        \node[fill=white,inner sep=1pt] at (-1.325,0) {$\times$};
+    \end{scope}
+    % two components: y^2 = x^3 - 4x, roots -2,0,2
+    \begin{scope}[xshift=6.6cm]
+        \draw[->] (-2.7,0) -- (3.55,0);
+        \draw (1,-1.85) -- (1,1.85);
+        \draw[domain=-2:0,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+        \draw[domain=-2:0,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+        \draw[domain=2:2.85,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+        \draw[domain=2:2.85,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+        \node[fill=white,inner sep=1pt] at (-2,0) {$\times$};
+        \node[fill=white,inner sep=1pt] at (0,0) {$\times$};
+        \node[fill=white,inner sep=1pt] at (2,0) {$\times$};
+    \end{scope}
+\end{tikzpicture}
+\caption{Real locus of a short Weierstrass equation. Left: $y^2=x^3-x+1$, one real root. Right: $y^2=x^3-4x$, three real roots, drawn as an oval and an unbounded component, with a vertical line in the gap between them.}
+\label{fig:ec-real}
+\end{figure}
+
+This shape of equation is called the \emph{Weierstrass form}. It is available whenever $\operatorname{char} K\neq 2,3$. In the remaining characteristics one uses
+\begin{align*}
+    \operatorname{char} K=2:
+    &\quad
+    \begin{cases}
+        y^2+cy=x^3+ax+b,\\
+        y^2+xy=x^3+ax^2+b,
+    \end{cases}\\[0.4em]
+    \operatorname{char} K=3:
+    &\quad
+    y^2=x^3+ax^2+bx+c.
+\end{align*}
+The general Weierstrass equation, over any field, is
+\[
+    y^2+a_1 xy+a_3 y=x^3+a_2 x^2+a_4 x+a_6.
+\]
+
+An elliptic curve comes with a point at infinity. That extra point is what makes it possible to put an abelian group structure on the curve.
+
+Adding two points by adding coordinates does not work. If $(x_1,y_1)$ and $(x_2,y_2)$ lie on $E$, the pair $(x_1+x_2,\,y_1+y_2)$ need not.
+
+% --- page 64 ---
+
+A second attempt uses the geometry of a line. Let $P$ and $Q$ be points of $E$, and let the line through them meet $E$ again at $R$, as in Figure~\ref{fig:ec-naive}.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=0.72cm,y=0.72cm,line cap=round,line join=round]
+    \draw[->] (-2.7,0) -- (4.15,0);
+    % y-axis in the gap (0,2); x=0 is a root, with a vertical tangent
+    \draw[gray!55] (0,-4.3) -- (0,4.3);
+    \draw[domain=-2:0,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=-2:0,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=2:3.30,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=2:3.30,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+    % P, Q, R lie on y^2=x^3-4x; chord y+0.397=0.881(x+1.98) ends on R
+    \coordinate (P) at (-1.98,-0.397);
+    \coordinate (Q) at (-0.30,1.083);
+    \coordinate (R) at (3.056,4.040);
+    \draw (-2.32,-0.696) -- (R);
+    \draw[->] (-0.72,0.713) -- (-0.48,0.924);
+    \fill (P) circle (1.6pt);
+    \node[anchor=north east] at (-2.08,-0.58) {$P$};
+    \fill (Q) circle (1.6pt);
+    \node[above=3pt] at (Q) {$Q$};
+    \fill (R) circle (1.6pt);
+    \node[above left=1pt] at (R) {$R$};
+\end{tikzpicture}
+\caption{The chord through $P$ and $Q$ on $y^2=x^3-4x$ meets the curve again at $R$. Declaring $P+Q=R$ does not give a group law.}
+\label{fig:ec-naive}
+\end{figure}
+
+\begin{remark}
+Taking $P+Q$ to be this third point $R$ fails. The three intersection points are symmetric, so the same rule would also require $Q+R=P$ and $P+R=Q$, and those identities do not hold. The proposal collapses further to $2P=2Q=2R=\mathcal{O}_E$, i.e.\ every point would have order dividing $2$. The notes mark the attempt with $(\times)$; it also fails.
+\end{remark}
+
+The law that does work reflects the third intersection across the $x$-axis. Draw the line through $P$ and $Q$, let $R$ be its third meeting with $E$, and let $R'$ be the reflection of $R$ in the $x$-axis (Figure~\ref{fig:ec-sum}). Define
+\[
+    P+Q=R'.
+\]
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x=0.78cm,y=0.78cm,line cap=round,line join=round]
+    \draw[->] (-2.55,0) -- (4.05,0);
+    % y-axis in the gap (0,2); x=0 is a root, with a vertical tangent
+    \draw[gray!55] (0,-3.25) -- (0,3.15);
+    \draw[domain=-2:0,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=-2:0,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=2:3.25,samples=240,smooth] plot (\x,{sqrt(max(0,\x*\x*\x-4*\x))});
+    \draw[domain=2:3.25,samples=240,smooth] plot (\x,{-sqrt(max(0,\x*\x*\x-4*\x))});
+    % P, Q, R on y^2=x^3-4x; R' is the reflection of R
+    \coordinate (P) at (-1.800,-1.170);
+    \coordinate (Q) at (-0.040,0.400);
+    \coordinate (R) at (2.635,2.786);
+    \coordinate (Rp) at (2.635,-2.786);
+    \draw (-2.15,-1.482) -- (R);
+    \draw[dashed] (R) -- (Rp);
+    \fill (P) circle (1.6pt);
+    \node[anchor=north] at (-1.80,-1.32) {$P$};
+    \fill (Q) circle (1.6pt);
+    \node[anchor=east] at (-0.28,0.72) {$Q$};
+    \fill (R) circle (1.6pt);
+    \node[anchor=south west] at (2.78,2.90) {$R$};
+    \fill (Rp) circle (1.6pt);
+    \node[anchor=west] at (2.95,-2.55) {$R'=P+Q$};
+\end{tikzpicture}
+\caption{Chord through $P$ and $Q$ on $y^2=x^3-4x$, meeting the curve again at $R$. The dashed segment reflects $R$ across the $x$-axis to $R'$, and the sum is $P+Q=R'$.}
+\label{fig:ec-sum}
+\end{figure}
+
+\par
+\ifdim\dimexpr\pagegoal-\pagetotal<5\baselineskip
+  \newpage
+\fi
+\begin{example}[Adding two distinct points]
+\label{ex:pq-sum}
+Take $y^2=x^3-15x+18$, with $P=(7,16)$ and $Q=(1,2)$. Both points lie on the curve:
+\[
+    16^2=256=7^3-15\cdot 7+18,
+    \qquad
+    2^2=4=1^3-15\cdot 1+18.
+\]
+The slope of the chord is
+\[
+    \frac{16-2}{7-1}=\frac{14}{6}=\frac{7}{3},
+\]
+so the line is
+\[
+    y-2=\frac{7}{3}(x-1),
+    \qquad
+    y=\frac{7}{3}x-\frac{1}{3}.
+\]
+Substitute into the curve:
+\[
+    \left(\frac{7}{3}x-\frac{1}{3}\right)^2=x^3-15x+18.
+\]
+Clearing the denominator $9$,
+\begin{align*}
+    (7x-1)^2&=9x^3-135x+162,\\
+    49x^2-14x+1&=9x^3-135x+162,\\
+    0&=9x^3-49x^2-121x+161.
+\end{align*}
+Dividing by $9$ gives the monic cubic whose roots are the $x$-coordinates of the three intersections:
+\begin{equation}
+    x^3-\frac{49}{9}x^2-\frac{121}{9}x+\frac{161}{9}=0.
+    \label{eq:pq-cubic}
+\end{equation}
+% --- page 65 ---
+The roots include $x=7$ and $x=1$. If $\lambda$ is the third, then
+\[
+    \lambda+1+7=\frac{49}{9},
+    \qquad
+    \lambda=\frac{49}{9}-8=\frac{49-72}{9}=-\frac{23}{9}.
+\]
+% FIX p.65: the notes write this reduction as $(49-8)/7=-23/9$.
+% The sum of roots of \eqref{eq:pq-cubic} is $49/9$, so $\lambda=49/9-8=-23/9$.
+% The value $-23/9$ written underneath is the correct root; $(49-8)/7=41/7$ is not.
+The line at this abscissa has
+\begin{align*}
+    y
+    &=\frac{7}{3}\left(-\frac{23}{9}\right)-\frac{1}{3}
+     =\frac{-161-9}{27}
+     =-\frac{170}{27}.
+\end{align*}
+% FIX p.65: the notes record the intersection ordinate as $-170/9$ and the sum as $(-23/9,\,170/9)$.
+% The line is $y=(7x-1)/3$, so $y=(-170/9)/3=-170/27$.
+Reflecting across the $x$-axis,
+\[
+    P+Q=\left(-\frac{23}{9},\,\frac{170}{27}\right).
+\]
+\end{example}
+
+\lectureheading{Lecture 22 (03/11/26)}
+
+To double a point, replace the chord by the tangent. Let the tangent line to $E$ at $P$ meet $E$ again at $R$. Then $P+P$ is the reflection of $R$ across the $x$-axis.
+
+\begin{example}[Doubling]
+Continue with $y^2=x^3-15x+18$ and $P=(7,16)$. Differentiating implicitly,
+\[
+    2yy'=3x^2-15,
+    \qquad
+    y'=\frac{3x^2-15}{2y}.
+\]
+The slope of the tangent at $P$ is
+\[
+    \frac{3\cdot 7^2-15}{2\cdot 16}
+    =\frac{3\cdot 49-15}{32}
+    =\frac{132}{32}
+    =\frac{33}{8}.
+\]
+The tangent line is
+\[
+    y=\frac{33}{8}(x-7)+16
+    =\frac{33}{8}x-\frac{103}{8}.
+\]
+% --- page 66 ---
+For the third intersection, substitute into the curve:
+\[
+    \left(\frac{33x-103}{8}\right)^2=x^3-15x+18.
+\]
+Expanding $(33x-103)^2=1089x^2-6798x+10609$ and $64(x^3-15x+18)=64x^3-960x+1152$, rearranging yields
+\[
+    64x^3-1089x^2+5838x-9457=0,
+\]
+or
+\[
+    x^3-\frac{1089}{64}x^2+\frac{2919}{32}x-\frac{9457}{64}=0.
+\]
+The point $P$ is a point of tangency, so $x=7$ is a double root. The third root therefore satisfies
+\[
+    7+7+x=\frac{1089}{64},
+    \qquad
+    x=\frac{1089}{64}-14
+     =\frac{1089-896}{64}
+     =\frac{193}{64}.
+\]
+% FIX p.66: the third root is written as $(1089-14)/64=193/64$.
+% That quotient is $1075/64$. The sum of roots gives $1089/64-14=193/64$, which is the value used below.
+The tangent at this abscissa has
+\begin{align*}
+    y
+    &=\frac{33}{8}\cdot\frac{193}{64}-\frac{103}{8}
+     =\frac{33\cdot 193-103\cdot 64}{512}
+     =\frac{6369-6592}{512}
+     =-\frac{223}{512}.
+\end{align*}
+Reflecting across the $x$-axis,
+\[
+    2P=P+P=\left(\frac{193}{64},\,\frac{223}{512}\right).
+\]
+\end{example}
+
+\paragraph{Inverses and the identity.}
+The same rule has to add a point to its reflection $(x,-y)$, and a point to the point at infinity.
+
+The line through $(x,y)$ and $(x,-y)$ is vertical, so it meets $E$ at no further affine point. Declare that the point at infinity lies on every vertical line, and write $\mathcal{O}$ for that point. The vertical line then meets $E$ at $(x,y)$, $(x,-y)$, and $\mathcal{O}$, and the group law gives
+\[
+    (x,y)+(x,-y)=\mathcal{O}.
+\]
+In the other direction, the vertical line through $P=(x,y)$ meets $E$ again at $P'=(x,-y)$. Reflecting $P'$ across the $x$-axis returns $P$, so
+\[
+    P+\mathcal{O}=P.
+\]
+
+% --- page 67 ---
+
+Thus $P+P'=\mathcal{O}$ with $P'=(x,-y)$. The point $(x,-y)$ is the inverse of $P$, written $-P$.
+
+\begin{keybox}
+\begin{theorem}[Group law]
+\label{thm:group-law}
+Let $E$ be an elliptic curve as above. The addition just defined has the following properties.
+\begin{enumerate}[leftmargin=1.6em,label=\textup{(\arabic*)}]
+    \item $P+\mathcal{O}=\mathcal{O}+P=P$.
+    \item $P+(-P)=\mathcal{O}$.
+    \item $P+Q=Q+P$.
+    \item $(P+Q)+R=P+(Q+R)$.
+\end{enumerate}
+Associativity needs a separate rigorous proof; it is not checked from the pictures.
+\end{theorem}
+\end{keybox}
+
+\subsection{The addition algorithm}
+
+Let $E\colon y^2=x^3+Ax+B$, and let $P_1,P_2$ be points of $E$.
+\begin{enumerate}[leftmargin=1.6em,label=\textup{(\arabic*)}]
+    \item If $P_1=\mathcal{O}$, then $P_1+P_2=P_2$. If $P_2=\mathcal{O}$, then $P_1+P_2=P_1$.
+    \item Otherwise write $P_1=(x_1,y_1)$ and $P_2=(x_2,y_2)$. If $x_1=x_2$ and $y_1=-y_2$, then $P_1+P_2=\mathcal{O}$.
+    \item Otherwise define $\lambda$, $x_3$, and $y_3$ as follows, and set $P_1+P_2=(x_3,y_3)$.
+\end{enumerate}
+
+% --- page 68 ---
+
+In case~(3),
+\begin{equation}
+    \lambda=
+    \begin{cases}
+        \dfrac{y_2-y_1}{x_2-x_1} & \text{if }P_1\neq P_2,\\[1.1em]
+        \dfrac{3x_1^2+A}{2y_1} & \text{if }P_1=P_2,
+    \end{cases}
+    \label{eq:lambda}
+\end{equation}
+and
+\begin{align}
+    x_3&=\lambda^2-x_1-x_2, \label{eq:x3}\\
+    y_3&=\lambda(x_1-x_3)-y_1. \label{eq:y3}
+\end{align}
+% FIX p.68: the formula line writes $y_3=\lambda(x_1-x_3)+y_1$.
+% The proof just below derives the minus sign, which is the group law.
+Then $P_1+P_2=(x_3,y_3)$.
+
+\begin{proof}
+In case~(3), $\lambda$ is the slope of the line through $P_1$ and $P_2$ (the tangent line, when the points coincide). That line is
+\[
+    y=\lambda x+\nu,
+    \qquad
+    \nu=y_1-\lambda x_1.
+\]
+Substitute into the curve:
+\begin{align*}
+    (\lambda x+\nu)^2&=x^3+Ax+B,\\
+    x^3-\lambda^2 x^2+(A-2\lambda\nu)x+(B-\nu^2)&=0.
+\end{align*}
+The three roots are the abscissae of the intersections, so
+\[
+    \lambda^2=x_1+x_2+x_3,
+    \qquad
+    x_3=\lambda^2-x_1-x_2.
+\]
+The third intersection has ordinate $\lambda x_3+\nu$. Reflecting it across the $x$-axis gives the sum:
+\begin{align*}
+    y_3
+    &=-(\lambda x_3+\nu)
+     =-\lambda x_3-\nu
+     =-\lambda x_3-(y_1-\lambda x_1)
+     =\lambda(x_1-x_3)-y_1.
+\end{align*}
+\end{proof}
+
+With this addition, the points of an elliptic curve form a group. The identity is the point at infinity $\mathcal{O}$.
+
+\paragraph{Integer points.}
+How many points with integer coordinates does $E$ have? For $A,B\in\Z$, Siegel's theorem says there are only finitely many integer points. Baker's method gives a bound on the number of those points.
+
+% --- page 69 ---
+
+\subsection{Rational points}
+
+The rational points are much more structured than a finite set.
+
+\begin{theorem}[Mordell--Weil]
+The group $E(\mathbb{Q})$ of rational points, including $\mathcal{O}$, is a finitely generated abelian group:
+\[
+    E(\mathbb{Q})\;\cong\; G\times \Z^{r}.
+\]
+Here $G$ is a finite abelian group and the integer $r\geq 0$ is the \emph{rank} of the elliptic curve.
+\end{theorem}
+
+The rank is the quantity one most wants to understand for an elliptic curve over $\mathbb{Q}$. Bhargava's theorem says that a positive proportion of elliptic curves over $\mathbb{Q}$ have rank $0$, and a positive proportion have rank $1$.
+
+If $r=0$, then $E(\mathbb{Q})$ itself is a finite abelian group. Mazur's theorem lists $15$ explicit possibilities for $G$. Those groups are too small to use for cryptography.
+
+The Lutz--Nagell theorem says that, on the model $y^2=x^3+Ax+B$ with $A,B\in\Z$, every torsion point is an integer point.
+% FIX p.69: the notes write ``Lutz-Nagelli''; the result is the Lutz--Nagell theorem.
+
+\subsection{Elliptic curves over finite fields}
+
+Now take an odd prime $p$, and an equation
+\[
+    y^2=x^3+Ax+B
+    \qquad\text{with}\qquad
+    4A^3+27B^2\not\equiv 0\pmod{p}.
+\]
+% --- page 70 ---
+The set of solutions in $\Fp\times\Fp$, together with the point $\mathcal{O}$ at infinity, is a group under the same addition law. For each fixed $x$ one has to solve $y^2=x^3+Ax+B$ in $\Fp$.
+
+\begin{example}[A curve over $\mathbb{F}_{13}$]
+\label{ex:f13}
+Let $E\colon y^2=x^3+3x+8$ over $\mathbb{F}_{13}$. The group is
+\begin{align*}
+    E(\mathbb{F}_{13})
+    =\{&
+        \mathcal{O},\;
+        (1,5),\;(1,8),\;
+        (2,3),\;(2,10),\\
+        &(9,6),\;(9,7),\;
+        (12,2),\;(12,11)
+    \}.
+\end{align*}
+The same chord-and-tangent formulae work in $\Fp$. The notes ask whether these points carry a group structure; the answer is that one mimics the same addition law. Take $P=(9,7)$ and $Q=(1,8)$. Then
+\[
+    \lambda
+    =\frac{8-7}{1-9}
+    =\frac{1}{-8}.
+\]
+Modulo $13$ one has $-8\equiv 5$, and $5\cdot 8=40\equiv 1$, so $5^{-1}\equiv 8$ and $\lambda\equiv 8$. Then
+\begin{align*}
+    x_3
+    &=\lambda^2-x_1-x_2
+     =8^2-9-1
+     =64-10
+     =54
+     \equiv 2\pmod{13},
+\end{align*}
+since $54-4\cdot 13=2$, and
+\begin{align*}
+    y_3
+    &=\lambda(x_1-x_3)-y_1
+     =8(9-2)-7
+     =8\cdot 7-7
+     =49
+     \equiv 10\pmod{13},
+\end{align*}
+since $49-3\cdot 13=10$. (Equivalently $8\cdot 7-7=7\cdot 7=49$.) Therefore
+\[
+    P+Q=(2,10),
+\]
+which is one of the points listed above.
+% FIX p.70: a sign in the handwritten line $8^2-9-1=64+10=54$ does not match $64-10=54$. The value $54\equiv 2$ used for $x_3$ is the correct one.
+\end{example}
+
+% --- page 71 ---
+
+Doubling the same point $P=(9,7)$,
+\begin{align*}
+    \lambda
+    &=\frac{3x_1^2+A}{2y_1}
+     =\frac{3\cdot 9^2+3}{2\cdot 7}
+     =\frac{246}{14}.
+\end{align*}
+Here $246=19\cdot 13-1\equiv -1\pmod{13}$ and $14\equiv 1\pmod{13}$, so $\lambda\equiv -1$. Then
+\begin{align*}
+    x_3
+    &=\lambda^2-x_1-x_2
+     =1-9-9
+     =-17
+     \equiv 9\pmod{13},\\
+    y_3
+    &=\lambda(x_1-x_3)-y_1
+     =-1(9-9)-7
+     =-7
+     \equiv 6\pmod{13}.
+\end{align*}
+Hence $2P=(9,6)$.
+
+\paragraph{The size of $E(\Fp)$.}
+There are $p$ choices for $x$, and each gives at most two choices for $y$. Counting $\mathcal{O}$ as well,
+\[
+    \bigl|E(\Fp)\bigr|\leq 2p+1.
+\]
+About half of the values of $x$ make $x^3+Ax+B$ a quadratic residue, and about half make it a quadratic non-residue. The residue case contributes two points and the non-residue case contributes none, so one expects about $p$ affine points. Together with $\mathcal{O}$,
+\[
+    \bigl|E(\Fp)\bigr|\;\approx\; p+1.
+\]
+% FIX p.71: the notes equate $(p\cdot 2+1)/2$ with $p+1$.
+% That quotient is $p+1/2$. The count intended by the residue heuristic is $(p/2)\cdot 2+1=p+1$.
+
+\begin{keybox}
+\begin{theorem}[Hasse bound]
+\[
+    \bigl|E(\Fp)\bigr|=(p+1)-t_p
+    \qquad\text{with}\qquad
+    |t_p|\leq 2\sqrt{p}.
+\]
+The bound is tight.
+\end{theorem}
+\end{keybox}
+% FIX p.71: the notes spell the name ``Haase''; the bound is Hasse's.
+
+% --- page 72 ---
+
+The integer $t_p=(p+1)-\bigl|E(\Fp)\bigr|$ is called the \emph{trace of Frobenius}.
+% FIX p.72: the notes write $t_p=\bigl|E(\Fp)\bigr|-(p+1)$, the negative of the trace appearing in the Hasse formula $|E(\Fp)|=(p+1)-t_p$ on the previous page.
+
+\subsection{The elliptic-curve discrete logarithm}
+
+\begin{keybox}
+\begin{definition}[EC-DLP]
+Let $E$ be an elliptic curve over $\Fp$, and let $P,Q\in E(\Fp)$. The elliptic-curve discrete logarithm problem asks for an integer $n$ such that
+\[
+    nP=Q,
+\]
+that is,
+\[
+    \underbrace{P+P+\cdots+P}_{n\text{ times}}=Q.
+\]
+The integer $n$ is called the discrete logarithm of $Q$ with respect to $P$, written $\log_P(Q)$. This is the additive form of the index $\ind$ of Lecture~12.
+\end{definition}
+\end{keybox}
+
+\begin{remark}
+As for the general discrete logarithm in Lecture~12, the equation $nP=Q$ can be solved if and only if $Q$ lies in the cyclic subgroup $\langle P\rangle$.
+% FIX p.72: the notes spell ``solved'' as ``sowed''.
+The solution is not unique: it is determined only modulo the order of $P$.
+\end{remark}
+
+\begin{example}[A curve over $\mathbb{F}_{73}$]
+Let $y^2=x^3+8x+7$ over $\mathbb{F}_{73}$, and set
+\begin{align*}
+    P&=(32,53),\\
+    Q&=(39,17)=11P,\\
+    R&=(35,47)=37P.
+\end{align*}
+The order of $P$ is $41$. Since $11+37=48\equiv 7\pmod{41}$,
+\[
+    Q+R=11P+37P=48P=7P=(37,41).
+\]
+\end{example}
+
+Alice, in the protocols built on this group, needs to compute $nP$. Adding $P$ to itself one step at a time produces the sequence $P,\,2P,\,3P,\,4P,\,\ldots$, which takes $n$ additions.
+
+% --- page 73 ---
+
+\paragraph{Double-and-add.}
+Write the binary expansion
+\[
+    n=n_0+n_1\cdot 2+\cdots+n_r\cdot 2^r,
+    \qquad
+    n_i\in\{0,1\},
+    \quad n_r=1.
+\]
+Compute the successive doubles
+\[
+    Q_0=P,
+    \quad
+    Q_1=2Q_0,
+    \quad
+    Q_2=2Q_1,
+    \quad
+    \ldots,
+    \quad
+    Q_r=2Q_{r-1}.
+\]
+Then $Q_i=2^i P$, and
+\[
+    nP=\sum_{i=0}^{r} n_i Q_i.
+\]
+Building the $Q_i$ costs $r$ doublings, and summing the terms with $n_i=1$ costs at most $r$ further additions, so $nP$ is obtained in at most $2r$ group operations. Because $n_r=1$,
+\[
+    2^r\leq n<2^{r+1},
+    \qquad
+    r\leq \log_2 n<r+1.
+\]
+% FIX p.73: the notes write the stricter inequality $r<\log_2 n<r+1$. Equality $r=\log_2 n$ holds whenever $n$ is a power of $2$.
+
+\clearpage
+\phantomsection
+\addcontentsline{toc}{part}{Summary}
+\section*{Summary of Lectures 13--22}
+\vspace{0.4em}
+
+\[
+\boxed{
+\begin{array}{c}
+\text{Shanks / Pohlig--Hellman}
+\longrightarrow
+\text{RSA}
+\longrightarrow
+\text{Miller--Rabin, AKS}
+\\[4pt]
+\longrightarrow
+\text{Pollard $\rho$, Pollard $p-1$}
+\longrightarrow
+\text{signatures, quadratic sieve}
+\\[4pt]
+\longrightarrow
+\text{Goldwasser--Micali, index calculus}
+\longrightarrow
+\text{elliptic curves / EC-DLP}.
+\end{array}
+}
+\]
+
+Main facts:
+\[
+    g^{x}=h
+    \text{ in }
+    O\bigl(\sqrt{N}\log N\bigr)
+    \text{ steps (Shanks)},
+    \qquad
+    \sum_{i}e_{i}\,S(p_{i})+O(\log N)
+    \text{ (Pohlig--Hellman)},
+\]
+\[
+    N=pq,
+    \qquad
+    de\equiv 1\pmod{\varphi(N)},
+    \qquad
+    m\equiv C^{d}\pmod{N},
+\]
+\[
+    a^{q}\equiv 1
+    \text{ or }
+    a^{2^{j}q}\equiv -1\pmod{p},
+    \qquad
+    (x+a)^{n}\equiv x^{n}+a
+    \quad\text{in }(\Z/n\Z)[x],
+\]
+\[
+    \gcdop(a^{L}-1,N)=p
+    \text{ when }(p-1)\mid L\text{ and }a^{L}\not\equiv 1\pmod{q},
+\]
+\[
+    a^{2}\equiv b^{2}\pmod{N}
+    \text{ gives }
+    \gcdop(a\pm b,N),
+\]
+\[
+    s_{1}\equiv g^{k}\pmod{p},
+    \qquad
+    s_{2}\equiv (D-as_{1})k^{-1}\pmod{p-1},
+    \qquad
+    A^{s_{1}}s_{1}^{s_{2}}\equiv g^{D}\pmod{p},
+\]
+\[
+    L(x)=\exp\bigl(\sqrt{\log x\cdot\log\log x}\bigr),
+    \qquad
+    \psi(x,B)=x\,u^{-u(1+o(1))},
+    \qquad
+    u=\frac{\log x}{\log B},
+\]
+\[
+    \Bigl(\frac{c}{p}\Bigr)=(-1)^{m},
+    \qquad
+    \ind_{g}(h)
+    \equiv
+    -k+\sum_{\ell}e_{\ell}\,\ind_{g}(\ell)
+    \pmod{p-1},
+\]
+\[
+    x_{3}=\lambda^{2}-x_{1}-x_{2},
+    \qquad
+    y_{3}=\lambda(x_{1}-x_{3})-y_{1},
+    \qquad
+    \bigl|E(\Fp)\bigr|=(p+1)-t_{p},
+    \quad
+    |t_{p}|\le 2\sqrt{p},
+\]
+and
+\[
+    nP=Q
+    \quad\text{in }O(\log n)\text{ additions}.
+\]

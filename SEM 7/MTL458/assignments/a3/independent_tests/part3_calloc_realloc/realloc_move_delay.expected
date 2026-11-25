@@ -1,0 +1,44 @@
+moved 1 data 1
+old poisoned 1
+region 0 65536
+  32 D 128 10
+  160 F 128
+  288 A 128 10
+  416 A 128 10
+  544 A 144 100
+  688 F 64848
+error: write after free (block 0:32)
+null 1
+region 0 65536
+  32 F 256
+  288 D 128 10
+  416 A 128 10
+  544 A 144 100
+  688 F 64848
+moved 1 data 1
+region 0 65536
+  32 F 384
+  416 D 128 10
+  544 A 144 100
+  688 A 352 300
+  1040 F 64496
+error: overflow detected (block 0:544)
+moved 1 data 1
+error: double free (block 0:544)
+null 1
+same 1
+region 0 65536
+  32 F 512
+  544 D 144 100
+  688 A 352 300
+  1040 A 2048 2000
+  3088 F 62448
+region 0 65536
+  32 F 656
+  688 A 352 300
+  1040 A 2048 2000
+  3088 F 62448
+data 1 1
+leak: block 0:688 (300 bytes)
+leak: block 0:1040 (2000 bytes)
+leak summary: 2 blocks, 2300 bytes

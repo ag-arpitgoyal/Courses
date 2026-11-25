@@ -1,0 +1,174 @@
+\section{DFA minimization and the Myhill--Nerode theorem}
+
+\subsection{Equivalent versus distinguishable states}
+Let $M=(Q,\Sigma,\transition,q_0,F)$ be a DFA. Write
+$\transition^*(q,x)$ for the state reached from $q$ on $x$.
+
+\begin{definition}[Distinguishable states]
+States $p,q\in Q$ are \emph{equivalent} if
+\[
+  \forall x\in\Sigma^*:\quad
+  \bigl(\transition^*(p,x)\in F
+        \iff
+        \transition^*(q,x)\in F\bigr).
+\]
+Otherwise they are \emph{distinguishable}: some witness $x$ sends exactly one
+of them into $F$. Equivalently, once the machine is in $p$ versus $q$, no
+future input can tell the two situations apart if and only if $p$ and $q$
+are equivalent.
+\end{definition}
+Accepting and non-accepting states are always distinguishable (witness $\eps$).
+
+\subsection{The table-filling algorithm}
+\begin{algorithm}[Table filling]
+\begin{enumerate}
+  \item Remove unreachable states by BFS/DFS from $q_0$.
+  \item Make a table of unordered pairs $\set{p,q}$ with $p\neq q$.
+  \item Mark every pair in which exactly one state is accepting.
+  \item Repeat: if an unmarked pair $\set{p,q}$ has, for some $a\in\Sigma$,
+        the pair $\set{\transition(p,a),\transition(q,a)}$ already marked, then
+        mark $\set{p,q}$. (If $\transition(p,a)=r$ and $\transition(q,a)=s$ are
+        distinguishable, then $ax$ distinguishes $p$ and $q$ whenever $x$
+        distinguishes $r$ and $s$.)
+  \item Stop when a pass marks nothing new. Unmarked pairs are equivalent.
+        Merge equivalent states.
+\end{enumerate}
+\end{algorithm}
+
+\begin{theorem}[Correctness of table filling]
+A pair is marked if and only if it is distinguishable.
+\end{theorem}
+
+\begin{proof}
+($\Rightarrow$) Induction on the iteration in which the pair is marked. Pairs
+marked in step~3 are distinguished by $\eps$. If $\set{p,q}$ is marked because
+$\set{\transition(p,a),\transition(q,a)}$ was already marked, the inductive
+hypothesis gives a witness $x$ for the successors, so $ax$ witnesses
+$\set{p,q}$.
+
+($\Leftarrow$) Induction on the length of a shortest distinguishing word.
+If $|x|=0$, then $x=\eps$ and the pair is marked in step~3. If
+$x=ax'$ with $|x|=k+1$, then $x'$ distinguishes
+$r=\transition(p,a)$ and $s=\transition(q,a)$ and has length $k$, so
+$\set{r,s}$ is already marked by the inductive hypothesis. Step~4 therefore
+marks $\set{p,q}$.
+\end{proof}
+
+The relation ``unmarked'' is an equivalence relation on the (reachable) states.
+The \emph{minimal DFA} has those equivalence classes as states:
+\[
+  M'=\bigl(Q/{\sim},\;\Sigma,\;\transition',\;[q_0],\;
+           \set{[q]:q\in F}\bigr),
+  \qquad
+  \transition'([q],a)=[\transition(q,a)].
+\]
+$\transition'$ is well-defined: if $q\sim r$ but
+$\transition(q,a)\not\sim\transition(r,a)$, then some $x$ distinguishes the
+successors, so $ax$ distinguishes $q$ and $r$. An accept state and a reject
+state never lie in the same class.
+
+\begin{theorem}
+$\lang{M'}=\lang{M}$, and $M'$ has the fewest states among all DFAs equivalent
+to $M$.
+\end{theorem}
+
+\begin{proof}[Sketch]
+A run of $M$ on $w$ visits $q_0,q_1,\ldots,q_n$; the corresponding run of $M'$
+visits $[q_0],[q_1],\ldots,[q_n]$. The last class is accepting if and only if
+$q_n\in F$, so the languages coincide.
+
+If some equivalent DFA $N$ had fewer states than $M'$, then two distinct
+classes $[p]$ and $[q]$ of $M'$ would map to the same state of $N$. A witness
+that distinguishes $p$ and $q$ would then distinguish that state of $N$ from
+itself, which is impossible. Hence $M'$ is minimal.
+\end{proof}
+
+\begin{example}[Table filling on a four-state DFA]
+Let $Q=\set{1,2,3,4}$ with $1$ start, $F=\set{3,4}$, and
+\[
+\begin{array}{c|cc}
+ & 0 & 1\\
+\hline
+1 & 2 & 3\\
+2 & 1 & 4\\
+3 & 4 & 3\\
+4 & 3 & 4
+\end{array}
+\]
+Pairs mixing $\set{1,2}$ with $\set{3,4}$ are marked immediately. Then
+$\transition(1,1)=3$ and $\transition(2,1)=4$ are both accepting, while
+$\transition(3,0)=4$ and $\transition(4,0)=3$ stay unmarked. The unmarked
+pairs are $\set{1,2}$ and $\set{3,4}$. The minimal DFA therefore has two
+states: $\set{1,2}$ (reject) and $\set{3,4}$ (accept).
+\end{example}
+
+\subsection{Equivalence of strings}
+The same idea, lifted from states to strings, is independent of any particular
+machine.
+
+\begin{definition}[Myhill--Nerode relation]
+For a language $A\subseteq\Sigma^*$ define
+\[
+  x\equiv_A y
+  \quad\Longleftrightarrow\quad
+  \forall z\in\Sigma^*:\;
+  (xz\in A\iff yz\in A).
+\]
+Strings $x,y$ are equivalent when no future $z$ can tell them apart; they
+represent the same knowledge about $A$.
+\end{definition}
+
+\begin{example}[Strings ending in $1$]
+Let $L=\set{w:w\text{ ends in }1}$. Then
+$00\equiv_L 000\equiv_L 1000$ (all ``last symbol is $0$''), while
+$1$, $01$, $001$ are another class. Two classes: last bit $0$ versus last
+bit $1$.
+
+For $A=\set{w:w\text{ ends in }00}$ there are three relevant classes:
+ends in $00$; ends in $1$ (or is $\eps$ / ends in a $1$ not covered); ends
+in a single $0$ not already forming the suffix $00$.
+\end{example}
+
+\subsection{Myhill--Nerode theorem}
+\begin{theorem}[Myhill--Nerode]
+The following are equivalent for $A\subseteq\Sigma^*$.
+\begin{enumerate}
+  \item $A$ is regular.
+  \item $\equiv_A$ has finitely many equivalence classes.
+\end{enumerate}
+Moreover, the number of classes equals the number of states in the unique
+(up to renaming) minimal DFA for $A$.
+\end{theorem}
+
+\begin{proof}
+($\Rightarrow$) Let $M=(Q,\Sigma,\transition,q_0,F)$ recognize $A$. If
+$\transition^*(q_0,x)=\transition^*(q_0,y)$, then $x\equiv_A y$, because
+every continuation $z$ leads both strings to the same state. Contrapositively,
+distinguishable strings go to different states. Hence the number of classes is
+at most $|Q|$, which is finite.
+
+($\Leftarrow$) Let the classes of $\equiv_A$ be the states of a DFA
+\[
+  M=\bigl(\set{[x]:x\in\Sigma^*},\;
+          \Sigma,\;
+          \transition,\;
+          [\eps],\;
+          \set{[x]:x\in A}\bigr),
+\]
+where $\transition([x],a)=[xa]$. This is well-defined by right-invariance of
+$\equiv_A$: if $x\equiv_A y$ then $xa\equiv_A ya$.
+
+\textbf{Claim.} $\transition^*([\eps],w)=[w]$ for every $w$. By induction on
+$|w|$: the base is $[\eps]$; if the claim holds for $w$ then
+\[
+  \transition^*([\eps],wa)
+    =\transition\bigl(\transition^*([\eps],w),a\bigr)
+    =\transition([w],a)=[wa].
+\]
+Hence $M$ accepts $w$ if and only if $[w]$ is accepting if and only if
+$w\in A$.
+
+The construction uses exactly one state per class, so it is minimal. It
+matches the table-filling DFA: two reachable states $p=\transition^*(q_0,x)$
+and $q=\transition^*(q_0,y)$ are equivalent if and only if $x\equiv_A y$.
+\end{proof}

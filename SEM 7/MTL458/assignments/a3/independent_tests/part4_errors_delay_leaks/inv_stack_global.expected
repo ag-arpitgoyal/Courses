@@ -1,0 +1,18 @@
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+error: invalid pointer
+q NULL
+error: invalid pointer
+q NULL
+error: invalid pointer
+q NULL
+region 0 65536
+  32 A 128 10
+  160 A 144 100
+  304 F 65232
+leak: block 0:32 (10 bytes)
+leak: block 0:160 (100 bytes)
+leak summary: 2 blocks, 110 bytes

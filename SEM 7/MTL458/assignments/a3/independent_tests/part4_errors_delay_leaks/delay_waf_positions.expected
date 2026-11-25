@@ -1,0 +1,7 @@
+error: write after free (block 0:32)
+error: write after free (block 0:160)
+error: write after free (block 0:288)
+error: write after free (block 0:416)
+error: write after free (block 0:560)
+region 0 65536
+  32 F 65504

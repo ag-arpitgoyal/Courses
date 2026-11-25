@@ -1,0 +1,15 @@
+p reused 1 zero 1
+q at a 1 zero 1
+region 0 65536
+  32 A 384 300
+  416 A 128 50
+  544 F 64992
+region 0 65536
+  32 D 384 300
+  416 F 65120
+r at a 1 zero 1
+region 0 65536
+  32 A 640 600
+  672 F 64864
+leak: block 0:32 (600 bytes)
+leak summary: 1 blocks, 600 bytes

@@ -1,0 +1,3 @@
+leak: block 0:32 (100 bytes)
+leak: block 0:304 (10 bytes)
+leak summary: 2 blocks, 110 bytes

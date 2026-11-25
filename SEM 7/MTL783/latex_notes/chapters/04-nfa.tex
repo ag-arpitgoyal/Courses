@@ -1,0 +1,206 @@
+\section{Nondeterministic finite automata}
+\label{ch:nfa}
+
+\subsection{From DFA to NFA}
+Nondeterminism captures guessing: at a step there may be
+many legal next states. Every DFA is an NFA, but an NFA may have
+\begin{itemize}
+  \item zero, one, or several outgoing arrows for a given state and symbol;
+  \item $\eps$-transitions that consume no input.
+\end{itemize}
+
+\textbf{Computation as splitting.} Whenever several moves are possible, the
+machine splits into copies, one per choice. Each copy proceeds independently
+and may split again. A copy with no legal move dies. The NFA accepts if
+\emph{any} copy is in an accept state after the input is fully read.
+
+An $\eps$-transition from $q$ to $r$ immediately starts an extra copy in $r$
+without reading a symbol. Think of threads or \texttt{fork}.
+
+\begin{example}[An NFA with $\eps$-moves]
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=28mm]
+  \node[state,initial] (q1) {$q_1$};
+  \node[state,right=of q1] (q2) {$q_2$};
+  \node[state,accepting,right=of q2] (q3) {$q_3$};
+  \path[->]
+    (q1) edge[loop above] node{$0,1$} ()
+         edge node[above]{$1$} (q2)
+    (q2) edge node[above]{$0$} (q3)
+         edge[bend left=18] node[below]{$\eps$} (q3)
+    (q3) edge[loop above] node{$0,1$} ();
+\end{tikzpicture}
+\end{center}
+On input $010110$ some thread reaches an accept state, so the NFA accepts.
+\end{example}
+
+\begin{exercise}
+For every NFA $N$, construct an equivalent NFA $N'$ with no $\varepsilon$-transitions.
+(Replace each $\transition(q,a)$ by the $\varepsilon$-closure of that set; start
+from the $\varepsilon$-closure of $q_0$.)
+\end{exercise}
+
+\begin{exercise}
+Determine the language of the NFA in the previous example on input $010110$.
+\end{exercise}
+
+\subsection{Why nondeterminism helps}
+\begin{itemize}
+  \item Some languages have a tiny NFA but an exponentially larger DFA.
+  \item Nondeterminism is a useful preview of later models (NPDA, NTMs).
+\end{itemize}
+
+\begin{example}[Third symbol from the end is $1$]
+\[
+  A=\set{w\in\set{0,1}^*: \text{the third symbol from the end of }w\text{ is }1}.
+\]
+$01001$ is rejected; $010100$ is accepted. An NFA guesses which $1$ is the
+third-from-last symbol and then verifies the last two symbols:
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=24mm]
+  \node[state,initial] (q0) {$q_0$};
+  \node[state,right=of q0] (q1) {$q_1$};
+  \node[state,right=of q1] (q2) {$q_2$};
+  \node[state,accepting,right=of q2] (q3) {$q_3$};
+  \path[->]
+    (q0) edge[loop above] node{$0,1$} ()
+         edge node[above]{$1$} (q1)
+    (q1) edge node[above]{$0,1$} (q2)
+    (q2) edge node[above]{$0,1$} (q3);
+\end{tikzpicture}
+\end{center}
+Any DFA for $A$ needs at least $8=2^3$ states: it must remember the last three
+symbols.
+\end{example}
+
+\subsection{Formal definition of an NFA}
+\begin{definition}[NFA]
+A \emph{nondeterministic finite automaton} is a $5$-tuple
+\[
+  N=(Q,\Sigma,\transition,q_0,F)
+\]
+where $Q$ is a finite set of states, $\Sigma$ is a finite alphabet,
+\[
+  \transition:Q\times\Sigma_\eps\to\powerset{Q},
+  \qquad \Sigma_\eps=\Sigma\cup\set{\eps},
+\]
+$q_0\in Q$ is the start state, and $F\subseteq Q$ is the set of accept
+states. Here $\powerset{Q}$ is the power set of $Q$.
+\end{definition}
+A DFA is the special case in which $\transition(q,a)$ is always a singleton,
+$\transition(q,\eps)=\varnothing$, and there is exactly one outgoing $a$-edge
+from each state.
+
+\begin{definition}[Computation of an NFA]
+Let $N=(Q,\Sigma,\transition,q_0,F)$ and $w\in\Sigma^*$. Write $w=y_1y_2\cdots y_m$
+with each $y_i\in\Sigma_\eps$ (so $\eps$-symbols may be inserted). Then $N$
+accepts $w$ if there is a sequence of states $r_0,r_1,\ldots,r_m$ such that
+\begin{enumerate}
+  \item $r_0=q_0$;
+  \item $r_{i+1}\in\transition(r_i,y_{i+1})$ for $0\leq i\leq m-1$;
+  \item $r_m\in F$.
+\end{enumerate}
+\end{definition}
+
+\subsection{Equivalence of NFAs and DFAs}
+\begin{definition}
+Two automata $M_1$ and $M_2$ (DFA or NFA) are \emph{equivalent} if
+$\lang{M_1}=\lang{M_2}$.
+\end{definition}
+
+\begin{theorem}[Subset construction]
+For every NFA $N$ there is an equivalent DFA $M$.
+\end{theorem}
+
+\begin{proof}[Construction]
+Let $N=(Q,\Sigma,\transition,q_0,F)$. First ignore $\eps$-moves. Define
+\[
+  M=\bigl(\powerset{Q},\Sigma,\Delta,\set{q_0},F'\bigr),
+\]
+where
+\[
+  \Delta(R,a)=\bigcup_{r\in R}\transition(r,a)
+  =\set{q:q\in\transition(r,a)\text{ for some }r\in R}
+\]
+and
+\[
+  F'=\set{R\subseteq Q:R\cap F\neq\varnothing}.
+\]
+The DFA state after reading $w$ is exactly the set of NFA states reachable
+on $w$. It is accepting if and only if some reachable NFA state is accepting.
+
+\textbf{$\eps$-moves.} For $R\subseteq Q$ let $E(R)$ be the
+\emph{$\eps$-closure}: all states reachable from $R$ by zero or more
+$\eps$-moves. Then set
+\[
+  \Delta(R,a)=E\!\Bigl(\bigcup_{r\in R}\transition(r,a)\Bigr),
+  \qquad
+  \text{start state }=E(\set{q_0}).
+\]
+Correctness is by induction on $|w|$, as in the product-construction proof.
+\end{proof}
+
+\begin{corollary}
+A language is regular if and only if it is recognized by an NFA (with or
+without $\eps$-moves).
+\end{corollary}
+
+\begin{exercise}
+Carry out the subset construction on the third-from-last NFA.
+\end{exercise}
+
+\subsection{NFA proofs of the remaining closure properties}
+With $\eps$-NFAs the constructions are diagrams rather than products.
+
+\begin{theorem}
+Regular languages are closed under union, concatenation, and star.
+\end{theorem}
+
+\begin{proof}[NFA constructions]
+Let $N_1$ and $N_2$ recognize $A$ and $B$.
+
+\textbf{Union.} Add a new start state $q_0$ with $\eps$-edges to the old start
+states of $N_1$ and $N_2$. Accepting states are the old accepting states of both
+machines.
+
+\textbf{Concatenation.} Put an $\eps$-edge from every accept state of $N_1$ to
+the start state of $N_2$. Keep only $N_2$'s accept states. The new start state
+is $N_1$'s start state.
+
+\textbf{Star.} Add a new start state $q_0$ that is also accepting, with an
+$\eps$-edge to the old start. From every old accept state, add an $\eps$-edge
+back to the old start (and to $q_0$ if desired). Then $\eps$ is accepted, and
+any concatenation of words from $A$ can be guessed as a sequence of loops.
+\end{proof}
+
+Combined with the subset construction they complete the proof that regular
+languages are closed under the three regular operations.
+
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=16mm]
+  \node[state,initial] (u) {$q_0$};
+  \node[draw,rounded corners,minimum width=16mm,minimum height=10mm,right=of u] (n1) {$N_1$};
+  \node[draw,rounded corners,minimum width=16mm,minimum height=10mm,below=12mm of n1] (n2) {$N_2$};
+  \path[->]
+    (u) edge node[above]{$\eps$} (n1)
+    (u) edge node[left]{$\eps$} (n2);
+  \node[below=8mm of n2,font=\small] {union};
+\end{tikzpicture}
+\hspace{6mm}
+\begin{tikzpicture}[automaton,node distance=18mm]
+  \node[draw,rounded corners,minimum width=16mm,minimum height=10mm] (a) {$N_1$};
+  \node[draw,rounded corners,minimum width=16mm,minimum height=10mm,right=of a] (b) {$N_2$};
+  \path[->] (a) edge node[above]{$\eps$} (b);
+  \node[below=10mm of a] {};
+  \node[below=8mm of b,xshift=-11mm,font=\small] {concatenation};
+\end{tikzpicture}
+\hspace{6mm}
+\begin{tikzpicture}[automaton,node distance=18mm]
+  \node[state,initial,accepting] (s) {$q_0$};
+  \node[draw,rounded corners,minimum width=16mm,minimum height=10mm,right=of s] (n) {$N$};
+  \path[->]
+    (s) edge[bend left=14] node[above]{$\eps$} (n)
+    (n) edge[bend left=14] node[below]{$\eps$} (s);
+  \node[below=8mm of n,font=\small] {star};
+\end{tikzpicture}
+\end{center}

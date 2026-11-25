@@ -1,0 +1,128 @@
+\section{Regular operations and closure under union}
+
+\subsection{The three regular operations}
+Let $A$ and $B$ be languages, not necessarily over the same alphabet. If the
+alphabets differ, replace both by $\Sigma_A\cup\Sigma_B$.
+
+\begin{definition}[Regular operations]
+\[
+\begin{aligned}
+  A\cup B
+    &=\set{w:w\in A\text{ or }w\in B},\\
+  A\concat B
+    &=\set{xy:x\in A,\, y\in B},\\
+  A^*
+    &=\set{x_1x_2\cdots x_k:k\geq 0,\, x_i\in A}.
+\end{aligned}
+\]
+By convention $A^0=\set{\eps}$, so $\eps\in A^*$ always, even if
+$\eps\notin A$.
+\end{definition}
+
+\begin{example}
+Let $A=\set{00,11}$ over $\set{0,1}$ and $B=\set{ab,ba}$ over $\set{a,b}$. Then
+\[
+\begin{aligned}
+  A\cup B
+    &=\set{00,11,ab,ba}
+    &&\text{(alphabet }\set{0,1,a,b}\text{),}\\
+  A\concat B
+    &=\set{00ab,00ba,11ab,11ba},\\
+  A^*
+    &=\set{\eps,00,11,0000,0011,1100,1111,\ldots}.
+\end{aligned}
+\]
+\end{example}
+
+\begin{theorem}
+Regular languages are closed under union, concatenation, and star.
+\end{theorem}
+The union case is proved with a product DFA. Concatenation and star need
+nondeterminism; those constructions appear in Chapter~\ref{ch:nfa}.
+
+\subsection{Closure under union: product construction}
+\begin{theorem}[Union of regular languages]
+If $A$ and $B$ are regular, then $A\cup B$ is regular.
+\end{theorem}
+
+\begin{proof}
+If $A$ and $B$ use different alphabets $\Sigma_1$ and $\Sigma_2$, work over
+$\Sigma=\Sigma_1\cup\Sigma_2$. Let
+\[
+  M_1=(Q_1,\Sigma,\transition_1,q_1,F_1),\qquad
+  M_2=(Q_2,\Sigma,\transition_2,q_2,F_2)
+\]
+recognize $A$ and $B$. The idea is to run $M_1$ and $M_2$
+\emph{simultaneously} on the same input.
+
+Define the product DFA
+\[
+  M=(Q_1\times Q_2,\Sigma,\transition,(q_1,q_2),F),
+\]
+where
+\[
+  \transition\bigl((r,s),a\bigr)
+    =\bigl(\transition_1(r,a),\transition_2(s,a)\bigr)
+\]
+and
+\[
+  F=\set{(r,s):r\in F_1\text{ or }s\in F_2}.
+\]
+
+\textbf{Claim.} $M$ accepts $w\in\Sigma^*$ if and only if $w\in A\cup B$.
+
+\textbf{Subclaim.} For every $w\in\Sigma^*$, after reading $w$ the machine
+$M_1$ is in state $r$, $M_2$ is in state $s$, if and only if $M$ is in state
+$(r,s)$.
+
+\textit{Proof of the subclaim, by induction on $|w|$.}
+If $w=\eps$, then $M_1$ is in $q_1$, $M_2$ is in $q_2$, and $M$ is in
+$(q_1,q_2)$.
+
+Let $w=w'a$ with $|w'|=n-1$ and last symbol $a=w_n$. By the inductive
+hypothesis, $M$ is in $(r,s)$ after $w'$ if and only if $M_1$ is in $r$ and
+$M_2$ is in $s$. The next transitions are
+\[
+  \transition_1(r,a)=r',\qquad
+  \transition_2(s,a)=s',\qquad
+  \transition\bigl((r,s),a\bigr)=(r',s').
+\]
+Hence after $w$ the product is in $(r',s')$ if and only if $M_1$ is in $r'$
+and $M_2$ is in $s'$.
+
+\textit{Proof of the claim, assuming the subclaim.}
+$M$ accepts $w$ if and only if, after $w$, it is in some $(r,s)\in F$, if and
+only if $r\in F_1$ or $s\in F_2$, if and only if $M_1$ or $M_2$ accepts $w$,
+if and only if $w\in A\cup B$.
+\end{proof}
+
+\begin{figure}[ht]
+\centering
+\begin{tikzpicture}[node distance=16mm and 22mm]
+  \node[box] (in) {read $a$};
+  \node[box,below left=of in] (m1) {$M_1$: $r\mapsto r'$};
+  \node[box,below right=of in] (m2) {$M_2$: $s\mapsto s'$};
+  \node[box,below=24mm of in] (p) {product: $(r',s')$};
+  \draw[arrow] (in) -- (m1);
+  \draw[arrow] (in) -- (m2);
+  \draw[arrow] (m1) -- (p);
+  \draw[arrow] (m2) -- (p);
+\end{tikzpicture}
+\caption{The product DFA stores both component states and updates them in lockstep.}
+\end{figure}
+
+\begin{exercise}
+Let $M$ be a DFA over $\Sigma$ recognizing $A$. Construct a DFA for the
+complement $\overline{A}=\Sigma^*\setminus A$ by swapping accept and
+non-accept states. (Missing symbols of a larger alphabet should go to a
+permanent rejecting sink.)
+\end{exercise}
+
+\subsection{Why concatenation is harder}
+To recognize $A\concat B$ a deterministic machine would have to know, while
+reading, where the $A$-prefix ends and the $B$-suffix begins. That cut-point
+cannot in general be determined with finite memory. Therefore:
+\begin{itemize}
+  \item a single DFA product does not capture concatenation;
+  \item we need \emph{nondeterminism}: the machine may guess the cut.
+\end{itemize}

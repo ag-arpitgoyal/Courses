@@ -1,0 +1,1872 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[
+  left=1.05in,
+  right=1.05in,
+  top=1in,
+  bottom=1in,
+  headheight=14pt
+]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\linespread{1.25}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em plus 0.25em minus 0.1em}
+\setlength{\abovedisplayskip}{1.2em plus 0.3em minus 0.2em}
+\setlength{\belowdisplayskip}{1.2em plus 0.3em minus 0.2em}
+\setlength{\abovedisplayshortskip}{0.9em plus 0.2em}
+\setlength{\belowdisplayshortskip}{1em plus 0.2em}
+\setlength{\jot}{9pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\setlist[itemize]{leftmargin=*,itemsep=6pt,topsep=6pt,parsep=3pt}
+\setlist[enumerate]{leftmargin=*,itemsep=6pt,topsep=6pt,parsep=3pt}
+
+% Plain black frame for the question statement.
+\newtcolorbox{qbox}{
+  enhanced,
+  colback=white,colframe=black,
+  boxrule=0.6pt,sharp corners,
+  left=10pt,right=10pt,top=4pt,bottom=6pt,
+  before skip=12pt,after skip=12pt
+}
+
+\newenvironment{solution}
+  {\par\noindent\textbf{Solution.}\par\nobreak}
+  {\par\hfill\(\square\)\par}
+
+\newcommand{\step}[1]{\par\addvspace{0.5em}\noindent\textbf{#1}\par\nobreak}
+\newcommand{\mk}[1]{\hfill\textit{[#1 marks]}}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\norm}[1]{\lVert#1\rVert}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Major Examinations: Solutions}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\title{\textbf{MTL712: Computational Methods for Differential\\Equations}\\[6pt]
+\large Previous-Year Major Papers with Complete Solutions}
+\author{\normalsize Papers: November 2016, May 2023 and 2025--26 Semester I}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+
+Questions are transcribed from the supplied scans.  Each question is
+stated in a box, followed by a complete solution.  Where a question is
+ambiguous or contains a misprint, the interpretation used is stated
+before the solution.
+
+{\linespread{1.0}\selectfont\setlength{\parskip}{0pt}\tableofcontents}
+\clearpage
+
+%#####################################################################
+\section{Major Examination, November 2016}
+%#####################################################################
+
+Duration 2 hours, 50 marks.
+
+%---------------------------------------------------------------------
+\subsection{RK2 applied to a linear system}
+
+\begin{qbox}
+Find the condition on the step size \(h\) if the two-stage
+second-order RK method applied to the system \(\mathbf y'=-A\mathbf y\),
+where
+\[
+  A=\begin{bmatrix}2&0\\0&6\end{bmatrix},
+\]
+is absolutely stable.  What is the corresponding result for
+\(A=\begin{bmatrix}20&0\\0&60\end{bmatrix}\)?\mk{7}
+\end{qbox}
+
+\begin{solution}
+\step{Step 1: the stability function of any two-stage RK2 method}
+A two-stage explicit RK method is
+\[
+  k_1=f(x_n,y_n),\qquad
+  k_2=f(x_n+c_2h,\ y_n+c_2hk_1),\qquad
+  y_{n+1}=y_n+h(b_1k_1+b_2k_2),
+\]
+and it has order \(2\) exactly when \(b_1+b_2=1\) and \(b_2c_2=\tfrac12\).
+For the test equation \(y'=\lambda y\), with \(z=h\lambda\),
+\[
+  k_1=\lambda y_n,\qquad k_2=\lambda(1+c_2z)y_n,
+\]
+so
+\[
+  y_{n+1}=\bigl[1+(b_1+b_2)z+b_2c_2z^2\bigr]y_n
+         =\Bigl(1+z+\frac{z^2}2\Bigr)y_n .
+\]
+Hence every two-stage second-order RK method has the same stability
+function
+\[
+  R(z)=1+z+\frac{z^2}{2}.
+\]
+
+\step{Step 2: the real interval of absolute stability}
+For real \(z\),
+\[
+  R(z)=\frac{(1+z)^2+1}{2}\ \ge\ \frac12>0,
+\]
+so \(|R(z)|<1\iff R(z)<1\iff z+\frac{z^2}2<0\iff z(2+z)<0\iff -2<z<0\).
+The interval of absolute stability is \((-2,0)\).
+
+\step{Step 3: decouple the system}
+Since \(A\) is diagonal, \(\mathbf y'=-A\mathbf y\) is two independent
+scalar equations, and the RK method acts on each component separately.
+The components have \(\lambda_1=-2\) and \(\lambda_2=-6\).  The method is
+absolutely stable for the system if and only if it is absolutely stable
+for each component:
+\[
+  -2<-2h<0\quad\text{and}\quad -2<-6h<0
+  \iff 0<h<\tfrac13 .
+\]
+The stiffer component (\(\lambda=-6\)) decides the bound.
+
+\step{Step 4: the second matrix}
+Now \(\lambda_1=-20\), \(\lambda_2=-60\), and
+\[
+  -2<-60h<0\iff 0<h<\tfrac1{30}.
+\]
+
+\step{Comment}
+Multiplying \(A\) by \(10\) multiplies the eigenvalues by \(10\) and
+divides the admissible step by \(10\): for an explicit method the step
+size is limited by the largest eigenvalue, \(h<2/\lambda_{\max}\), even
+though the corresponding solution component decays fastest.  This is
+the difficulty with stiff systems.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Solving the implicit equation of an LMM}
+
+\begin{qbox}
+Consider a \(k\)-step LMM
+\[
+  y_{n+k}+\alpha_{k-1}y_{n+k-1}+\cdots+\alpha_0y_n
+  =h\bigl(\beta_kf_{n+k}+\beta_{k-1}f_{n+k-1}+\cdots+\beta_0f_n\bigr)
+\]
+used to solve \(y'(x)=f(x,y)\), \(y(x_0)=y_0\), where \(f(x,y)\) is
+non-linear.  Compare the fixed point iteration method, the
+predictor--corrector method and the Newton--Raphson method for solving
+the above problem.\mk{7}
+\end{qbox}
+
+\begin{solution}
+If \(\beta_k\ne0\) the method is implicit.  At each step the unknown
+\(y_{n+k}\) satisfies the non-linear equation
+\begin{equation}\label{eq:impl}
+  y_{n+k}=h\beta_kf(x_{n+k},y_{n+k})+g_n,
+  \qquad
+  g_n=h\sum_{j=0}^{k-1}\beta_jf_{n+j}-\sum_{j=0}^{k-1}\alpha_jy_{n+j},
+\end{equation}
+where \(g_n\) is known.  Let \(L\) be the Lipschitz constant of \(f\)
+with respect to \(y\).
+
+\step{(a) Fixed point iteration}
+\[
+  y_{n+k}^{[s+1]}=h\beta_kf\bigl(x_{n+k},y_{n+k}^{[s]}\bigr)+g_n,
+  \qquad s=0,1,2,\dots
+\]
+The map \(y\mapsto h\beta_kf(x_{n+k},y)+g_n\) has Lipschitz constant
+\(h|\beta_k|L\), so by the contraction mapping theorem the iteration
+converges to the unique solution of \eqref{eq:impl} for any starting
+value if
+\[
+  h<\frac1{|\beta_k|L}.
+\]
+\begin{itemize}
+  \item Convergence is linear, with rate \(h|\beta_k|L\).
+  \item Cost per iteration: one evaluation of \(f\); no derivatives.
+  \item Drawback: the condition \(h|\beta_k|L<1\) restricts \(h\).  For
+    stiff problems \(L\) is very large, so this destroys the advantage
+    of using an implicit method.
+\end{itemize}
+
+\step{(b) Predictor--corrector method}
+An explicit LMM (the predictor) gives a starting value
+\(y_{n+k}^{[0]}\), and the implicit method (the corrector) is applied a
+fixed number \(m\) of times, as in fixed point iteration:
+\[
+  \text{P(EC)}^m\text{E}:\quad
+  \text{Predict},\ (\text{Evaluate }f,\ \text{Correct})^m,\ \text{Evaluate}.
+\]
+\begin{itemize}
+  \item Cheap and fully explicit: \(m+1\) evaluations of \(f\) per step
+    (typically \(m=1\) or \(2\)), no linear systems.
+  \item The iteration is \emph{not} carried to convergence, so the
+    result is a new method.  If the predictor has order \(p^*\ge p\)
+    (the order of the corrector), the pair has order \(p\) and the
+    principal error of the corrector; if \(p^*<p\), the order can drop.
+  \item The difference between predicted and corrected values gives a
+    cheap error estimate (Milne's device), useful for step control.
+  \item The stability region is that of the PC pair, which is much
+    smaller than that of the corrector and behaves like an explicit
+    method.  So it is not suitable for stiff problems.
+\end{itemize}
+
+\step{(c) Newton--Raphson method}
+Write \eqref{eq:impl} as \(F(y)=y-h\beta_kf(x_{n+k},y)-g_n=0\).  Then
+\[
+  \Bigl[I-h\beta_k\frac{\partial f}{\partial y}\bigl(x_{n+k},y^{[s]}\bigr)\Bigr]
+  \bigl(y^{[s+1]}-y^{[s]}\bigr)=-F\bigl(y^{[s]}\bigr).
+\]
+\begin{itemize}
+  \item Converges quadratically from a good starting value (for example
+    from an explicit predictor).
+  \item No restriction of the type \(h|\beta_k|L<1\): the method keeps
+    the full stability of the implicit formula.  This makes it the
+    method of choice for stiff problems.
+  \item Cost per iteration: evaluation of the Jacobian
+    \(\partial f/\partial y\) and solution of a linear system.  This can
+    be reduced by \emph{modified Newton} (keeping the Jacobian fixed for
+    several iterations or steps), at the price of linear convergence.
+\end{itemize}
+
+\step{Summary}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & Fixed point & PC (P(EC)\(^m\)E) & Newton--Raphson\\
+\midrule
+Convergence & linear, needs \(h|\beta_k|L<1\) & fixed \(m\) corrections & quadratic (local)\\
+Cost per step & \(f\) evaluations & \(m+1\) evaluations & Jacobian + linear solve\\
+Step restriction & yes & yes (explicit-type) & no\\
+Stiff problems & unsuitable & unsuitable & suitable\\
+\bottomrule
+\end{tabular}
+\end{center}
+For non-stiff problems the predictor--corrector approach is the most
+economical; for stiff problems Newton's method (or modified Newton) is
+needed.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Von Neumann criterion in the \(\ell_{2,\Delta x}\) norm}
+
+\begin{qbox}
+Prove that the difference scheme
+\[
+  u^{n+1}=Qu^n
+\]
+is stable with respect to the \(\ell_{2,\Delta x}\) norm if and only if
+there exist positive constants \(\Delta t_0\) and \(\Delta x_0\) and
+non-negative constants \(\beta\) and \(K\) so that
+\[
+  |\rho(\xi)|^{n+1}\le Ke^{\beta(n+1)\Delta t}
+\]
+for \(0<\Delta t\le\Delta t_0\), \(0<\Delta x\le\Delta x_0\) and all
+\(\xi\in[-\pi,\pi]\).\mk{7}
+\end{qbox}
+
+\begin{solution}
+\step{Setting}
+\(Q\) is a constant-coefficient difference operator on the whole line,
+\[
+  (Qu)_k=\sum_{j=-m_1}^{m_2}q_ju_{k+j},
+\]
+where the \(q_j\) may depend on \(\Delta t\) and \(\Delta x\).  The norm
+is \(\norm{u}_{2,\Delta x}^2=\sum_k|u_k|^2\Delta x\).  The scheme is
+\emph{stable} if there are \(\Delta t_0,\Delta x_0>0\) and
+\(K,\beta\ge0\) such that
+\[
+  \norm{u^{n+1}}_{2,\Delta x}\le Ke^{\beta(n+1)\Delta t}\norm{u^0}_{2,\Delta x}
+\]
+for all \(u^0\), all \(n\ge0\), \(0<\Delta t\le\Delta t_0\) and
+\(0<\Delta x\le\Delta x_0\).
+
+\step{Discrete Fourier transform}
+For \(u\in\ell_2\) define
+\[
+  \hat u(\xi)=\frac1{\sqrt{2\pi}}\sum_k e^{-ik\xi}u_k,\qquad \xi\in[-\pi,\pi].
+\]
+Parseval's identity gives \(\norm{\hat u}_{L_2[-\pi,\pi]}=\norm{u}_{\ell_2}\),
+and hence \(\norm{u}_{2,\Delta x}=\sqrt{\Delta x}\,\norm{\hat u}_{L_2}\).
+Shifting by \(j\) multiplies the transform by \(e^{ij\xi}\), so
+\[
+  \widehat{u^{n+1}}(\xi)=\rho(\xi)\,\widehat{u^n}(\xi),
+  \qquad
+  \rho(\xi)=\sum_jq_je^{ij\xi},
+\]
+and therefore \(\widehat{u^{n+1}}=\rho^{n+1}\,\widehat{u^0}\).  The
+symbol \(\rho\) is a trigonometric polynomial, hence continuous in
+\(\xi\).
+
+\step{(\(\Leftarrow\)) The condition implies stability}
+If \(|\rho(\xi)|^{n+1}\le Ke^{\beta(n+1)\Delta t}\) for all \(\xi\), then
+\begin{align*}
+  \norm{u^{n+1}}_{2,\Delta x}^2
+  &=\Delta x\int_{-\pi}^{\pi}|\rho(\xi)|^{2(n+1)}\,|\widehat{u^0}(\xi)|^2\,d\xi\\
+  &\le K^2e^{2\beta(n+1)\Delta t}\,\Delta x\int_{-\pi}^{\pi}|\widehat{u^0}(\xi)|^2\,d\xi
+   =K^2e^{2\beta(n+1)\Delta t}\norm{u^0}_{2,\Delta x}^2 .
+\end{align*}
+Taking square roots gives stability with the same \(K\) and \(\beta\).
+
+\step{(\(\Rightarrow\)) Stability implies the condition}
+Suppose the scheme is stable with constants \(\Delta t_0,\Delta x_0,K,\beta\),
+and suppose, for contradiction, that for some admissible
+\(\Delta t,\Delta x\), some \(n\) and some \(\xi_0\),
+\[
+  |\rho(\xi_0)|^{n+1}>Ke^{\beta(n+1)\Delta t}.
+\]
+By continuity of \(\rho\) there is an interval \(I\ni\xi_0\) of positive
+length on which \(|\rho(\xi)|^{n+1}>Ke^{\beta(n+1)\Delta t}\).  Choose
+\(u^0\) to be the sequence whose transform is the indicator function of
+\(I\) (it lies in \(\ell_2\) by Parseval).  Then
+\[
+  \norm{u^{n+1}}_{2,\Delta x}^2
+  =\Delta x\int_I|\rho(\xi)|^{2(n+1)}\,d\xi
+  >K^2e^{2\beta(n+1)\Delta t}\,\Delta x\int_I d\xi
+  =K^2e^{2\beta(n+1)\Delta t}\norm{u^0}_{2,\Delta x}^2,
+\]
+contradicting stability.  Hence the inequality holds, with the same
+constants, for all admissible \(\Delta t,\Delta x\) and all \(\xi\).
+\end{solution}
+
+\textit{Remark.}  In practice the condition is checked through the
+sufficient form \(|\rho(\xi)|\le1+C\Delta t\): then
+\(|\rho|^{n+1}\le(1+C\Delta t)^{n+1}\le e^{C(n+1)\Delta t}\), so
+\(K=1\), \(\beta=C\).
+
+%---------------------------------------------------------------------
+\subsection{Crank--Nicolson for \(v_t=v_{xx}-v\)}
+
+\begin{qbox}
+Consider the PDE \(v_t=v_{xx}-v\), \(t>0\), \(x\in(-\infty,\infty)\).
+Analyse the stability of the Crank--Nicolson scheme for this PDE.\mk{7}
+\end{qbox}
+
+\begin{solution}
+\step{The scheme}
+Crank--Nicolson averages the whole right-hand side between the levels
+\(n\) and \(n+1\).  With \(r=\Delta t/\Delta x^2\) and
+\(\delta^2u_k=u_{k+1}-2u_k+u_{k-1}\),
+\[
+  \frac{u_k^{n+1}-u_k^n}{\Delta t}
+  =\frac12\Bigl[\frac{\delta^2u_k^{n+1}}{\Delta x^2}-u_k^{n+1}\Bigr]
+   +\frac12\Bigl[\frac{\delta^2u_k^{n}}{\Delta x^2}-u_k^{n}\Bigr],
+\]
+that is,
+\[
+  \Bigl(1+\frac{\Delta t}2\Bigr)u_k^{n+1}-\frac r2\,\delta^2u_k^{n+1}
+  =\Bigl(1-\frac{\Delta t}2\Bigr)u_k^{n}+\frac r2\,\delta^2u_k^{n}.
+\]
+
+\step{The symbol}
+Substitute \(u_k^n=\rho^ne^{ik\xi}\).  Since
+\(\delta^2e^{ik\xi}=(2\cos\xi-2)e^{ik\xi}=-4\sin^2\frac\xi2\,e^{ik\xi}\),
+\[
+  \rho(\xi)
+  =\frac{1-\frac{\Delta t}2-2r\sin^2\frac\xi2}
+        {1+\frac{\Delta t}2+2r\sin^2\frac\xi2}
+  =\frac{1-a}{1+a},
+  \qquad
+  a=2r\sin^2\frac\xi2+\frac{\Delta t}2 .
+\]
+
+\step{Stability}
+Since \(a>0\) for every \(\xi\) and every \(\Delta t>0\),
+\[
+  |1-a|<1+a\quad\Longrightarrow\quad|\rho(\xi)|<1 .
+\]
+Hence \(|\rho(\xi)|^{n+1}\le1\), and by the criterion of the previous
+question (with \(K=1\), \(\beta=0\)) the scheme is stable for all
+\(\Delta t\) and \(\Delta x\): it is \emph{unconditionally stable}.
+
+This agrees with the PDE, whose Fourier modes decay like
+\(e^{-(1+\omega^2)t}\).  (For large \(r\), \(\rho\) is close to \(-1\)
+for high frequencies, so these modes decay slowly and oscillate in
+sign, as for Crank--Nicolson applied to the heat equation.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Consistency with a derivative boundary condition}
+
+\begin{qbox}
+Discuss the consistency of the difference scheme
+\[
+  u_k^{n+1}=(1-2r)u_k^n+r\bigl(u_{k+1}^n+u_{k-1}^n\bigr),\quad
+  k=1,2,\dots,M-1,\qquad r=\frac{\nu\Delta t}{\Delta x^2},
+\]
+\[
+  u_M^{n+1}=0,\qquad u_0^n=u_1^n,
+\]
+to the initial-boundary value problem
+\[
+  v_t=\nu v_{xx},\ x\in(0,1),\ t>0;\qquad
+  v(x,0)=f(x);\qquad v(1,t)=0;\qquad v_x(0,t)=0 .
+\]\mk{7}
+\end{qbox}
+
+\begin{solution}
+A scheme for an IBVP is consistent if the difference equation and each
+difference boundary condition are consistent with the corresponding
+equation and boundary condition of the problem.  Let \(v\) be a smooth
+exact solution and \(v_k^n=v(k\Delta x,n\Delta t)\).
+
+\step{Interior points \(k=1,\dots,M-1\)}
+Written in the form that approximates the PDE,
+\[
+  \tau_k^n=\frac{v_k^{n+1}-v_k^n}{\Delta t}
+  -\nu\,\frac{v_{k+1}^n-2v_k^n+v_{k-1}^n}{\Delta x^2}.
+\]
+By Taylor expansion about \((k\Delta x,n\Delta t)\),
+\[
+  \tau_k^n=(v_t-\nu v_{xx})+\frac{\Delta t}2v_{tt}
+  -\frac{\nu\Delta x^2}{12}v_{xxxx}+\cdots
+  =O(\Delta t)+O(\Delta x^2),
+\]
+since \(v_t=\nu v_{xx}\).  So \(\tau_k^n\to0\) as
+\(\Delta t,\Delta x\to0\): the interior scheme is consistent, of order
+\((1,2)\).
+
+\step{The boundary \(x=1\)}
+\(u_M^{n+1}=0\) imposes \(v(1,t)=0\) exactly; the truncation error is
+zero.
+
+\step{The boundary \(x=0\)}
+The condition \(u_0^n=u_1^n\) is the approximation
+\[
+  \frac{u_1^n-u_0^n}{\Delta x}=0\qquad\text{of}\qquad v_x(0,t)=0 .
+\]
+Its truncation error is
+\[
+  \frac{v(\Delta x,t)-v(0,t)}{\Delta x}-v_x(0,t)
+  =\frac{\Delta x}{2}v_{xx}(0,t)+O(\Delta x^2)=O(\Delta x),
+\]
+which tends to zero.  So the boundary condition is consistent, but only
+\emph{first order} accurate (it is a one-sided difference).
+
+\step{Conclusion}
+The scheme is consistent with the IBVP.  The interior equation is
+\(O(\Delta t)+O(\Delta x^2)\) accurate, but the Neumann boundary
+condition is only \(O(\Delta x)\), which in general reduces the overall
+accuracy to first order in \(\Delta x\).  A second-order treatment uses
+a fictitious point: \(u_{-1}^n=u_1^n\) (central difference), which gives
+\(u_0^{n+1}=(1-2r)u_0^n+2ru_1^n\) at \(k=0\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{FTCS and FTBS for \(v_t+av_x=\nu v_{xx}\)}
+
+\begin{qbox}
+Consider the IVP \(v_t+av_x=\nu v_{xx}\), \(v(x,0)=f(x)\).
+\begin{enumerate}[label=(\roman*)]
+  \item Analyse the stability of the FTCS scheme for the above IVP given
+    that \(r^2\ge R^2/4\), where \(r=\nu\Delta t/\Delta x^2\) and
+    \(R=a\Delta t/\Delta x\).\mk{5}
+  \item Analyse the stability of the FTBS scheme when \(\nu=0\) and
+    \(a>0\).\mk{5}
+  \item Analyse the stability of the FTCS scheme when \(\nu=0\) and
+    \(a>0\).\mk{4}
+  \item From (iii), what can you say about the stability of the FTCS
+    scheme for the IBVP \(v_t+av_x=0\), \(v(x,0)=f(x)\), \(a>0\),
+    \(v(0,t)=v(1,t)=0\)?  Give reasons.\mk{1}
+\end{enumerate}
+\end{qbox}
+
+\begin{solution}
+Throughout, \(s=\sin\frac\xi2\) and \(\xi\in[-\pi,\pi]\).
+
+\step{(i) FTCS for convection--diffusion}
+The scheme is
+\[
+  u_k^{n+1}=u_k^n-\frac R2\bigl(u_{k+1}^n-u_{k-1}^n\bigr)
+  +r\bigl(u_{k+1}^n-2u_k^n+u_{k-1}^n\bigr).
+\]
+Its symbol is
+\[
+  \rho(\xi)=1-2r(1-\cos\xi)-iR\sin\xi=1-4rs^2-iR\sin\xi .
+\]
+Using \(\sin^2\xi=4s^2(1-s^2)\),
+\begin{align*}
+  |\rho|^2&=(1-4rs^2)^2+4R^2s^2(1-s^2)\\
+  &=1-4s^2\bigl[(2r-R^2)-(4r^2-R^2)s^2\bigr].
+\end{align*}
+So \(|\rho|\le1\) for all \(\xi\) if and only if
+\(g(s^2)=(2r-R^2)-(4r^2-R^2)s^2\ge0\) for all \(s^2\in[0,1]\).  \(g\) is
+linear in \(s^2\), so this holds if and only if
+\[
+  g(0)=2r-R^2\ge0\qquad\text{and}\qquad g(1)=2r-4r^2\ge0,
+\]
+that is,
+\[
+  R^2\le2r\le1 .
+\]
+Under the given assumption \(R^2\le4r^2\): if \(r\le\frac12\) then
+\(R^2\le4r^2=2r\cdot2r\le2r\), so the first condition holds
+automatically.  Hence, given \(r^2\ge R^2/4\),
+\[
+  \text{FTCS is stable}\iff 0<r\le\tfrac12 .
+\]
+
+\step{(ii) FTBS for \(v_t+av_x=0\), \(a>0\)}
+The scheme is \(u_k^{n+1}=u_k^n-R\bigl(u_k^n-u_{k-1}^n\bigr)\), with
+symbol
+\[
+  \rho(\xi)=1-R+Re^{-i\xi}.
+\]
+Then
+\[
+  |\rho|^2=(1-R+R\cos\xi)^2+R^2\sin^2\xi=1-4R(1-R)\sin^2\frac\xi2 .
+\]
+So \(|\rho|\le1\) for all \(\xi\iff R(1-R)\ge0\iff0\le R\le1\).  Since
+\(a>0\), FTBS is stable if and only if
+\[
+  0<R=\frac{a\Delta t}{\Delta x}\le1
+\]
+(the CFL condition).  Geometrically, \(\rho\) is a circle of radius \(R\)
+centred at \(1-R\), which lies inside the unit disc exactly when
+\(0\le R\le1\).
+
+\step{(iii) FTCS for \(v_t+av_x=0\)}
+With \(\nu=0\) the symbol is \(\rho(\xi)=1-iR\sin\xi\), so
+\[
+  |\rho(\xi)|^2=1+R^2\sin^2\xi>1\qquad\text{whenever }\sin\xi\ne0 .
+\]
+For the usual refinement with \(R\) fixed, \(\max_\xi|\rho|=\sqrt{1+R^2}\)
+is a constant greater than \(1\), independent of \(\Delta t\), so
+\(|\rho|^{n+1}=(1+R^2)^{(n+1)/2}\) cannot be bounded by
+\(Ke^{\beta(n+1)\Delta t}\).  FTCS is \emph{unconditionally unstable}.
+(Only under the impractical restriction \(\Delta t\le c\,\Delta x^2\) do
+we get \(R^2=a^2\Delta t^2/\Delta x^2\le a^2c\,\Delta t\), hence
+\(|\rho|\le1+\frac12a^2c\,\Delta t\), which is stable in the weak sense.)
+
+\step{(iv) The IBVP}
+The FTCS scheme is still unstable.  On the grid \(x_k=k\Delta x\),
+\(M\Delta x=1\), with \(u_0=u_M=0\), the scheme is
+\(\mathbf u^{n+1}=Q\mathbf u^n\) with
+\[
+  Q=I-\frac R2S,\qquad S=\mathrm{tridiag}(-1,0,1),
+\]
+\(S\) skew-symmetric.  By the tridiagonal eigenvalue formula the
+eigenvalues of \(S\) are \(2i\cos\frac{j\pi}M\), so those of \(Q\) are
+\[
+  \lambda_j=1-iR\cos\frac{j\pi}M,
+  \qquad |\lambda_j|^2=1+R^2\cos^2\frac{j\pi}M,\quad j=1,\dots,M-1 .
+\]
+\(Q\) is normal (identity plus a skew-symmetric matrix), so
+\(\norm{Q^n}_2=\max_j|\lambda_j|^n=\bigl(1+R^2\cos^2\frac\pi M\bigr)^{n/2}\),
+which grows geometrically in \(n\) for fixed \(R\).  This is the
+instability found in (iii).  In addition, for \(a>0\) the
+characteristics carry information to the right, so a condition may be
+prescribed only at the inflow boundary \(x=0\); the condition
+\(v(1,t)=0\) over-determines the problem.
+\end{solution}
+
+%#####################################################################
+\section{Final Examination, May 2023}
+%#####################################################################
+
+\textit{Note.}  This paper (a second-semester offering) covers numerical
+linear algebra, interpolation, quadrature and optimisation rather than
+differential equations; these topics are not in the lecture notes of
+this course.  Full solutions are given anyway.  Reasons must be given
+for all answers.
+
+%---------------------------------------------------------------------
+\subsection{Gradient descent with exact line search}
+
+\begin{qbox}
+Consider the gradient descent method applied to a convex function
+\(f:\mathbb R^n\to\mathbb R\), where at each step we move along the
+negative gradient direction to a point which minimises \(f\) along this
+line.  Let \(x_k\) and \(x_{k+1}\) be two consecutive points generated
+by this method.  Prove that \(\nabla f(x_k)^T\nabla f(x_{k+1})=0\).\mk{3}
+\end{qbox}
+
+\begin{solution}
+Assume \(f\) is differentiable and the line minimum exists.  Let
+\(g=\nabla f(x_k)\).  If \(g=0\), the result is trivial.  Otherwise
+\[
+  x_{k+1}=x_k-t_kg,\qquad t_k\in\arg\min_{t\ge0}\varphi(t),
+  \qquad \varphi(t)=f(x_k-tg).
+\]
+By the chain rule, \(\varphi'(t)=-\nabla f(x_k-tg)^Tg\).  In particular
+\(\varphi'(0)=-\norm g^2<0\), so \(\varphi\) decreases near \(t=0\) and
+the minimiser satisfies \(t_k>0\).  An interior minimiser of a
+differentiable function is a stationary point, so
+\[
+  0=\varphi'(t_k)=-\nabla f(x_k-t_kg)^Tg=-\nabla f(x_{k+1})^T\nabla f(x_k).
+\]
+(Convexity of \(f\) makes \(\varphi\) convex, so any stationary point
+of \(\varphi\) is indeed its minimiser.)  Hence consecutive gradients
+are orthogonal: the method zig-zags.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Newton's method for \(f(x)=\norm x_2^3\)}
+
+\begin{qbox}
+Determine the rate of convergence of Newton's method (with step size
+\(\eta=1\)) for minimising \(f(x)=\norm x_2^3\), \(x\in\mathbb R^n\).
+You may use: if \(u\) is a unit vector,
+\((I+uu^T)^{-1}=I-\frac12uu^T\).\mk{4}
+\end{qbox}
+
+\begin{solution}
+For \(x\ne0\) write \(\norm x=\norm x_2\) and \(u=x/\norm x\).  Then
+\[
+  \nabla f(x)=3\norm x\,x,
+  \qquad
+  \nabla^2f(x)=3\Bigl(\norm x\,I+\frac{xx^T}{\norm x}\Bigr)
+  =3\norm x\,(I+uu^T).
+\]
+By the given formula,
+\[
+  [\nabla^2f(x)]^{-1}=\frac1{3\norm x}\Bigl(I-\frac12uu^T\Bigr).
+\]
+The Newton step is
+\[
+  x_{k+1}=x_k-[\nabla^2f(x_k)]^{-1}\nabla f(x_k)
+  =x_k-\Bigl(I-\frac12uu^T\Bigr)x_k
+  =\frac12\,u\,(u^Tx_k)=\frac12x_k ,
+\]
+since \(u^Tx_k=\norm{x_k}\).  Hence
+\[
+  x_k=2^{-k}x_0\to0=x^*,\qquad \frac{\norm{x_{k+1}-x^*}}{\norm{x_k-x^*}}=\frac12 .
+\]
+Newton's method converges only \emph{linearly}, with rate \(\frac12\),
+not quadratically.  The reason is that the Hessian at the minimiser is
+singular (\(\nabla^2f(0)=0\)), so the hypothesis of the quadratic
+convergence theorem fails.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Convexity of a maximum}
+
+\begin{qbox}
+\begin{enumerate}[label=(\roman*)]
+  \item Let \(f_1,\dots,f_m\) be convex functions with a common domain.
+    Prove that \(f(x)=\max_{i}f_i(x)\) is also convex.\mk{3}
+  \item Given \(x\in\mathbb R^n\), define \(f(x)\) as the sum of the
+    \(k\) largest coordinates of \(x\), where \(k\) is a fixed integer
+    between \(0\) and \(n\).  Prove that \(f\) is convex.\mk{2}
+\end{enumerate}
+\end{qbox}
+
+\begin{solution}
+\step{(i)}
+The common domain \(D\) is convex.  For \(x,y\in D\) and
+\(\theta\in[0,1]\), for every \(i\),
+\[
+  f_i(\theta x+(1-\theta)y)\le\theta f_i(x)+(1-\theta)f_i(y)
+  \le\theta f(x)+(1-\theta)f(y).
+\]
+Taking the maximum over \(i\) on the left gives
+\(f(\theta x+(1-\theta)y)\le\theta f(x)+(1-\theta)f(y)\).
+
+\step{(ii)}
+For any set \(S\subseteq\{1,\dots,n\}\) with \(|S|=k\), the sum
+\(\sum_{i\in S}x_i\) is at most the sum of the \(k\) largest
+coordinates, with equality when \(S\) indexes them.  Hence
+\[
+  f(x)=\max_{|S|=k}\ \sum_{i\in S}x_i ,
+\]
+a maximum of finitely many (\(\binom nk\)) linear, hence convex,
+functions.  By (i), \(f\) is convex.  (For \(k=0\), \(f\equiv0\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Interpolation error for \(\cos x\)}
+
+\begin{qbox}
+Suppose \(\cos(x)\) is to be approximated by an interpolating
+polynomial of degree \(n+1\), using \(n\) equally spaced points in the
+interval \([0,1]\).  How accurate is the approximation (give bounds, no
+exact answer is needed)?\mk{2}
+\end{qbox}
+
+\begin{solution}
+\textit{Interpretation.}  A polynomial of degree \(n+1\) needs \(n+2\)
+interpolation points, so the statement is inconsistent.  We give the
+bound for \(N+1\) equally spaced nodes in \([0,1]\) (degree \(N\)) and
+then specialise.
+
+\step{Error formula}
+For \(x\in[0,1]\) there is \(\eta\in(0,1)\) with
+\[
+  \cos x-p_N(x)=\frac{f^{(N+1)}(\eta)}{(N+1)!}\prod_{i=0}^N(x-x_i).
+\]
+Every derivative of \(\cos\) is \(\pm\sin\) or \(\pm\cos\), so
+\(|f^{(N+1)}|\le1\).
+
+\step{Crude bound}
+Each factor satisfies \(|x-x_i|\le1\), so
+\[
+  |\cos x-p_N(x)|\le\frac1{(N+1)!}.
+\]
+
+\step{Sharper bound for equal spacing}
+With spacing \(h=1/N\), \(\bigl|\prod_{i=0}^N(x-x_i)\bigr|\le\frac14h^{N+1}N!\),
+so
+\[
+  |\cos x-p_N(x)|\le\frac{h^{N+1}}{4(N+1)}=\frac1{4(N+1)N^{N+1}}.
+\]
+
+\step{Specialising}
+For degree \(n+1\) (\(N=n+1\), i.e.\ \(n+2\) points):
+\[
+  |\cos x-p(x)|\le\frac1{(n+2)!}
+  \quad\text{and}\quad
+  |\cos x-p(x)|\le\frac1{4(n+2)(n+1)^{n+2}} .
+\]
+If instead \(n\) points are used literally (degree \(n-1\)), the bounds
+are \(1/n!\) and \(1/\bigl(4n(n-1)^n\bigr)\).  Either way the error
+decreases faster than geometrically.  For example, a polynomial of
+degree \(5\) on \(6\) equally spaced points (\(h=\frac15\)) has error at
+most \(1/(4\cdot6\cdot5^6)\approx2.7\times10^{-6}\) (the crude bound
+gives \(1/720\approx1.4\times10^{-3}\)).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{A quadrature formula with derivatives}
+
+\begin{qbox}
+Determine a formula of the form
+\[
+  \int_a^bf(x)\,dx=Af(c)+Bf'(a)+Cf''(b),
+\]
+where \(c\) is the mid-point of \([a,b]\).  The formula should be exact
+for polynomials of as high degree as possible.\mk{3}
+\end{qbox}
+
+\begin{solution}
+Shift so that the midpoint is \(0\): let \(H=\frac{b-a}2\), so the
+interval is \([-H,H]\) and \(c=0\) (the coefficients do not change
+under translation).  Impose exactness for \(1,x,x^2\):
+\begin{align*}
+  f=1:&\quad 2H=A,\\
+  f=x:&\quad 0=A\cdot0+B\cdot1+C\cdot0\ \Rightarrow\ B=0,\\
+  f=x^2:&\quad \tfrac23H^3=A\cdot0+B\cdot(-2H)+2C\ \Rightarrow\ C=\tfrac13H^3 .
+\end{align*}
+Check \(f=x^3\): the integral is \(0\), but the right-hand side is
+\(A\cdot0+B\cdot3H^2+C\cdot6H=2H^4\ne0\).  So the maximal degree of
+exactness is \(2\), and
+\[
+  \boxed{\int_a^bf(x)\,dx\approx(b-a)\,f\Bigl(\frac{a+b}2\Bigr)
+  +\frac{(b-a)^3}{24}\,f''(b)},
+\]
+exact for all polynomials of degree \(\le2\) (and not for \(x^3\)).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{An LU factorisation}
+
+\begin{qbox}
+Compute the LU factorisation without pivoting of
+\(\begin{pmatrix}1&2\\2&5\end{pmatrix}\).\mk{2}
+\end{qbox}
+
+\begin{solution}
+Eliminate with multiplier \(l_{21}=2/1=2\): row 2 \(-\,2\times\) row 1
+gives \((0,\ 5-4)=(0,1)\).  Hence
+\[
+  \begin{pmatrix}1&2\\2&5\end{pmatrix}
+  =\begin{pmatrix}1&0\\2&1\end{pmatrix}
+   \begin{pmatrix}1&2\\0&1\end{pmatrix}.
+\]
+(Check: \(2\cdot2+1\cdot1=5\).)
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{A fixed point iteration}
+
+\begin{qbox}
+Consider the fixed point iteration \(x_{k+1}=(\alpha+1)x_k-x_k^2\),
+\(k=0,1,\dots\), where \(\alpha\) is a real number satisfying
+\(\frac12\le\alpha\le1\).  Show that the iteration converges for any
+initial guess \(x_0\) with \(\alpha-\frac15\le x_0\le\alpha+\frac15\).
+Assuming that the iteration converges, find the values of \(\alpha\) for
+which it converges quadratically.  Argue why it will converge
+quadratically for this range of the starting point.\mk{5}
+\end{qbox}
+
+\begin{solution}
+\step{Fixed points}
+\(g(x)=(\alpha+1)x-x^2\).  Then \(g(x)=x\iff x(\alpha-x)=0\), so the
+fixed points are \(0\) and \(\alpha\).  Since \(g'(0)=1+\alpha>1\), the
+fixed point \(0\) is repelling; the iteration converges to \(\alpha\).
+
+\step{Error recursion}
+Let \(e_k=x_k-\alpha\).  Then
+\[
+  e_{k+1}=g(\alpha+e_k)-\alpha
+  =(\alpha+1)(\alpha+e_k)-(\alpha+e_k)^2-\alpha
+  =e_k\,(1-\alpha-e_k).
+\]
+
+\step{Convergence for \(|e_0|\le\frac15\)}
+If \(|e_k|\le\frac15\) and \(\frac12\le\alpha\le1\), then
+\[
+  -\tfrac15\le1-\alpha-e_k\le\tfrac12+\tfrac15=\tfrac7{10},
+\]
+so \(|1-\alpha-e_k|\le\frac7{10}\) and \(|e_{k+1}|\le\frac7{10}|e_k|\).
+By induction, \(|e_k|\le\frac15\) for all \(k\) (the iterates stay in
+\([\alpha-\frac15,\alpha+\frac15]\)) and
+\[
+  |e_k|\le\Bigl(\tfrac7{10}\Bigr)^k|e_0|\to0 .
+\]
+So the iteration converges to \(\alpha\) for every such \(x_0\).
+
+\step{Quadratic convergence}
+From the recursion,
+\(e_{k+1}=(1-\alpha)e_k-e_k^2\).  If \(\alpha<1\), then
+\(e_{k+1}/e_k\to1-\alpha=g'(\alpha)\ne0\): the convergence is linear
+with rate \(1-\alpha\).  Convergence is quadratic exactly when
+\(g'(\alpha)=1-\alpha=0\), i.e.
+\[
+  \alpha=1 .
+\]
+Then \(e_{k+1}=-e_k^2\), so \(|e_{k+1}|=|e_k|^2\) exactly.  For
+\(|e_0|\le\frac15\) this gives \(|e_k|=|e_0|^{2^k}\le5^{-2^k}\to0\): the
+iteration converges, and quadratically, with asymptotic constant
+\(|e_{k+1}|/|e_k|^2=1\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{A Householder reflection}
+
+\begin{qbox}
+Determine the Householder transformation that annihilates all but the
+first entry of the vector \((1,1,1,1)^T\), i.e.\ find the Householder
+matrix \(H\) such that \(H(1,1,1,1)^T=(\alpha,0,0,0)^T\), where
+\(\alpha\) is a negative number.  Clearly write down the vector
+corresponding to the Householder matrix.\mk{3}
+\end{qbox}
+
+\begin{solution}
+Let \(x=(1,1,1,1)^T\).  A reflection preserves length, so
+\(|\alpha|=\norm x_2=2\), and \(\alpha=-2\) (the sign opposite to
+\(x_1\), which also avoids cancellation).  The Householder vector is
+\[
+  v=x-\alpha e_1=x+2e_1=(3,1,1,1)^T,\qquad v^Tv=12,
+\]
+and
+\[
+  H=I-\frac{2vv^T}{v^Tv}=I-\frac16vv^T
+  =\frac16\begin{pmatrix}
+    -3&-3&-3&-3\\
+    -3&5&-1&-1\\
+    -3&-1&5&-1\\
+    -3&-1&-1&5
+  \end{pmatrix}.
+\]
+(Equivalently, the unit vector is \(u=v/\norm v=(3,1,1,1)^T/(2\sqrt3)\)
+and \(H=I-2uu^T\).)  Check: the first row of \(Hx\) is
+\(\frac16(-12)=-2\), and the second row is
+\(\frac16(-3+5-1-1)=0\); similarly for rows 3 and 4.  So
+\(Hx=(-2,0,0,0)^T\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Power iteration}
+
+\begin{qbox}
+Consider the matrix \(A=\begin{pmatrix}1&4\\1&1\end{pmatrix}\).  To which
+eigenvector will the power iteration starting with \((1,1)^T\)
+converge?\mk{3}
+\end{qbox}
+
+\begin{solution}
+The characteristic equation is \((1-\lambda)^2-4=0\), so
+\(\lambda_1=3\), \(\lambda_2=-1\).  Eigenvectors:
+\[
+  (A-3I)v=0:\ v_1=(2,1)^T;\qquad (A+I)v=0:\ v_2=(2,-1)^T .
+\]
+Expand the starting vector:
+\((1,1)^T=c_1(2,1)^T+c_2(2,-1)^T\) gives \(2c_1+2c_2=1\),
+\(c_1-c_2=1\), so \(c_1=\frac34\), \(c_2=-\frac14\).  Then
+\[
+  A^k\begin{pmatrix}1\\1\end{pmatrix}
+  =3^k\Bigl[\tfrac34v_1-\tfrac14\Bigl(-\tfrac13\Bigr)^kv_2\Bigr].
+\]
+Since \(c_1\ne0\) and \(|\lambda_1|=3>|\lambda_2|=1\), the normalised
+iterates converge to the dominant eigenvector
+\[
+  \frac{(2,1)^T}{\sqrt5},
+\]
+corresponding to \(\lambda=3\), with error \(O(3^{-k})\).  (Because
+\(\lambda_1>0\), the iterates converge without sign alternation.)
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Backward stability of \(QA\)}
+
+\begin{qbox}
+Let \(Q\) be an \(n\times n\) unitary matrix (\(QQ^*=I\)).  Consider the
+computational problem: given an \(n\times n\) matrix \(A\), output
+\(QA\).  Assume that you are given stable algorithms for computing
+addition and multiplication.  Prove that the usual algorithm for
+computing \(QA\) is stable.  (The input is \(A\); \(Q\) is fixed.)\mk{5}
+\end{qbox}
+
+\begin{solution}
+(The paper writes \(UU^*=I\); this means \(QQ^*=I\).)
+
+\step{Floating point model}
+Each operation satisfies \(\mathrm{fl}(a\circ b)=(a\circ b)(1+\delta)\)
+with \(|\delta|\le\varepsilon\) (machine epsilon), for
+\(\circ\in\{+,\times\}\).
+
+\step{Error in one inner product}
+The usual algorithm computes each entry
+\((QA)_{ij}=\sum_{k=1}^nq_{ik}a_{kj}\) by multiplying and summing in
+order.  Each product picks up one factor \((1+\delta)\), and each term
+passes through at most \(n-1\) additions, each contributing a factor
+\((1+\delta)\).  Hence
+\[
+  \mathrm{fl}\Bigl(\sum_kq_{ik}a_{kj}\Bigr)=\sum_kq_{ik}a_{kj}(1+\theta_k),
+  \qquad |\theta_k|\le\gamma_n:=\frac{n\varepsilon}{1-n\varepsilon}
+  =n\varepsilon+O(\varepsilon^2).
+\]
+So the computed product is \(\widetilde{QA}=QA+E\) with
+\[
+  |E_{ij}|\le\gamma_n\sum_k|q_{ik}||a_{kj}|,
+  \qquad\text{i.e.}\qquad |E|\le\gamma_n|Q|\,|A|\ \text{(entrywise)}.
+\]
+
+\step{Backward error}
+Define \(\delta A=Q^*E\).  Then
+\[
+  Q(A+\delta A)=QA+QQ^*E=QA+E=\widetilde{QA},
+\]
+so the computed result is the \emph{exact} product for the perturbed
+input \(A+\delta A\).  Since \(Q^*\) is unitary,
+\(\norm{\delta A}_F=\norm{E}_F\), and
+\[
+  \norm{E}_F\le\gamma_n\,\bigl\lVert|Q|\,|A|\bigr\rVert_F
+  \le\gamma_n\norm{Q}_F\norm{A}_F=\gamma_n\sqrt n\,\norm A_F,
+\]
+using \(\norm{Q}_F^2=\mathrm{trace}(Q^*Q)=n\).  Therefore
+\[
+  \frac{\norm{\delta A}_F}{\norm A_F}\le\sqrt n\,\gamma_n=O(\varepsilon).
+\]
+
+\step{Conclusion}
+The algorithm is \emph{backward stable}: it gives the exact answer for
+an input with relative perturbation \(O(\varepsilon)\).  Backward
+stability implies stability.  (Unitarity was essential: it made the
+backward error \(Q^*E\) no larger than the forward error \(E\).)
+\end{solution}
+
+\clearpage
+%#####################################################################
+\section{End-Semester Examination, 2025--26 Semester I}
+%#####################################################################
+
+Duration 2 hours, 40 marks.  All notations are standard.
+
+%---------------------------------------------------------------------
+\subsection{A tridiagonal system solved as a difference equation}
+
+\begin{qbox}
+Suppose we want to solve the tridiagonal system \(Ax=b\), where
+\[
+  A=\begin{bmatrix}
+    -3&1&&&\\
+    2&-3&1&&\\
+    &2&-3&1&\\
+    &&\ddots&\ddots&\ddots\\
+    &&2&-3&1\\
+    &&&2&-3
+  \end{bmatrix},
+  \qquad
+  b=\begin{bmatrix}1\\0\\0\\\vdots\\0\\0\end{bmatrix}.
+\]
+State the difference equation which replaces the matrix formulation of
+the problem.  Solve the system by solving the difference equation.\mk{4}
+\end{qbox}
+
+\begin{solution}
+Let \(A\) be \(N\times N\) and \(x=(x_1,\dots,x_N)^T\).
+
+\step{Step 1: the difference equation}
+Row \(i\) of \(Ax=b\) reads
+\[
+  2x_{i-1}-3x_i+x_{i+1}=b_i,\qquad i=1,\dots,N,
+\]
+where the first and last rows have no \(x_0\) and \(x_{N+1}\) terms.
+The only non-zero entry of \(b\) is \(b_1=1\), in the first row
+\(-3x_1+x_2=1\).  Introduce two fictitious values \(x_0\), \(x_{N+1}\)
+and choose them so that every row has the same form: the first row is
+\(2x_0-3x_1+x_2=0\) provided \(2x_0=-1\), and the last row is
+\(2x_{N-1}-3x_N+x_{N+1}=0\) provided \(x_{N+1}=0\).  Hence \(Ax=b\) is
+equivalent to the boundary value problem for a second-order
+homogeneous linear difference equation:
+\[
+  \boxed{\;x_{i+1}-3x_i+2x_{i-1}=0,\quad i=1,2,\dots,N,
+  \qquad x_0=-\tfrac12,\quad x_{N+1}=0.\;}
+\]
+
+\step{Step 2: the general solution}
+In shift-operator form, \((E^2-3E+2)x_{i-1}=0\).  The characteristic
+equation \(\xi^2-3\xi+2=(\xi-1)(\xi-2)=0\) has the distinct roots
+\(\xi=1,2\), so
+\[
+  x_i=C_1+C_2\,2^i .
+\]
+
+\step{Step 3: the boundary conditions}
+\[
+  x_0=C_1+C_2=-\tfrac12,\qquad x_{N+1}=C_1+C_2\,2^{N+1}=0 .
+\]
+Subtracting, \(C_2(2^{N+1}-1)=\frac12\), so
+\[
+  C_2=\frac1{2(2^{N+1}-1)},\qquad
+  C_1=-2^{N+1}C_2=-\frac{2^N}{2^{N+1}-1}.
+\]
+(The determinant \(2^{N+1}-1\ne0\), so the solution is unique, as it
+must be since \(A\) is non-singular.)  Therefore
+\[
+  \boxed{\;x_i=\frac{2^{i-1}-2^N}{2^{N+1}-1},\qquad i=1,2,\dots,N.\;}
+\]
+
+\step{Check}
+First row:
+\(-3x_1+x_2=\dfrac{-3(1-2^N)+(2-2^N)}{2^{N+1}-1}=\dfrac{2^{N+1}-1}{2^{N+1}-1}=1\).
+Last row:
+\(2x_{N-1}-3x_N=\dfrac{(2^{N-1}-2^{N+1})-3(2^{N-1}-2^N)}{2^{N+1}-1}=0\).
+For example, \(N=2\) gives \(x=(-\frac37,-\frac27)^T\), and indeed
+\(-3(-\frac37)-\frac27=1\), \(2(-\frac37)-3(-\frac27)=0\).  All
+\(x_i<0\), and \(|x_i|\) decreases from \(x_1\approx-\frac12\) to
+\(x_N\approx-\frac14\) for large \(N\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Classical RK4 for a rotating system}
+
+\begin{qbox}
+The classical fourth-order Runge--Kutta method is used to solve the
+system
+\[
+  y'=-kz,\quad y(x_0)=y_0,\qquad z'=ky,\quad z(x_0)=z_0,
+\]
+where \(k>0\) and \(x,x_0,y,y_0,z\) and \(z_0\) are real.  The step
+length \(h\) is supposed to be \(>0\).  Putting
+\(y_n\approx y(x_0+nh)\) and \(z_n\approx z(x_0+nh)\), prove that
+\[
+  \begin{bmatrix}y_{n+1}\\ z_{n+1}\end{bmatrix}
+  =A\begin{bmatrix}y_n\\ z_n\end{bmatrix},
+\]
+where \(A\) is a real \(2\times2\) matrix.  Find under what
+condition(s) the solutions do not grow exponentially for increasing
+values of \(n\).\mk{5}
+\end{qbox}
+
+\begin{solution}
+\step{Step 1: vector form}
+Let \(\mathbf w=(y,z)^T\).  The system is \(\mathbf w'=M\mathbf w\) with
+\[
+  M=kJ,\qquad J=\begin{bmatrix}0&-1\\1&0\end{bmatrix},\qquad
+  J^2=-I,\quad J^3=-J,\quad J^4=I .
+\]
+
+\step{Step 2: RK4 on a linear constant-coefficient system}
+The classical RK4 method for \(\mathbf w'=\mathbf F(x,\mathbf w)\) is
+\[
+  \mathbf w_{n+1}=\mathbf w_n+\frac h6\bigl(K_1+2K_2+2K_3+K_4\bigr),
+\]
+\begin{align*}
+  K_1&=\mathbf F(x_n,\mathbf w_n),&
+  K_2&=\mathbf F\bigl(x_n+\tfrac h2,\mathbf w_n+\tfrac h2K_1\bigr),\\
+  K_3&=\mathbf F\bigl(x_n+\tfrac h2,\mathbf w_n+\tfrac h2K_2\bigr),&
+  K_4&=\mathbf F(x_n+h,\mathbf w_n+hK_3).
+\end{align*}
+With \(\mathbf F=M\mathbf w\),
+\begin{align*}
+  K_1&=M\mathbf w_n,\\
+  K_2&=M\bigl(\mathbf w_n+\tfrac h2M\mathbf w_n\bigr)
+      =\bigl(M+\tfrac h2M^2\bigr)\mathbf w_n,\\
+  K_3&=M\bigl(\mathbf w_n+\tfrac h2K_2\bigr)
+      =\bigl(M+\tfrac h2M^2+\tfrac{h^2}4M^3\bigr)\mathbf w_n,\\
+  K_4&=M\bigl(\mathbf w_n+hK_3\bigr)
+      =\bigl(M+hM^2+\tfrac{h^2}2M^3+\tfrac{h^3}4M^4\bigr)\mathbf w_n .
+\end{align*}
+Hence
+\[
+  K_1+2K_2+2K_3+K_4
+  =\bigl(6M+3hM^2+h^2M^3+\tfrac{h^3}4M^4\bigr)\mathbf w_n,
+\]
+and
+\[
+  \mathbf w_{n+1}
+  =\Bigl(I+hM+\frac{(hM)^2}{2!}+\frac{(hM)^3}{3!}+\frac{(hM)^4}{4!}\Bigr)\mathbf w_n .
+\]
+
+\step{Step 3: the matrix \(A\)}
+Put \(\omega=kh>0\).  Using \(J^2=-I\), \(J^3=-J\), \(J^4=I\),
+\[
+  A=\Bigl(1-\frac{\omega^2}2+\frac{\omega^4}{24}\Bigr)I
+   +\Bigl(\omega-\frac{\omega^3}6\Bigr)J
+  =\begin{bmatrix}a&-b\\ b&a\end{bmatrix},
+  \qquad
+  a=1-\frac{\omega^2}2+\frac{\omega^4}{24},\quad
+  b=\omega-\frac{\omega^3}6 .
+\]
+This is a real \(2\times2\) matrix, which proves the first part.
+Explicitly,
+\[
+  y_{n+1}=a\,y_n-b\,z_n,\qquad z_{n+1}=b\,y_n+a\,z_n .
+\]
+
+\step{Step 4: growth of the solution}
+\(A^TA=(a^2+b^2)I\), so \(A=\sqrt{a^2+b^2}\,R\) with \(R\) a rotation,
+and the eigenvalues of \(A\) are \(a\pm ib\), of modulus
+\(\sqrt{a^2+b^2}\).  Therefore
+\[
+  y_n^2+z_n^2=\bigl(a^2+b^2\bigr)^n\bigl(y_0^2+z_0^2\bigr)
+\]
+exactly, for every \(n\).  Now
+\begin{align*}
+  a^2&=1-\omega^2+\frac{\omega^4}3-\frac{\omega^6}{24}+\frac{\omega^8}{576},\qquad
+  b^2=\omega^2-\frac{\omega^4}3+\frac{\omega^6}{36},\\
+  a^2+b^2&=1-\frac{\omega^6}{72}+\frac{\omega^8}{576}
+  =1-\frac{\omega^6}{576}\bigl(8-\omega^2\bigr).
+\end{align*}
+The solutions do not grow exponentially if and only if
+\(a^2+b^2\le1\), i.e.\ \(\omega^2\le8\):
+\[
+  \boxed{\;0<kh\le2\sqrt2,\qquad\text{i.e.}\qquad 0<h\le\frac{2\sqrt2}{k}\approx\frac{2.83}{k}.\;}
+\]
+\begin{itemize}
+  \item \(kh<2\sqrt2\): \(a^2+b^2<1\), the numerical solution decays
+    slowly (a small amplitude error).
+  \item \(kh=2\sqrt2\): \(a^2+b^2=1\), \(A\) is a rotation and
+    \(y_n^2+z_n^2\) is constant.
+  \item \(kh>2\sqrt2\): \(y_n^2+z_n^2\) grows like
+    \((a^2+b^2)^n\), exponentially.
+\end{itemize}
+
+\step{Comment}
+The exact solution
+\(y=y_0\cos k(x-x_0)-z_0\sin k(x-x_0)\),
+\(z=y_0\sin k(x-x_0)+z_0\cos k(x-x_0)\) rotates with constant
+\(y^2+z^2\).  The eigenvalues of \(M\) are \(\pm ik\), so the result is
+the statement that the RK4 stability polynomial
+\(R(\bar h)=1+\bar h+\frac{\bar h^2}2+\frac{\bar h^3}6+\frac{\bar h^4}{24}\)
+satisfies \(|R(i\omega)|\le1\) exactly for \(|\omega|\le2\sqrt2\): the
+interval of the imaginary axis inside the RK4 stability region.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Order of an LMM via \texorpdfstring{\(\rho(z)/\log z-\sigma(z)\)}{rho/log - sigma}}
+
+\begin{qbox}
+Consider the initial value problem \(y'=f(x,y)\), \(y(x_0)=y_0\).
+Assume \(f(x,y)\) is a sufficiently smooth function.  Suppose \(p\) is
+a positive integer.  Prove that the linear \(k\)-step method defined by
+\(\sum_{j=0}^k\alpha_jy_{n+j}=h\sum_{j=0}^k\beta_jf_{n+j}\), with
+stability polynomials \(\rho(z)\) and \(\sigma(z)\), is of order \(p\)
+if and only if the function \(\varphi(z)\) defined by
+\[
+  \varphi(z)=\frac{\rho(z)}{\log z}-\sigma(z)
+\]
+has a zero of multiplicity \(p\) at \(z=1\).  (Note that the function
+\(\log z\) appearing in the denominator is made single valued by
+cutting the complex plane along the half line \(\operatorname{Re}z\le0\).)\mk{5}
+\end{qbox}
+
+\begin{solution}
+\step{Definitions}
+\(\rho(z)=\sum_{j=0}^k\alpha_jz^j\), \(\sigma(z)=\sum_{j=0}^k\beta_jz^j\).
+The associated difference operator is
+\[
+  L[y(x);h]=\sum_{j=0}^k\bigl[\alpha_jy(x+jh)-h\beta_jy'(x+jh)\bigr].
+\]
+Expanding \(y(x+jh)\) and \(y'(x+jh)\) in Taylor series about \(x\),
+\[
+  L[y(x);h]=c_0y(x)+c_1hy'(x)+c_2h^2y''(x)+\cdots,
+\]
+\[
+  c_0=\sum_j\alpha_j,\qquad
+  c_q=\frac1{q!}\sum_jj^q\alpha_j-\frac1{(q-1)!}\sum_jj^{q-1}\beta_j\quad(q\ge1).
+\]
+The method has \emph{order \(p\)} if \(c_0=c_1=\cdots=c_p=0\) and
+\(c_{p+1}\ne0\).  Note that \(c_0=\rho(1)\).
+
+With the cut along the negative real axis, \(\log z\) is the principal
+branch, holomorphic on \(\mathbb C\setminus(-\infty,0]\), which
+contains a neighbourhood of \(z=1\); there \(e^{\log z}=z\) and
+\[
+  \log z=(z-1)E(z),\qquad E \text{ holomorphic},\ E(1)=1 .
+\]
+So \(\log z\) has a simple zero at \(z=1\) and no other zero.  The
+cut is needed only to make \(\varphi\) a well-defined (single-valued)
+holomorphic function near \(z=1\).
+
+\step{Step 1: the key function \(g\)}
+Define the entire function
+\[
+  g(h)=\rho(e^h)-h\,\sigma(e^h)=\sum_{j=0}^k\bigl(\alpha_j-h\beta_j\bigr)e^{jh}.
+\]
+This is \(L[e^x;h]\) at \(x=0\).  Expanding
+\(e^{jh}=\sum_q j^qh^q/q!\),
+\[
+  g(h)=\sum_{q\ge0}h^q\Bigl[\frac1{q!}\sum_jj^q\alpha_j
+       -\frac1{(q-1)!}\sum_jj^{q-1}\beta_j\Bigr]
+  =\sum_{q\ge0}c_qh^q,
+\]
+(the \(\beta\) term absent for \(q=0\)).  So the \(c_q\) are exactly
+the Taylor coefficients of \(g\) at \(h=0\), and
+\begin{equation}\label{eq:ordg}
+\begin{aligned}
+  \text{order }p&\iff c_0=\cdots=c_p=0,\ c_{p+1}\ne0\\
+  &\iff g\text{ has a zero of multiplicity exactly }p+1\text{ at }h=0 .
+\end{aligned}
+\end{equation}
+
+\step{Step 2: relation between \(g\) and \(\varphi\)}
+For \(z\) near \(1\), put \(h=\log z\).  Then
+\[
+  g(\log z)=\rho(z)-\log z\cdot\sigma(z)=\log z\cdot\varphi(z),
+  \qquad z\ne1 .
+\]
+Conversely, for \(h\) near \(0\) (\(z=e^h\) near \(1\)),
+\begin{equation}\label{eq:gphi}
+  g(h)=h\,\varphi(e^h),\qquad h\ne0 .
+\end{equation}
+
+\step{Step 3: order \(p\Rightarrow\) zero of multiplicity \(p\)}
+Suppose the method has order \(p\ge1\).  By \eqref{eq:ordg},
+\(g(h)=h^{p+1}G(h)\) with \(G\) holomorphic and \(G(0)=c_{p+1}\ne0\).
+In particular \(\rho(1)=c_0=0\), so the singularity of
+\(\rho(z)/\log z\) at \(z=1\) is removable and \(\varphi\) is
+holomorphic near \(1\).  Then
+\[
+  \varphi(z)=\frac{g(\log z)}{\log z}
+  =(\log z)^pG(\log z)=(z-1)^p\,E(z)^p\,G(\log z),
+\]
+and \(E(1)^pG(\log1)=G(0)\ne0\).  Hence \(\varphi\) has a zero of
+multiplicity exactly \(p\) at \(z=1\), with
+\(\varphi(z)=c_{p+1}(z-1)^p+O\bigl((z-1)^{p+1}\bigr)\).
+
+\step{Step 4: zero of multiplicity \(p\Rightarrow\) order \(p\)}
+Suppose \(\varphi\) is holomorphic near \(z=1\) with a zero of
+multiplicity \(p\ge1\) there.  (A zero requires holomorphy; if
+\(\rho(1)\ne0\) then \(\rho/\log z\) has a pole at \(1\) and \(\varphi\)
+cannot have a zero.  So \(\rho(1)=0\).)  Write
+\(\varphi(z)=(z-1)^p\Phi(z)\) with \(\Phi(1)\ne0\).  Since
+\(e^h-1=h\,\tilde E(h)\), \(\tilde E(0)=1\), \eqref{eq:gphi} gives
+\[
+  g(h)=h\,(e^h-1)^p\,\Phi(e^h)=h^{p+1}\,\tilde E(h)^p\,\Phi(e^h),
+\]
+with \(\tilde E(0)^p\Phi(1)=\Phi(1)\ne0\).  So \(g\) has a zero of
+multiplicity exactly \(p+1\) at \(h=0\), and by \eqref{eq:ordg} the
+method has order \(p\).
+
+\step{Conclusion}
+Both directions are proved: the method has order \(p\) if and only if
+\(\varphi\) has a zero of multiplicity \(p\) at \(z=1\).  Moreover
+\(\varphi(z)=c_{p+1}(z-1)^p+\cdots\), so the leading coefficient of
+\(\varphi\) at \(z=1\) is the error constant \(c_{p+1}\).  This is
+the basis of the construction of methods of maximal order: given
+\(\rho\), take \(\sigma\) to be the Taylor polynomial of
+\(\rho(z)/\log z\) at \(z=1\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{A tabulated solution and Numerov's method}
+
+\begin{qbox}
+A table of the function \(y=f(x)\) is given.
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}c|ccccccc@{}}
+\toprule
+\(x\)&4&5&6&7&8&9&10\\
+\(y\)&0.15024&0.56563&1.54068&3.25434&5.51438&7.56171&8.22108\\
+\bottomrule
+\end{tabular}
+\end{center}
+It is known that \(f\) satisfies the differential equation
+\[
+  \frac{d^2y}{dx^2}+\Bigl(1-\frac4x-\frac{n(n+1)}{x^2}\Bigr)y=0,
+\]
+where \(n\) is a positive integer.
+\begin{enumerate}[label=(\alph*)]
+  \item Find \(n\).\mk{3}
+  \item Compute \(f(12)\) using Numerov's method with step size
+    \(1\).\mk{3}
+\end{enumerate}
+\end{qbox}
+
+\begin{solution}
+Write the equation as \(y''=F(x,y)\) with
+\[
+  F(x,y)=-g(x)\,y,\qquad
+  g(x)=1-\frac4x-\frac{N}{x^2},\qquad N=n(n+1).
+\]
+Numerov's method (order \(4\)) is
+\[
+  y_{i+1}-2y_i+y_{i-1}=\frac{h^2}{12}\bigl(F_{i+1}+10F_i+F_{i-1}\bigr).
+\]
+
+\step{(a) Finding \(n\)}
+The tabulated values satisfy Numerov's relation up to its
+truncation error \(O(h^6)\) and rounding.  Here \(h=1\) and
+\(F_j=-(1-\frac4{x_j})y_j+N\,\dfrac{y_j}{x_j^2}\), which is linear in
+\(N\).  Writing \(\delta^2y_i=y_{i+1}-2y_i+y_{i-1}\), the relation at
+\(x_i\) gives
+\[
+  N=\frac{12\,\delta^2y_i+P_i}{Q_i},\qquad
+  P_i=\sum_{j}w_j\Bigl(1-\frac4{x_j}\Bigr)y_j,\quad
+  Q_i=\sum_jw_j\frac{y_j}{x_j^2},
+\]
+where the sums run over \(j=i-1,i,i+1\) with weights
+\(w_{i\pm1}=1\), \(w_i=10\).  For example, at \(x_i=7\):
+\(\delta^2y=5.51438-2(3.25434)+1.54068=0.54638\), and
+\begin{align*}
+  P&=\tfrac13(1.54068)+10\cdot\tfrac37(3.25434)+\tfrac12(5.51438)=17.21792,\\
+  Q&=\tfrac{1.54068}{36}+10\cdot\tfrac{3.25434}{49}+\tfrac{5.51438}{64}=0.79311,\\
+  N&=\frac{12(0.54638)+17.21792}{0.79311}=\frac{23.77448}{0.79311}=29.976 .
+\end{align*}
+At all interior points:
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}cccccc@{}}
+\toprule
+\(x_i\)&5&6&7&8&9\\
+\midrule
+\(\delta^2y_i\)&0.55966&0.73861&0.54638&\(-0.21271\)&\(-1.38796\)\\
+\(N\)&30.027&29.993&29.976&29.974&29.988\\
+\bottomrule
+\end{tabular}
+\end{center}
+(The cruder central-difference relation
+\(\delta^2y_i=-g(x_i)y_i\) gives \(29.2\)--\(30.1\), the same
+conclusion.)  Hence \(n(n+1)=30\), and since \(n\) is a positive
+integer,
+\[
+  \boxed{n=5}\qquad(n(n+1)=30;\ \text{the other root } n=-6 \text{ is excluded}).
+\]
+
+\step{(b) \(f(12)\) by Numerov with \(h=1\)}
+Now \(g(x)=1-\dfrac4x-\dfrac{30}{x^2}\).  Since \(F\) is linear in
+\(y\), the implicit Numerov formula can be solved for \(y_{i+1}\):
+\[
+  \Bigl(1+\frac{g_{i+1}}{12}\Bigr)y_{i+1}
+  =2\Bigl(1-\frac{5g_i}{12}\Bigr)y_i-\Bigl(1+\frac{g_{i-1}}{12}\Bigr)y_{i-1}.
+\]
+The two starting values are \(y(9)=7.56171\) and \(y(10)=8.22108\) from
+the table.  The needed values of \(g\):
+\[
+  g(9)=\frac{5}{27}=0.185185,\quad
+  g(10)=0.3,\quad
+  g(11)=\frac{47}{121}=0.388430,\quad
+  g(12)=\frac{11}{24}=0.458333 .
+\]
+
+\textit{Step to \(x=11\):}
+\[
+  1.032369\,y_{11}=2(0.875)(8.22108)-1.015432\,(7.56171)
+  =14.386890-7.678403=6.708487,
+\]
+\[
+  y_{11}=f(11)\approx6.49815 .
+\]
+
+\textit{Step to \(x=12\):}
+\[
+  1.038194\,y_{12}=2\Bigl(1-\frac{5(0.388430)}{12}\Bigr)(6.49815)-1.025\,(8.22108)
+  =1.676309(6.49815)-8.426607,
+\]
+\[
+  1.038194\,y_{12}=10.892900-8.426607=2.466293,
+  \qquad
+  \boxed{f(12)\approx2.37556 .}
+\]
+
+\step{Comment}
+The equation is the Coulomb wave equation with \(\eta=2\), \(L=5\);
+to the accuracy of the table, \(f(x)\approx6.2296\,F_5(2,x)\), the
+regular Coulomb wave function, whose value gives \(f(12)\approx2.3818\).
+The Numerov error \(\approx0.006\) is consistent with the large step
+\(h=1\) (the local error is \(-\frac1{240}h^6y^{(6)}\), and the solution
+oscillates with wavelength of order \(2\pi\)).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Du Fort--Frankel scheme: stability by the matrix method}
+
+\begin{qbox}
+Investigate the stability by the matrix method of the Du Fort and
+Frankel scheme for the equation
+\[
+  \pd ut=\pdd ux,\qquad 0<x<1,\ t>0,
+\]
+for fixed mesh length, given that \(u\) is known on the boundaries
+\(x=0\) and \(x=1\) for \(t>0\).  (Hint: the Du Fort and Frankel scheme
+is
+\[
+  U_m^{n+1}=\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)
+  +\frac{1-2r}{1+2r}U_m^{n-1},\qquad r=\frac k{h^2}.)
+\]\mk{5}
+\end{qbox}
+
+\begin{solution}
+Let \(Nh=1\); the unknowns are \(U_m^n\), \(m=1,\dots,N-1\).
+
+\step{Step 1: matrix form}
+With \(U^n=[U_1^n,\dots,U_{N-1}^n]^T\) and the known boundary values
+moved to the right-hand side,
+\[
+  U^{n+1}=\frac{2r}{1+2r}\,AU^n+\frac{1-2r}{1+2r}\,U^{n-1}+f_n,
+  \qquad
+  A=\begin{bmatrix}
+    0&1&&\\
+    1&0&1&\\
+    &\ddots&\ddots&\ddots\\
+    &&1&0
+  \end{bmatrix}_{(N-1)\times(N-1)},
+\]
+\(f_n=\frac{2r}{1+2r}\,[U_0^n,0,\dots,0,U_N^n]^T\).
+
+\step{Step 2: reduction to a two-level scheme}
+This is a three-level scheme.  Put \(V^n=U^{n-1}\) and
+\(W^n=\begin{bmatrix}U^n\\ V^n\end{bmatrix}\).  Then
+\[
+  W^{n+1}=BW^n+\begin{bmatrix}f_n\\0\end{bmatrix},
+  \qquad
+  B=\begin{bmatrix}
+    \dfrac{2r}{1+2r}A&\dfrac{1-2r}{1+2r}I\\[8pt]
+    I&0
+  \end{bmatrix}.
+\]
+An error \(E^0\) in the initial data propagates as \(E^n=B^nE^0\).  For
+a fixed mesh the scheme is stable if \(\norm{B^n}\) stays bounded as
+\(n\to\infty\); this holds if every eigenvalue of \(B\) has modulus
+\(<1\) (then \(B^n\to0\)), and fails if one has modulus \(>1\).
+
+\step{Step 3: eigenvalues of \(B\)}
+The eigenvalues of the tridiagonal matrix \(A\) are the distinct numbers
+\[
+  \lambda_k=2\cos\frac{k\pi}N,\qquad k=1,\dots,N-1,
+\]
+with eigenvectors \(v_k=\bigl(\sin\frac{jk\pi}N\bigr)_{j=1}^{N-1}\).
+These \(N-1\) independent vectors are also eigenvectors of \(I\)
+(eigenvalue \(1\)) and of \(0\) (eigenvalue \(0\)).  So all four blocks
+of \(B\) share the eigenvectors \(v_k\), and by the theorem on
+eigenvalues of block matrices, the eigenvalues \(\lambda\) of \(B\) are
+the eigenvalues of the \(2\times2\) matrices
+\[
+  \begin{bmatrix}
+    \dfrac{2r\lambda_k}{1+2r}&\dfrac{1-2r}{1+2r}\\[8pt]
+    1&0
+  \end{bmatrix},\qquad k=1,\dots,N-1 .
+\]
+(Directly: \(B\begin{bmatrix}\alpha_1v_k\\ \alpha_2v_k\end{bmatrix}
+=\lambda\begin{bmatrix}\alpha_1v_k\\ \alpha_2v_k\end{bmatrix}\) reduces
+to this \(2\times2\) eigenproblem for \((\alpha_1,\alpha_2)\).)  Hence
+\[
+  \lambda^2-\frac{2r\lambda_k}{1+2r}\lambda-\frac{1-2r}{1+2r}=0,
+  \qquad
+  \lambda=\frac{r\lambda_k\pm\bigl(1+(\lambda_k^2-4)r^2\bigr)^{1/2}}{1+2r},
+\]
+and with \(\lambda_k=2\cos\frac{k\pi}N\), \(\lambda_k^2-4=-4\sin^2\frac{k\pi}N\):
+\[
+  \lambda=\frac{2r\cos\frac{k\pi}N\pm\bigl(1-4r^2\sin^2\frac{k\pi}N\bigr)^{1/2}}{1+2r},
+  \qquad k=1,\dots,N-1 .
+\]
+For \(1\le k\le N-1\), \(\sin\frac{k\pi}N>0\) and
+\(|\cos\frac{k\pi}N|<1\).
+
+\step{Case I: \(0\le1-4r^2\sin^2\frac{k\pi}N<1\) (real roots)}
+\[
+  |\lambda|\le\frac{2r|\cos\frac{k\pi}N|+\bigl(1-4r^2\sin^2\frac{k\pi}N\bigr)^{1/2}}{1+2r}
+  <\frac{2r+1}{1+2r}=1 .
+\]
+
+\step{Case II: \(1-4r^2\sin^2\frac{k\pi}N<0\) (complex conjugate roots)}
+This requires \(4r^2>1\), i.e.\ \(r>\frac12\).  Then
+\[
+  |\lambda|^2
+  =\frac{4r^2\cos^2\frac{k\pi}N+4r^2\sin^2\frac{k\pi}N-1}{(1+2r)^2}
+  =\frac{4r^2-1}{(1+2r)^2}=\frac{2r-1}{2r+1}<1 .
+\]
+(Equivalently, \(|\lambda|^2\) is the product of the roots,
+\(-\frac{1-2r}{1+2r}\).)
+
+\step{Conclusion}
+Every eigenvalue of \(B\) satisfies \(|\lambda|<1\) for every \(r>0\).
+Hence, for a fixed mesh size, \(B^n\to0\) and the Du Fort--Frankel
+scheme is \emph{unconditionally stable} (for all \(r=k/h^2>0\)).
+
+\textit{Remark.}  Stability is unconditional, but the scheme is
+consistent with \(u_t=u_{xx}\) only if \(k/h\to0\); if \(k/h=c\) is
+fixed, it is consistent with \(u_t=u_{xx}-c^2u_{tt}\) instead.
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Wave equation by an implicit three-level scheme}
+
+\begin{qbox}
+Find the solution of the initial boundary value problem
+\[
+  \pdd ut=\pdd ux,\qquad 0<x<1,
+\]
+subject to the initial conditions \(u(x,0)=\sin\pi x\),
+\(\pd ut(x,0)=0\), \(0\le x\le1\), and the boundary conditions
+\(u(0,t)=0\), \(u(1,t)=0\), \(t>0\), by using the implicit scheme
+\[
+  \delta_t^2U_m^n=r\,\delta_x^2\bigl\{\theta U_m^{n+1}+(1-2\theta)U_m^n
+  +\theta U_m^{n-1}\bigr\}\quad\text{with }\theta=\tfrac12,
+\]
+where \(r=\frac kh\).  Assume \(h=\frac14\), \(r=\frac34\) and
+investigate for one time step.\mk{5}
+\end{qbox}
+
+\begin{solution}
+We use the scheme exactly as printed, with
+\[
+  r=\frac kh=\frac34,\qquad h=\frac14,\qquad k=rh=\frac3{16},\qquad \theta=\frac12 .
+\]
+
+\step{Step 1: the scheme for \(\theta=\frac12\)}
+With \(\theta=\frac12\), \(1-2\theta=0\), so
+\[
+  U_m^{n+1}-2U_m^n+U_m^{n-1}
+  =\frac r2\,\delta_x^2\bigl(U_m^{n+1}+U_m^{n-1}\bigr).
+\]
+Since \(\theta=\frac12\ge\frac14\), the scheme is unconditionally
+stable (von Neumann: the amplification factors satisfy
+\(|\xi_1|=|\xi_2|=1\) for every value of the positive coefficient of
+\(\delta_x^2\)).
+
+\step{Step 2: the first time step}
+Initial values: \(U_m^0=\sin\pi mh\).  The condition \(u_t(x,0)=0\) is
+replaced by the central difference
+\[
+  \frac{U_m^1-U_m^{-1}}{2k}=0\quad\Longrightarrow\quad U_m^{-1}=U_m^1 .
+\]
+Putting \(n=0\) in the scheme and eliminating \(U_m^{-1}\):
+\[
+  2U_m^1-2U_m^0=\frac r2\,\delta_x^2\bigl(2U_m^1\bigr)
+  \quad\Longrightarrow\quad
+  \Bigl(1-\frac r2\delta_x^2\Bigr)U_m^1=U_m^0,
+\]
+that is,
+\[
+  (1+r)U_m^1-\frac r2\bigl(U_{m+1}^1+U_{m-1}^1\bigr)=U_m^0 .
+\]
+With \(r=\frac34\), multiplying by \(8\):
+\[
+  14\,U_m^1-3\bigl(U_{m+1}^1+U_{m-1}^1\bigr)=8\,U_m^0,
+  \qquad m=1,2,3,
+\]
+with \(U_0^1=U_4^1=0\).
+
+\step{Step 3: solving}
+\(h=\frac14\), so the interior points are \(x=\frac14,\frac12,\frac34\)
+with \(U^0=\bigl(\frac1{\sqrt2},1,\frac1{\sqrt2}\bigr)\).  The problem is
+symmetric about \(x=\frac12\), so \(U_1^1=U_3^1=a\), \(U_2^1=b\):
+\begin{align*}
+  m=1:&\quad 14a-3b=\frac{8}{\sqrt2}=4\sqrt2,\\
+  m=2:&\quad 14b-6a=8 .
+\end{align*}
+From the first, \(b=(14a-4\sqrt2)/3\); substituting,
+\(196a-56\sqrt2-18a=24\), so
+\[
+  a=\frac{12+28\sqrt2}{89}\approx0.57975,\qquad
+  b=\frac{56+12\sqrt2}{89}\approx0.81989 .
+\]
+Hence, at \(t=k=\frac3{16}\),
+\[
+  \boxed{U^1\bigl(\tfrac14\bigr)=U^1\bigl(\tfrac34\bigr)\approx0.57975,\qquad
+  U^1\bigl(\tfrac12\bigr)\approx0.81989.}
+\]
+(Check: \(14(0.57975)-3(0.81989)=5.65684\approx4\sqrt2\) and
+\(14(0.81989)-6(0.57975)=8.0000\).)
+
+\step{Step 4: investigation (comparison with the exact solution)}
+The exact solution (by separation of variables) is
+\(u(x,t)=\sin\pi x\cos\pi t\).  Note that
+\(\delta_x^2\sin\pi mh=-4\sin^2\frac{\pi h}2\,\sin\pi mh=-(2-\sqrt2)\sin\pi mh\)
+for \(h=\frac14\): the initial data is an eigenvector of
+\(\delta_x^2\), so the numerical solution keeps the exact shape
+\(\sin\pi x\), and only its amplitude is approximated:
+\[
+  U_m^1=\frac{\sin\pi mh}{1+2r\sin^2\frac{\pi h}2}
+  =\frac{\sin\pi mh}{1+\frac38(2-\sqrt2)}=0.81989\,\sin\pi mh,
+\]
+in agreement with Step 3.  The exact amplitude is
+\(\cos\frac{3\pi}{16}=0.83147\).
+\begin{center}
+\renewcommand{\arraystretch}{1.2}
+\begin{tabular}{@{}cccc@{}}
+\toprule
+\(x\)&numerical \(U^1\)&exact \(u(x,\frac3{16})\)&error\\
+\midrule
+\(\frac14,\frac34\)&0.57975&0.58794&0.0082\\
+\(\frac12\)&0.81989&0.83147&0.0116\\
+\bottomrule
+\end{tabular}
+\end{center}
+The relative error is about \(1.4\%\) on this coarse grid.
+
+\textit{Remark.}  Deriving the scheme from
+\(\frac1{k^2}\delta_t^2U=\frac1{h^2}\delta_x^2U\) gives the coefficient
+\((k/h)^2=r^2\) (as in the notes).  With \(r^2=\frac9{16}\) in place of
+\(r\), the same steps give
+\(50U_m^1-9(U_{m+1}^1+U_{m-1}^1)=32U_m^0\) and
+\(U^1=0.60709,\ 0.85855,\ 0.60709\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Poisson's equation on a square: five-point scheme}
+
+\begin{qbox}
+Consider the Poisson equation with Dirichlet boundary conditions:
+\[
+  \pdd ux+\pdd uy=16,\qquad |x|<1,\ |y|<1;\qquad u=0\ \text{on the boundary } |x|=1,\ |y|=1.
+\]
+Formulate the five-point difference scheme with mesh size \(h\) in both
+directions.  Solve the difference equations for \(h=\frac12\).\mk{5}
+\end{qbox}
+
+\begin{solution}
+\step{Step 1: the five-point scheme}
+Let \(Nh=2\), \(x_i=-1+ih\), \(y_j=-1+jh\), \(0\le i,j\le N\), and
+\(u_{i,j}\approx u(x_i,y_j)\).  Using
+\(\pdd ux=\frac1{h^2}\delta_x^2u+O(h^2)\) and similarly in \(y\), at each
+interior point
+\[
+  \frac{u_{i+1,j}+u_{i-1,j}+u_{i,j+1}+u_{i,j-1}-4u_{i,j}}{h^2}=16,
+  \qquad 1\le i,j\le N-1,
+\]
+i.e.
+\[
+  \boxed{\;u_{i+1,j}+u_{i-1,j}+u_{i,j+1}+u_{i,j-1}-4u_{i,j}=16h^2,\;}
+\]
+with \(u_{i,j}=0\) whenever \(i\in\{0,N\}\) or \(j\in\{0,N\}\).  The
+local truncation error is \(O(h^2)\).  In matrix form, ordering the
+unknowns row by row,
+\(\operatorname{tridiag}(I,T,I)\,\mathbf u=16h^2\mathbf 1\) with
+\(T=\operatorname{tridiag}(1,-4,1)\), each block of order \(N-1\).  The
+matrix is symmetric and negative definite, so the solution is unique.
+
+\step{Step 2: \(h=\frac12\)}
+Then \(N=4\), the grid lines are \(-1,-\frac12,0,\frac12,1\), there are
+\(3\times3=9\) interior points, and \(16h^2=4\).  The problem is
+invariant under \(x\mapsto-x\), \(y\mapsto-y\) and \(x\leftrightarrow y\),
+and so is the difference system; by uniqueness its solution has the
+same symmetry.  So there are only three distinct unknowns:
+\[
+  \alpha=u\bigl(\pm\tfrac12,\pm\tfrac12\bigr),\qquad
+  \beta=u\bigl(0,\pm\tfrac12\bigr)=u\bigl(\pm\tfrac12,0\bigr),\qquad
+  \gamma=u(0,0).
+\]
+\begin{itemize}
+  \item At \((\frac12,\frac12)\): neighbours \((1,\frac12)\),
+    \((\frac12,1)\) on the boundary, \((0,\frac12)\), \((\frac12,0)\):
+    \[ 2\beta-4\alpha=4 . \]
+  \item At \((0,\frac12)\): neighbours \((\pm\frac12,\frac12)\),
+    \((0,1)\) on the boundary, \((0,0)\):
+    \[ 2\alpha+\gamma-4\beta=4 . \]
+  \item At \((0,0)\): four neighbours of type \(\beta\):
+    \[ 4\beta-4\gamma=4 . \]
+\end{itemize}
+From the first and third, \(\alpha=\frac\beta2-1\) and
+\(\gamma=\beta-1\).  Substituting in the second,
+\(\beta-2+\beta-1-4\beta=4\), so \(\beta=-\frac72\).  Hence
+\[
+  \boxed{\alpha=u\bigl(\pm\tfrac12,\pm\tfrac12\bigr)=-\frac{11}4,\qquad
+  \beta=u\bigl(0,\pm\tfrac12\bigr)=u\bigl(\pm\tfrac12,0\bigr)=-\frac72,\qquad
+  \gamma=u(0,0)=-\frac92 .}
+\]
+
+\step{Check}
+\(2(-\frac72)-4(-\frac{11}4)=4\);
+\(2(-\frac{11}4)-\frac92+14=4\);
+\(4(-\frac72)+18=4\).  On the grid,
+\[
+  \begin{array}{c|ccc}
+    y\backslash x&-\frac12&0&\frac12\\\hline
+    \frac12&-2.75&-3.5&-2.75\\
+    0&-3.5&-4.5&-3.5\\
+    -\frac12&-2.75&-3.5&-2.75
+  \end{array}
+\]
+The solution is negative, as it must be (\(\Delta u>0\) with zero
+boundary values, by the maximum principle).  For comparison, the exact
+value (from the Fourier series solution) is \(u(0,0)\approx-4.715\).
+\end{solution}
+
+%---------------------------------------------------------------------
+\subsection{Peaceman--Rachford ADI for the Neumann problem}
+
+\begin{qbox}
+Consider Laplace's equation
+\(\pdd ux+\pdd uy=0\), \(0<x,y<1\), subject to \(\pd un=g(x,y)\),
+where \(\pd un\) is the outward directed normal derivative on the
+boundary of the unit square \(0\le x,y\le1\).  The square region is
+covered by a grid with sides parallel to the coordinate axes and the
+grid spacing is \(h\) and \(Mh=1\), where \(M\) is the number of
+intervals in each direction.  Prove that the Peaceman--Rachford
+Alternating Direction Implicit (A.D.I.) iterative method for solving
+Laplace's equation in a square with Neumann boundary conditions is
+convergent for any fixed value of the iteration parameter.\mk{5}
+\end{qbox}
+
+\begin{solution}
+\step{Step 1: the discrete problem}
+Since \(u\) is not prescribed on the boundary, all \((M+1)^2\) grid
+values \(u_{l,m}\), \(0\le l,m\le M\), are unknowns.  At every grid
+point use the five-point formula
+\[
+  4u_{l,m}-u_{l+1,m}-u_{l-1,m}-u_{l,m+1}-u_{l,m-1}=0 .
+\]
+At boundary points it involves fictitious values outside the square,
+which are eliminated with central differences for the normal
+derivative.  For instance on \(x=0\), \(-\frac{u_{1,m}-u_{-1,m}}{2h}=g_{0,m}\),
+so \(u_{-1,m}=u_{1,m}+2hg_{0,m}\), giving
+\[
+  4u_{0,m}-2u_{1,m}-u_{0,m+1}-u_{0,m-1}=2hg_{0,m},
+\]
+and at the corner \((0,0)\),
+\(4u_{0,0}-2u_{1,0}-2u_{0,1}=2h\cdot2g_{0,0}\); the other sides and
+corners are similar.  With \(U\) ordered row by row, this gives
+\[
+  AU=2hG,
+\]
+where \(G\) has entry \(2g\) at the corners, \(g\) at the other boundary
+points and \(0\) at interior points.
+
+\step{Step 2: the splitting \(A=X+Y\)}
+Let
+\[
+  C=\begin{bmatrix}
+    2&-2&&&\\
+    -1&2&-1&&\\
+    &\ddots&\ddots&\ddots&\\
+    &&-1&2&-1\\
+    &&&-2&2
+  \end{bmatrix}_{(M+1)\times(M+1)}
+\]
+represent the \(x\)-difference \(2u_{l,m}-u_{l+1,m}-u_{l-1,m}\)
+(including the boundary rows).  Then \(A=X+Y\) with
+\[
+  X=I\otimes C=\operatorname{diag}(C,\dots,C),\qquad
+  Y=C\otimes I=\begin{bmatrix}
+    2I&-2I&&\\
+    -I&2I&-I&\\
+    &\ddots&\ddots&\ddots\\
+    &&-2I&2I
+  \end{bmatrix},
+\]
+the \(x\)- and \(y\)-difference parts.  (Indeed
+\(X+Y=\operatorname{tridiag}(-I,\ C+2I,\ -I)\) with first and last
+off-diagonal blocks \(-2I\), which is \(A\).)
+
+\step{Step 3: eigenvectors of \(C\), \(X\), \(Y\)}
+Let \(c_p=\bigl(\cos\frac{lp\pi}M\bigr)_{l=0}^M\),
+\(p=0,1,\dots,M\).  For \(0<l<M\),
+\(-\cos\frac{(l-1)p\pi}M+2\cos\frac{lp\pi}M-\cos\frac{(l+1)p\pi}M
+=\bigl(2-2\cos\frac{p\pi}M\bigr)\cos\frac{lp\pi}M\).  For \(l=0\):
+\(2-2\cos\frac{p\pi}M\).  For \(l=M\):
+\(-2\cos\frac{(M-1)p\pi}M+2\cos p\pi=(2-2\cos\frac{p\pi}M)\cos p\pi\),
+using \(\cos\frac{(M-1)p\pi}M=\cos p\pi\cos\frac{p\pi}M\).  Hence
+\[
+  Cc_p=\mu_pc_p,\qquad \mu_p=4\sin^2\frac{p\pi}{2M},\qquad p=0,\dots,M .
+\]
+The \(\mu_p\) are \(M+1\) distinct numbers in \([0,4]\), so the \(c_p\)
+form a basis.  Consequently the \((M+1)^2\) vectors
+\(\beta_{p,q}=c_q\otimes c_p\) (components
+\(\cos\frac{lp\pi}M\cos\frac{mq\pi}M\)) form a basis, and
+\[
+  X\beta_{p,q}=\mu_p\beta_{p,q},\qquad
+  Y\beta_{p,q}=\mu_q\beta_{p,q},\qquad
+  A\beta_{p,q}=(\mu_p+\mu_q)\beta_{p,q}.
+\]
+In particular \(XY=YX\), \(\mu_p\ge0\), and \(\mu_p=0\iff p=0\).  So
+\(A\) is singular with null space spanned by
+\(\beta_{0,0}=\mathbf 1\) (the constant vector), and the range of \(A\)
+is spanned by the \(\beta_{p,q}\), \((p,q)\ne(0,0)\).  The discrete
+Neumann problem is solvable if and only if the \(\beta_{0,0}\)-component
+of \(G\) vanishes (the discrete compatibility condition, see the remark
+below), and then its solution is unique up to an additive constant.
+We assume this, as for the continuous problem.
+
+\step{Step 4: the Peaceman--Rachford iteration}
+With a fixed iteration parameter \(\rho>0\) (in the notes' notation
+\(\rho=2/\lambda\)),
+\begin{align*}
+  (\rho I+X)\,U^{n+\frac12}&=(\rho I-Y)\,U^n+2hG,\\
+  (\rho I+Y)\,U^{n+1}&=(\rho I-X)\,U^{n+\frac12}+2hG .
+\end{align*}
+The matrices \(\rho I+X\) and \(\rho I+Y\) have eigenvalues
+\(\rho+\mu_p>0\), so they are invertible (and each is a set of
+tridiagonal systems along grid lines).  Any solution \(U\) of
+\(AU=2hG\) is a fixed point: \((\rho I+X)U=(\rho I-Y)U+(X+Y)U=(\rho I-Y)U+2hG\),
+and similarly for the second half-step.  Hence the error
+\(e^n=U^n-U\) satisfies
+\[
+  e^{n+1}=T\,e^n,\qquad
+  T=(\rho I+Y)^{-1}(\rho I-X)(\rho I+X)^{-1}(\rho I-Y).
+\]
+
+\step{Step 5: eigenvalues of the iteration matrix}
+Because \(X\) and \(Y\) share the eigenvectors \(\beta_{p,q}\),
+\[
+  T\beta_{p,q}=\tau_{p,q}\beta_{p,q},\qquad
+  \tau_{p,q}=\frac{(\rho-\mu_p)(\rho-\mu_q)}{(\rho+\mu_p)(\rho+\mu_q)} .
+\]
+For \(\rho>0\) and \(\mu\ge0\), \(\bigl|\frac{\rho-\mu}{\rho+\mu}\bigr|\le1\),
+with equality only for \(\mu=0\).  Therefore
+\[
+  \tau_{0,0}=1,\qquad |\tau_{p,q}|<1\quad\text{for all }(p,q)\ne(0,0),
+\]
+for \emph{every} \(\rho>0\).
+
+\step{Step 6: convergence}
+Expand \(e^0=\sum_{p,q}\varepsilon_{p,q}\beta_{p,q}\).  Then
+\[
+  e^n=\varepsilon_{0,0}\mathbf 1+\sum_{(p,q)\ne(0,0)}\tau_{p,q}^n\,\varepsilon_{p,q}\beta_{p,q}
+  \ \longrightarrow\ \varepsilon_{0,0}\mathbf 1\qquad(n\to\infty),
+\]
+geometrically, with factor \(\max_{(p,q)\ne(0,0)}|\tau_{p,q}|<1\).
+Hence
+\[
+  U^n\to U+\varepsilon_{0,0}\mathbf 1,
+\]
+and since \(A\mathbf 1=0\), the limit is again a solution of
+\(AU=2hG\).  The only component that does not decay is the constant
+vector, which is exactly the non-uniqueness of the Neumann problem
+(the constant is fixed by the initial guess).  So the
+Peaceman--Rachford iteration converges to a solution of the discrete
+Neumann problem for any fixed value of the iteration parameter.
+\(\blacksquare\)
+
+\step{Remark: the compatibility condition}
+The vector \(w=(\frac12,1,\dots,1,\frac12)^T\) satisfies \(w^TC=0\), so
+\((w\otimes w)^TA=0\), and \(AU=2hG\) is solvable if and only if
+\((w\otimes w)^TG=0\).  The weights \(w_lw_m\) are \(\frac14\) at the
+corners (where \(G=2g\)) and \(\frac12\) at the other boundary points
+(where \(G=g\)), so the condition is \(\sum_{\text{boundary points}}g=0\):
+the trapezoidal-rule form of \(\oint_{\partial R}g\,ds=0\), which is the
+condition for the continuous Neumann problem to be solvable.  If it
+fails, the \(\beta_{0,0}\)-component of the iterates drifts linearly
+while all other components still converge.
+\end{solution}
+
+\end{document}

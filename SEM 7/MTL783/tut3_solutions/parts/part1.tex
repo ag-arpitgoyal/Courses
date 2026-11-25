@@ -1,0 +1,364 @@
+\begin{question}{1}
+Give the formal definition of a deterministic Turing machine. Explain the role of the transition function and describe how a transition changes the tape contents, head position, and current state.
+\end{question}
+\begin{soln}
+A (deterministic) Turing machine is a 7-tuple
+\[
+M=(Q,\Sigma,\Gamma,\delta,q_0,q_{\mathrm{accept}},q_{\mathrm{reject}})
+\]
+where $Q,\Sigma,\Gamma$ are finite sets and
+\begin{itemize}
+\item $Q$ is the set of states, $q_0\in Q$ the start state, $q_{\mathrm{accept}}\neq q_{\mathrm{reject}}$ the accept and reject states;
+\item $\Sigma$ is the input alphabet, with the blank $\blank\notin\Sigma$;
+\item $\Gamma\supseteq\Sigma\cup\{\blank\}$ is the tape alphabet;
+\item $\delta: Q\times\Gamma\to Q\times\Gamma\times\{L,R\}$ is the transition function.
+\end{itemize}
+
+\textbf{Role of $\delta$.} $\delta$ is the entire ``program''. In state $q$ reading symbol $a$, the rule $\delta(q,a)=(r,b,D)$ says:
+\begin{enumerate}
+\item \emph{tape:} overwrite the scanned $a$ with $b$ (only this cell changes);
+\item \emph{head:} move one cell left ($D=L$) or right ($D=R$); a left move on the leftmost cell leaves the head where it is;
+\item \emph{state:} go to state $r$.
+\end{enumerate}
+Since $\delta$ is a function, there is exactly one next move: the machine is deterministic.
+
+\textbf{Configurations.} Write $u\,q\,av$ for ``tape $uav$, state $q$, head on $a$''. Then
+\[
+u\,q\,av \;\vdash\; u\,b\,r\,v \quad\text{if } D=R,
+\qquad
+uc\,q\,av \;\vdash\; u\,r\,cbv \quad\text{if } D=L .
+\]
+The machine starts in $q_0w$ (input $w$ on the leftmost cells, rest blank) and stops as soon as it enters $q_{\mathrm{accept}}$ or $q_{\mathrm{reject}}$. It accepts $w$ if it eventually reaches $q_{\mathrm{accept}}$; it may also run forever.
+\end{soln}
+
+\begin{question}{2}
+Answer the following questions about Turing machines:
+(1) Can the description of a Turing machine be written as a string?
+(2) Is the number of Turing machines finite, countable, or uncountable?
+(3) Can infinitely many strings represent the same TM?
+\end{question}
+\begin{soln}
+\textbf{(1) Yes.} A TM is a finite object: finitely many states and symbols and a finite table $\delta$. Number the states $1,\dots,|Q|$ and the symbols $1,\dots,|\Gamma|$, and write each rule $\delta(q_i,a_j)=(q_k,a_l,D)$ as, e.g.,
+\[
+0^i\,1\,0^j\,1\,0^k\,1\,0^l\,1\,0^{D}
+\qquad (D=1 \text{ for } L,\ D=2 \text{ for } R),
+\]
+separating rules by $11$. The result is a binary string $\enc{M}$.
+
+\textbf{(2) Countably infinite.}
+\emph{Infinite:} for every $n$ there is a machine with $n$ states.
+\emph{Countable:} $M\mapsto\enc{M}$ is one-to-one into $\{0,1\}^*$, and $\{0,1\}^*$ is countable (list strings by length, then lexicographically). So there are not uncountably many.
+
+\textbf{(3) Yes.} Renaming states, reordering the rules in the encoding, or adding extra states that are never entered all give different strings for a machine that behaves the same way. Adding $k$ such unused states for $k=1,2,3,\dots$ already gives infinitely many different encodings of machines that recognise the same language.
+\end{soln}
+
+\begin{question}{3}
+Construct a Turing machine that decides the language $L=\{0^n1^n\mid n\ge 0\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Match the 0s and 1s in pairs: cross off the leftmost $0$ (write $x$) and the leftmost $1$ (write $y$), return, repeat. When no $0$ is left, only $y$'s may remain.
+
+\begin{center}
+\begin{tikzpicture}[tm,node distance=3.4cm]
+\node[state,initial] (q1) {$q_1$};
+\node[state,right=of q1] (q2) {$q_2$};
+\node[state,below=2.4cm of q2] (q3) {$q_3$};
+\node[state,below=2.4cm of q1] (q4) {$q_4$};
+\node[state,accepting,left=2.6cm of q4] (qa) {$q_{a}$};
+\path
+ (q1) edge node {$0\to x,R$} (q2)
+ (q2) edge[loop above] node[lab] {$0\to R$\\ $y\to R$} ()
+ (q2) edge node {$1\to y,L$} (q3)
+ (q3) edge[loop right] node[lab] {$0\to L$\\ $y\to L$} ()
+ (q3) edge node[swap,pos=0.4] {$x\to R$} (q1)
+ (q1) edge node[swap] {$y\to R$} (q4)
+ (q4) edge[loop below] node {$y\to R$} ()
+ (q4) edge node {$\blank\to R$} (qa)
+ (q1) edge[bend right=20] node[swap] {$\blank\to R$} (qa);
+\end{tikzpicture}
+
+{\footnotesize Missing transitions go to $q_{\mathrm{reject}}$. ``$a\to b,D$'' = read $a$, write $b$, move $D$; ``$a\to D$'' leaves $a$ unchanged.}
+\end{center}
+
+\begin{itemize}
+\item $q_1$: at the leftmost unmatched symbol. A $0$ is crossed and we look for its $1$. A $y$ means all 0s are used: go to $q_4$ to check that only $y$'s remain. A blank means the input was empty: accept.
+\item $q_2$: move right over $0$'s and $y$'s to the first $1$ and cross it. (Reaching $\blank$ or $x$ here = no matching 1: reject.)
+\item $q_3$: move back left to the rightmost $x$, step right, repeat.
+\item $q_4$: accept iff we see only $y$'s and then a blank. (A $0$ or $1$ here means unequal counts or wrong order: reject.)
+\end{itemize}
+
+\textbf{Why it decides $L$.} Each round crosses one $0$ and one $1$, and $q_2$ only skips $0$'s and $y$'s, so a $1$ can never appear before a $0$ without causing a rejection. Every round removes two unmarked symbols, so there are at most $n$ rounds, each of finite length: the machine always halts.
+
+\textbf{Trace on $0011$:}
+$q_1 0011\vdash x q_2 011\vdash x0q_2 11\vdash xq_3 0y1\vdash q_3x0y1\vdash xq_1 0y1\vdash\cdots\vdash xxyq_2 1\vdash\cdots\vdash xxq_1 yy\vdash xxyq_4y\vdash xxyyq_4\blank\vdash$ accept.
+On $001$ the second round reaches $\blank$ in $q_2$ and rejects.
+\end{soln}
+
+\begin{question}{4}
+Design a Turing machine that decides the language of palindromes over $\{0,1\}$:
+$L=\{w\in\{0,1\}^*\mid w=w^R\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Compare the outermost symbols. Erase the first symbol and \emph{remember it in the state}, run to the end, check the last symbol is the same and erase it, return, repeat. Accept when at most one symbol is left.
+
+\begin{center}
+\begin{tikzpicture}[tm]
+\node[state,initial above] (q1) at (0,0) {$q_1$};
+\node[state] (q2) at (-3.6,-2) {$q_2$};
+\node[state] (q3) at (3.6,-2) {$q_3$};
+\node[state] (q4) at (-3.6,-5) {$q_4$};
+\node[state] (q5) at (3.6,-5) {$q_5$};
+\node[state] (q6) at (0,-3) {$q_6$};
+\node[state,accepting] (qa) at (0,-7) {$q_a$};
+\path
+ (q1) edge[swap] node {$0\to\blank,R$} (q2)
+ (q1) edge node {$1\to\blank,R$} (q3)
+ (q2) edge[loop left] node[lab] {$0,1\to R$} ()
+ (q3) edge[loop right] node[lab] {$0,1\to R$} ()
+ (q2) edge[swap] node {$\blank\to L$} (q4)
+ (q3) edge node {$\blank\to L$} (q5)
+ (q4) edge node[pos=0.45] {$0\to\blank,L$} (q6)
+ (q5) edge[swap] node[pos=0.45] {$1\to\blank,L$} (q6)
+ (q6) edge[loop below] node[lab] {$0,1\to L$} ()
+ (q6) edge[swap] node {$\blank\to R$} (q1)
+ (q4) edge[swap] node {$\blank\to R$} (qa)
+ (q5) edge node {$\blank\to R$} (qa);
+\draw[->,>=Stealth,semithick] (q1) .. controls (-7.2,1.2) and (-7.2,-7.4) .. node[left,font=\small] {$\blank\to R$} (qa);
+\end{tikzpicture}
+
+{\footnotesize Missing transitions go to $q_{\mathrm{reject}}$.}
+\end{center}
+
+\begin{itemize}
+\item $q_1$: erase the first symbol; go to $q_2$ (``it was $0$'') or $q_3$ (``it was $1$''). Blank: nothing left, accept.
+\item $q_2/q_3$: move right to the end of the remaining string, then step left onto its last symbol.
+\item $q_4$ (need a $0$) / $q_5$ (need a $1$): if the last symbol matches, erase it and go back ($q_6$); if it does not match, reject. If the cell is blank, the symbol erased in $q_1$ was the middle one of an odd-length string: accept.
+\item $q_6$: move left to the blank left by the last erasure, step right, repeat.
+\end{itemize}
+
+\textbf{Why it decides $L$.} $w$ is a palindrome iff its first and last symbols agree and the middle part is a palindrome; each round checks exactly this and removes both ends. Each round erases at least one symbol, so the machine halts.
+
+\textbf{Trace:} $0110$: erase both $0$'s $\to$ $\blank11\blank$, then both $1$'s, $q_1$ sees $\blank$: accept. $010$: ends match, then $q_1$ erases the $1$, $q_3\to q_5$ sees $\blank$: accept. $01$: $q_4$ reads $1$: reject.
+\end{soln}
+
+\begin{question}{5}
+Design a Turing machine that decides $L=\{a^nb^mc^{n+m}\mid n\ge 0,\ m\ge 1\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Match each $a$ and each $b$ with one $c$: cross the leftmost unmatched $a$ or $b$ (write $x$), cross the first unmatched $c$ (write $y$), return. While moving right we also check the order $a^*b^+$ before the $c$'s, using separate states for ``in the $a$-block'' and ``in the $b$-block''.
+
+\begin{center}
+\begin{tikzpicture}[tm]
+\node[state,initial] (q1) at (0,0) {$q_1$};
+\node[state] (q2) at (3.2,2.2) {$q_2$};
+\node[state] (q3) at (6.4,0) {$q_3$};
+\node[state] (q4) at (9.6,0) {$q_4$};
+\node[state] (q5) at (6.4,-3.2) {$q_5$};
+\node[state] (q6) at (0,-3.2) {$q_6$};
+\node[state,accepting] (qa) at (-3,-3.2) {$q_a$};
+\path
+ (q1) edge node {$a\to x,R$} (q2)
+ (q1) edge node[pos=0.3] {$b\to x,R$} (q3)
+ (q2) edge[loop above] node {$a\to R$} ()
+ (q2) edge node[pos=0.35] {$b\to R$} (q3)
+ (q3) edge[loop above] node {$b\to R$} ()
+ (q3) edge node {$y\to R$} (q4)
+ (q4) edge[loop above] node {$y\to R$} ()
+ (q3) edge node[pos=0.4] {$c\to y,L$} (q5)
+ (q4) edge node {$c\to y,L$} (q5)
+ (q5) edge[loop below] node[lab] {$a,b,y\to L$} ()
+ (q5) edge node[pos=0.55] {$x\to R$} (q1)
+ (q1) edge[swap] node {$y\to R$} (q6)
+ (q6) edge[loop below] node {$y\to R$} ()
+ (q6) edge node[swap] {$\blank\to R$} (qa);
+\end{tikzpicture}
+
+{\footnotesize Missing transitions go to $q_{\mathrm{reject}}$.}
+\end{center}
+
+\begin{itemize}
+\item $q_1$: leftmost unmatched symbol. $a$ or $b$: cross it. $y$: everything before the $c$'s is matched, go check the rest ($q_6$). $c$ or $\blank$: reject (a $c$ with no $a/b$ before it, or $n=m=0$).
+\item $q_2$: inside the $a$-block; may only see $a$'s, then must see a $b$ (this enforces $m\ge1$).
+\item $q_3$: inside the $b$-block; $b$'s, then either the first $c$ (cross it) or $y$'s ($q_4$).
+\item $q_4$: skip already crossed $c$'s, cross the next $c$.
+\item $q_5$: go back to the rightmost $x$. \quad $q_6$: accept iff only $y$'s remain.
+\end{itemize}
+
+\textbf{Why it decides $L$.} The states $q_2\to q_3\to q_4$ only allow the pattern $a^*\,b^+\,y^*\,c$, so every accepted string has the form $a^nb^mc^k$ with $m\ge1$; each round pairs one $a$/$b$ with one $c$, and $q_6$ accepts only if all $c$'s were used, so $k=n+m$. Conversely, every string of $L$ passes all these checks. Each round crosses two symbols, so the machine halts.
+
+\textbf{Trace:} $abccc$: two rounds give $xxyyc$; $q_1$ reads $y$, $q_6$ reads $c$: reject (needs exactly $2$ $c$'s). $bacc$: $q_3$ reads $a$: reject.
+\end{soln}
+
+\begin{question}{6}
+Give a high-level description of a Turing machine that decides $L=\{a^ib^jc^k\mid i,j,k\ge 0,\ k=ij\}$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $ij$ is ``$j$ $c$'s for every $a$''. So for each $a$, sweep over the $b$'s and cross one $c$ per $b$.
+
+$M=$ ``On input $w$:
+\begin{enumerate}
+\item Scan the input; if it is not of the form $a^*b^*c^*$, reject. Return to the left end.
+\item For each $a$ (cross it off):
+  \begin{enumerate}
+  \item for each $b$: mark the $b$, and cross off one uncrossed $c$; if no uncrossed $c$ is left, \emph{reject};
+  \item unmark all the $b$'s (so they can be used again for the next $a$).
+  \end{enumerate}
+\item When all $a$'s are crossed: if some $c$ is still uncrossed, \emph{reject}; otherwise \emph{accept}.''
+\end{enumerate}
+
+\textbf{Correctness.} Stage 2 crosses exactly $j$ $c$'s per $a$, hence $ij$ in total, rejecting as soon as there are fewer than needed. Stage 3 rejects if there are more. So the machine accepts iff $k=ij$. The cases $i=0$ or $j=0$ need no special treatment: nothing is crossed, and stage 3 accepts iff $k=0=ij$.
+
+\textbf{Halting.} Stage 1 is one pass. Stage 2 runs $i$ outer and $j$ inner iterations, each a finite back-and-forth sweep. So the machine always halts.
+\end{soln}
+
+\begin{question}{7}
+Consider the language $L=\{a^nb^{2n}\mid n>0\}$.
+(a) Explain how a stack can be used to accept this language.
+(b) Write a TM that simulates the stack behaviour to accept this language.
+\end{question}
+\begin{soln}
+\textbf{(a) Stack idea (a PDA).} While reading $a$'s, \emph{push two} symbols $X$ for each $a$. While reading $b$'s, \emph{pop one} $X$ for each $b$. Accept iff the input ends exactly when the stack becomes empty, and there was at least one $a$. Then $\#b=2\cdot\#a$, and the $a$'s came first because once we start popping we never push again.
+
+\textbf{(b) A 2-tape TM whose second tape is the stack.} Tape 1 holds the input (read left to right). Tape 2 is the stack: its head sits just right of the top symbol; a push writes $X$ and moves right, a pop moves left and erases. A transition label
+\[
+(s_1,s_2)\to(t_1,t_2),\,D_1D_2
+\]
+means: read $s_i$ on tape $i$, write $t_i$, move head $i$ in direction $D_i\in\{L,R,S\}$ ($S$ = stay).
+
+\begin{center}
+\begin{tikzpicture}[tm]
+\node[state,initial] (p1) at (0,0) {$q_{\mathrm{push}}$};
+\node[state] (p2) at (0,-3) {$q_{\mathrm{push}}'$};
+\node[state] (pop) at (5,0) {$q_{\mathrm{pop}}$};
+\node[state,accepting] (qa) at (10,0) {$q_a$};
+\path
+ (p1) edge[bend right=35,swap] node[lab] {$(a,\blank)\to(a,X),\,SR$\\ \emph{push first $X$}} (p2)
+ (p2) edge[bend right=35,swap] node[lab] {$(a,\blank)\to(a,X),\,RR$\\ \emph{push second $X$}} (p1)
+ (p1) edge node[lab] {$(b,\blank)\to(b,\blank),\,SL$} (pop)
+ (pop) edge[loop above] node[lab] {$(b,X)\to(b,\blank),\,RL$\\ \emph{pop}} ()
+ (pop) edge node[lab] {$(\blank,\blank)\to(\blank,\blank),\,SS$} (qa);
+\end{tikzpicture}
+
+{\footnotesize Missing transitions go to $q_{\mathrm{reject}}$.}
+\end{center}
+
+\begin{itemize}
+\item $q_{\mathrm{push}}\leftrightarrow q'_{\mathrm{push}}$: each $a$ pushes two $X$'s (tape-1 head advances only after the second push).
+\item On the first $b$, move the stack head onto the top $X$ and start popping.
+\item $q_{\mathrm{pop}}$: each $b$ pops one $X$. Accept when the input ends and the stack is empty ($\blank$ on both tapes).
+\end{itemize}
+
+\textbf{Rejections:} an $a$ after a $b$ (no rule in $q_{\mathrm{pop}}$); a $b$ with empty stack, i.e. too many $b$'s ($(b,\blank)$ in $q_{\mathrm{pop}}$); input ending with a non-empty stack, i.e. too few $b$'s ($(\blank,X)$); and $n=0$ (blank in $q_{\mathrm{push}}$; a leading $b$ gives $(b,\blank)$ in $q_{\mathrm{pop}}$). Every step moves the input head right or moves the stack head, so the machine halts within $2|w|+2$ steps.
+
+\textbf{Trace on $abb$:} push $X$, push $X$ (stack $XX$), read $b$: pop, $b$: pop, then $(\blank,\blank)$: accept. On $abbb$ the third $b$ meets an empty stack: reject.
+
+(If a single tape is preferred: cross one $a$ and then two $b$'s per round; this is the same idea, with the uncrossed $b$'s playing the role of the stack.)
+\end{soln}
+
+\begin{question}{8}
+Given binary representations of $x$ and $y$ as input to a Turing machine, describe how the machine would compute the following: (1) $x-1$ \quad (2) $x\times y$ \quad (3) $x^y$.
+\end{question}
+\begin{soln}
+Numbers are written in binary, most significant bit first. For (2) and (3) the input is $x\#y$. We use a multitape TM (allowed, since it is equivalent to a single-tape TM by Q14).
+
+\textbf{(1) $x-1$ (borrowing).} This is grade-school subtraction of 1:
+\begin{enumerate}
+\item Move to the last (least significant) bit.
+\item While the bit is $0$: write $1$, move left (borrow).
+\item At the first $1$: write $0$ and stop.
+\item If the result starts with $0$ and has more than one bit, delete that leading $0$ (e.g.\ $1000-1=0111\to111$).
+\end{enumerate}
+Example: $10100-1$: the last two $0$'s become $1$'s and the $1$ becomes $0$, giving $10011$.
+For $x=0$ we use the usual convention $0-1=0$ (check first whether all bits are $0$; if so leave the input unchanged).
+
+\textbf{(2) $x\times y$ (shift and add, Horner's rule).} Tape 1: $x$; tape 2: $y$; tape 3: the running product $P$, initially $0$.
+\[
+\text{for each bit } b \text{ of } y \text{ from left to right:}\qquad
+P\leftarrow 2P\ \ (\text{append a } 0),\qquad
+\text{if } b=1:\ P\leftarrow P+x .
+\]
+The addition $P+x$ is done with both heads starting at the right ends, adding bit by bit right to left and keeping the carry in the finite control.
+After the last bit $P=x\cdot y$, because $y=(\cdots((b_1)2+b_2)2+\cdots)2+b_k$.
+Example: $x=101$ (5), $y=11$ (3): $P=0\to0+101=101\to1010+101=1111$ (15).
+
+\textbf{(3) $x^y$ (square and multiply).} Tape for the result $R$, initially $1$:
+\[
+\text{for each bit } b \text{ of } y \text{ from left to right:}\qquad
+R\leftarrow R\cdot R,\qquad
+\text{if } b=1:\ R\leftarrow R\cdot x ,
+\]
+each multiplication using the subroutine from (2) (on extra work tapes).
+This is the same Horner idea, with $+$ replaced by $\times$: if $y'$ is the prefix read so far, then $R=x^{y'}$, and reading a bit $b$ changes $y'$ to $2y'+b$, so $R$ becomes $x^{2y'+b}=(x^{y'})^2x^b$. In particular $x^0=1$ (the loop never multiplies by $x$).
+
+\textbf{Halting.} Each loop runs once per bit of $y$ (finitely many), and each addition or multiplication halts. So all three machines halt with the answer on the tape.
+\end{soln}
+
+\begin{question}{9}
+If TMs $M$, $M'$ compute $f(x)$, $g(x)$ for input $x$, construct a TM which can compute (1) $f(g(x))$, (2) $f^n(x)$ where $n$ is given as input.
+\end{question}
+\begin{soln}
+``$M$ computes $f$'' means: started on $x$, $M$ halts with $f(x)$ on the tape. To run a machine as a \emph{subroutine} we simply copy its states and transitions into the new machine, and redirect its halting state to wherever we want to continue. Using two tapes keeps the bookkeeping simple (Q14).
+
+\textbf{(1) $f\circ g$.}
+$C=$ ``On input $x$:
+\begin{enumerate}
+\item Run $M'$ on $x$. It halts with $g(x)$ on the tape.
+\item Move the head back to the left end, and run $M$ on $g(x)$. When it halts, the tape holds $f(g(x))$.''
+\end{enumerate}
+If $g(x)$ or $f(g(x))$ is undefined (the machine loops), so does $C$. In a single-tape version, $C$ marks the left end first so that it can find it again in step 2.
+
+\textbf{(2) $f^n$, input $n\#x$ with $n$ in binary (or unary).}
+Tape 1 holds the counter $n$, tape 2 holds the current value $v$.
+$I=$ ``On input $n\#x$:
+\begin{enumerate}
+\item Copy $x$ to tape 2 and erase it from tape 1, leaving only $n$ there.
+\item While $n\neq0$: run $M$ on tape 2 (replacing $v$ by $f(v)$); then decrement $n$ on tape 1 (Q8(1)).
+\item Output tape 2.''
+\end{enumerate}
+\textbf{Invariant:} after $t$ iterations, tape 2 holds $f^t(x)$ and tape 1 holds $n-t$. So the loop runs exactly $n$ times and outputs $f^n(x)$ (for $n=0$ it outputs $x=f^0(x)$). If every call of $M$ halts, $I$ halts.
+\end{soln}
+
+\begin{question}{10}
+(a) Design a Turing machine that takes as input two integers $m,n$ in unary and computes the quotient and the remainder when $m$ is divided by $n$.
+(b) Hence (or otherwise) design a Turing machine that takes as input strings of the form $\{a^k\mid k>0\}$ and tests whether the input belongs to the language $\{a^{n!}\mid n>0\}$.
+\end{question}
+\begin{soln}
+\textbf{(a) Division by repeated subtraction.} Input $1^m\#1^n$ with $n\ge1$ (if $n=0$, reject: division by $0$). Idea: subtract $n$ from $m$ as many times as possible. Each complete subtraction adds $1$ to the quotient; what is left at the end is the remainder.
+
+The machine subtracts one unit at a time: it marks one $1$ of the divisor ($1\to y$) and crosses one $1$ of the dividend ($1\to x$). The quotient is built in unary to the right of a second $\#$.
+
+$D=$ ``On input $1^m\#1^n$:
+\begin{enumerate}
+\item Write $\#$ after the input (tape: $1^m\#1^n\#$).
+\item \emph{One unit:} find the leftmost unmarked $1$ of the divisor.
+  \begin{itemize}
+  \item If there is none (all $n$ are marked $y$): one full copy of $n$ has been subtracted. Append a $1$ to the quotient at the right end, unmark all divisor symbols ($y\to1$), and repeat stage 2.
+  \item Otherwise, look for an uncrossed $1$ in the dividend. If there is one, cross it ($1\to x$), mark this divisor $1$ as $y$, and repeat stage 2. If there is none, go to stage 3.
+  \end{itemize}
+\item \emph{Done:} the dividend is used up in the middle of a round. The remainder $r$ is the number of $y$'s, the quotient $q$ is the number of $1$'s after the second $\#$. Rewrite the tape as $1^q\#1^r$ and halt.''
+\end{enumerate}
+
+\textbf{Correctness.} Every crossed dividend $1$ is paired with exactly one marked divisor $1$, so when the machine stops $m=q\cdot n+r$, where $r$ is the number of $y$'s. We have $r<n$, because a round in which all $n$ divisor symbols are marked is counted in $q$ and reset. So $q=\lfloor m/n\rfloor$ and $r=m\bmod n$.
+\textbf{Halting.} Every pass of stage 2 either crosses a new dividend $1$ (at most $m$ times) or is one of the at most $q+1$ round resets, so stage 3 is always reached.
+Example: $m=7,n=3$: two full rounds ($q=2$), then one more $1$ is crossed and the dividend is empty, so $r=1$: output $11\#1$.
+
+\textbf{(b) Testing $k=n!$ by dividing by $2,3,4,\dots$} Use $D$ from (a) as a subroutine.
+
+$F=$ ``On input $a^k$ ($k>0$):
+\begin{enumerate}
+\item Let $v=k$ (rewrite the $a$'s as $1$'s) and $d=2$ (written $11$ on a second tape).
+\item If $v=1$, \emph{accept}.
+\item Divide $v$ by $d$ using $D$. If the remainder is not $0$, \emph{reject}.
+\item Let $v\leftarrow$ quotient, $d\leftarrow d+1$ (append a $1$), and go to stage 2.''
+\end{enumerate}
+
+\textbf{Correctness.} When stage 2 is reached for the $j$-th time ($j\ge1$), $v=k/j!$, since we have divided by $2,3,\dots,j$ in turn.
+\begin{itemize}
+\item If $k=n!$: every division up to $d=n$ is exact, and after it $v=n!/n!=1$, so $F$ accepts. (It cannot reject earlier: $j!$ divides $n!$ for $j\le n$.)
+\item If $F$ accepts at the $j$-th visit of stage 2, then $1=v=k/j!$, i.e.\ $k=j!$ with $j\ge1$.
+\end{itemize}
+So $F$ accepts exactly $\{a^{n!}\mid n>0\}$. Note that $k=1=1!$ is accepted immediately.
+
+\textbf{Halting.} Every exact division by $d\ge2$ at least halves $v$, and $v\ge1$. So after at most $\log_2 k$ rounds, $F$ either accepts ($v=1$) or rejects (a nonzero remainder; this includes the case $1<v<d$, where $q=0$ and $r=v$).
+Examples: $k=6$: $6/2=3$, $3/3=1$, accept. $k=4$: $4/2=2$, then $2/3$ leaves remainder $2$, reject.
+\end{soln}

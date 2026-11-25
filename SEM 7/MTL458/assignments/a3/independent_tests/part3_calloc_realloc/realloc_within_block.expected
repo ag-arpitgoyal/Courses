@@ -1,0 +1,33 @@
+same 1
+a: 01 08 0f 16 1d 24 2b 32 39 40
+same 1
+region 0 65536
+  32 A 128 88
+  160 A 128 10
+  288 F 65248
+error: overflow detected (block 0:32)
+moved 1
+q data 1 1 1
+q: 01 08 0f 16 1d 24 2b 32 39 40 55 55
+same 1
+region 0 65536
+  32 F 256
+  288 A 144 89
+  432 F 65104
+same 1
+error: overflow detected (block 0:32)
+same 1
+same 1
+region 0 65536
+  32 A 256 216
+  288 A 144 89
+  432 F 65104
+moved 1 data 1
+region 0 65536
+  32 F 256
+  288 A 144 89
+  432 A 272 217
+  704 F 64832
+leak: block 0:288 (89 bytes)
+leak: block 0:432 (217 bytes)
+leak summary: 2 blocks, 306 bytes

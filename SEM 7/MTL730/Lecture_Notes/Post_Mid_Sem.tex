@@ -1,0 +1,114 @@
+% MTL730 -- Post Mid-Semester Lectures
+\documentclass[12pt]{article}
+
+\usepackage[a4paper,margin=0.75in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{array}
+\usepackage{float}
+\usepackage{setspace}
+\usepackage{tikz}
+\usepackage{microtype}
+\usepackage{hyperref}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+\newtcolorbox{keybox}[1][]{enhanced, breakable,
+    colback=white, colframe=black, coltitle=black, colbacktitle=white, titlerule=0.4pt,
+    boxrule=0.7pt, arc=2pt, left=7pt, right=7pt, top=2pt, bottom=4pt,
+    before skip=12pt, after skip=12pt, fonttitle=\bfseries, #1}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\setstretch{1.17}
+\setlength{\parskip}{0.55em plus 0.15em minus 0.08em}
+\setlength{\parindent}{1.2em}
+\setlength{\abovedisplayskip}{12pt plus 4pt minus 6pt}
+\setlength{\belowdisplayskip}{12pt plus 4pt minus 6pt}
+\setlength{\abovedisplayshortskip}{8pt plus 3pt}
+\setlength{\belowdisplayshortskip}{8pt plus 3pt}
+\setlength{\floatsep}{14pt plus 4pt minus 4pt}
+\setlength{\textfloatsep}{16pt plus 4pt minus 4pt}
+\setlength{\intextsep}{14pt plus 4pt minus 3pt}
+
+\setlist{topsep=0.55em, partopsep=0.2em, itemsep=0.38em, parsep=0.12em}
+
+\makeatletter
+\renewcommand{\section}{\@startsection{section}{1}{\z@}%
+    {-4.4ex \@plus -1.2ex \@minus -.2ex}%
+    {2.6ex \@plus .35ex}%
+    {\normalfont\Large\bfseries}}
+\renewcommand{\subsection}{\@startsection{subsection}{2}{\z@}%
+    {-3.5ex \@plus -1ex \@minus -.2ex}%
+    {1.8ex \@plus .25ex}%
+    {\normalfont\large\bfseries}}
+\def\thm@space@setup{%
+    \thm@preskip=0.95em plus 0.35em minus 0.2em
+    \thm@postskip=0.95em plus 0.35em minus 0.2em
+}
+\makeatother
+
+\setcounter{tocdepth}{2}
+
+\newcommand{\lectureheading}[1]{%
+    \clearpage
+    \phantomsection
+    \addcontentsline{toc}{part}{#1}%
+    \section*{#1}
+    \vspace{0.35em}%
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{claim}[theorem]{Claim}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\makeatletter
+\def\thm@space@setup{%
+    \thm@preskip=0.95em plus 0.35em minus 0.2em
+    \thm@postskip=0.95em plus 0.35em minus 0.2em
+}
+\makeatother
+
+\DeclareMathOperator{\gcdop}{gcd}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\ind}{ind}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\N}{\mathbb N}
+\newcommand{\R}{\mathbb R}
+\newcommand{\Fp}{\mathbb F_p}
+\newcommand{\units}[1]{\left(\mathbb Z/#1\mathbb Z\right)^\times}
+
+\title{\textbf{MTL730 --- Post Mid-Semester Lectures}\\[2mm]
+\large Discrete Logarithms, RSA, Factorization, and Elliptic Curves}
+\author{Crafted by Arpit's Milo}
+\date{}
+
+\begin{document}
+\maketitle
+\begingroup
+\setlength{\parskip}{0.12em plus 0.05em}
+\setstretch{1.08}
+\tableofcontents
+\endgroup
+\newpage
+
+\input{post_mid_parts/part1}
+\input{post_mid_parts/part2}
+\input{post_mid_parts/part3}
+\input{post_mid_parts/part4}
+\input{post_mid_parts/part5}
+\input{post_mid_parts/part6}
+
+\end{document}

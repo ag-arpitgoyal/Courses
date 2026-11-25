@@ -1,0 +1,12 @@
+error: double free (block 0:160)
+error: double free (block 0:160)
+r=NULL
+error: double free (block 0:288)
+error: double free (block 1:100080)
+region 0 65536
+  32 A 128 10
+  160 A 128 10
+  288 F 65248
+region 1 131072
+  32 A 100048 100000
+  100080 F 30992

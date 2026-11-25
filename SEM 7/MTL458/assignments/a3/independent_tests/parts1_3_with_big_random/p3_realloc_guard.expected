@@ -1,0 +1,15 @@
+error: overflow detected (block 0:32)
+realloc slot 0 1073741825: NULL
+error: overflow detected (block 0:160)
+realloc slot 1 50: same
+realloc slot 2 100: same
+error: overflow detected (block 0:160)
+error: overflow detected (block 0:160)
+realloc slot 3 0: NULL
+error: overflow detected (block 0:160)
+realloc slot 4 200: moved
+region 0 65536
+  32 A 128 10
+  160 F 128
+  288 A 128 10
+  416 F 65120

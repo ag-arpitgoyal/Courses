@@ -1,0 +1,6 @@
+phase 0 (first fit): c 40x37 chk 3796032355, t 62x40 chk 3922614067, d 62x37 chk 2194763822
+phase 1 (next fit): c 55x52 chk 4192949904, t 77x55 chk 587772204, d 77x52 chk 1978180203
+phase 2 (best fit): c 70x67 chk 372155654, t 92x70 chk 2146989829, d 92x67 chk 2414279555
+phase 3 (worst fit): c 85x82 chk 525295883, t 107x85 chk 1470817445, d 107x82 chk 1267820992
+combined 902592701
+leak summary: 0 blocks, 0 bytes

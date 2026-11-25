@@ -1,0 +1,4938 @@
+% MTL730 -- Lectures 2 through 8
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{microtype}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    urlcolor=blue,
+    citecolor=blue
+}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{claim}[theorem]{Claim}
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+
+\DeclareMathOperator{\gcdop}{gcd}
+\DeclareMathOperator{\lcmop}{lcm}
+\DeclareMathOperator{\ord}{ord}
+\DeclareMathOperator{\ind}{ind}
+\DeclareMathOperator{\degp}{deg}
+\DeclareMathOperator{\charp}{char}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\N}{\mathbb N}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\R}{\mathbb R}
+\newcommand{\F}{\mathbb F}
+\newcommand{\Fp}{\mathbb F_p}
+\newcommand{\phiE}{\varphi}
+\newcommand{\divides}{\mid}
+\newcommand{\notdivides}{\nmid}
+\newcommand{\congmod}[1]{\pmod{#1}}
+\newcommand{\Zmod}[1]{\mathbb Z/#1\mathbb Z}
+\newcommand{\units}[1]{\left(\mathbb Z/#1\mathbb Z\right)^\times}
+
+\title{\textbf{MTL730 --- Lectures 2--8}\\[2mm]
+\large Number Theory and Finite Fields}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+\section*{Lecture 2}
+\addcontentsline{toc}{section}{Lecture 2}
+
+% ============================================================
+\section{Divisibility and Primes}
+% ============================================================
+
+\subsection{Divisibility}
+
+\begin{definition}[Divisibility]
+Let $a,b\in\Z$. We say that $a$ is a \emph{divisor} of $b$ if there exists
+an integer $c$ such that
+\[
+    b=ac.
+\]
+If $a\neq 0$, the choice of $c$ is unique, and we write
+\[
+    c=\frac{b}{a}.
+\]
+We write $a\mid b$ when $a$ divides $b$, and $a\nmid b$ otherwise.
+\end{definition}
+
+\begin{remark}
+The integer $c$ satisfying $b=ac$ is called the quotient of $b$ by $a$.
+\end{remark}
+
+\subsection{Common Divisors and the GCD}
+
+\begin{definition}[Common divisor]
+Let $a,b\in\Z$. An integer $d$ is a \emph{common divisor} of $a$ and $b$
+if
+\[
+    d\mid a
+    \qquad\text{and}\qquad
+    d\mid b.
+\]
+\end{definition}
+
+If $d$ is a common divisor of $a,b$, then for every $x,y\in\Z$,
+\[
+    d\mid ax+by.
+\]
+Indeed, if $a=da'$ and $b=db'$, then
+\[
+    ax+by=d(a'x+b'y).
+\]
+
+\begin{theorem}[B\'ezout-type characterization of the GCD]
+For any two integers $a,b$, there exists a common divisor $d$ of $a,b$
+such that
+\[
+    d=ax+by
+\]
+for some $x,y\in\Z$.
+Moreover, every other common divisor of $a,b$ divides $d$.
+\end{theorem}
+
+\begin{proof}
+We prove the existence by induction on $a+b$, after assuming without loss
+of generality that
+\[
+    a\ge b\ge 0.
+\]
+If $a=b=0$, take $d=0$.
+
+For the inductive step, if $b=0$, then $d=a$ works. Otherwise $b\ge1$.
+Consider $a-b$. Since
+\[
+    (a-b)+b=a<a+b,
+\]
+the induction hypothesis applies to the pair $(a-b,b)$. Hence there is an
+integer $d$ such that
+\[
+    d\mid(a-b),\qquad d\mid b,
+\]
+and
+\[
+    d=(a-b)x+by
+\]
+for some $x,y\in\Z$. Since
+\[
+    a=(a-b)+b,
+\]
+we also have $d\mid a$. Further,
+\[
+    d=ax+b(y-x),
+\]
+so $d$ is of the required form.
+
+Finally, if $c$ is any common divisor of $a,b$, then
+$c\mid ax+by=d$. Thus every common divisor divides $d$.
+\end{proof}
+
+\begin{corollary}
+There is a unique non-negative common divisor $d$ of $a,b$ such that every
+common divisor of $a,b$ divides $d$.
+\end{corollary}
+
+\begin{definition}[Greatest common divisor]
+The unique non-negative integer in the preceding corollary is called the
+\emph{greatest common divisor} of $a,b$, denoted by
+\[
+    \gcdop(a,b).
+\]
+If $(a,b)\neq(0,0)$, this is equivalently the least positive integer linear
+combination of $a$ and $b$:
+\[
+    \gcdop(a,b)
+    =
+    \min\{\,d\in\Z : d>0,\ d=ax+by\text{ for some }x,y\in\Z\,\}.
+\]
+One sets $\gcdop(0,0)=0$ separately.
+\end{definition}
+
+\begin{remark}[Linear-combination characterization]
+If $d=\gcdop(a,b)$, then there exist $x,y\in\Z$ such that
+\[
+    d=ax+by.
+\]
+Conversely, if $c=ax+by$ and $d=\gcdop(a,b)$, then
+\[
+    d\mid c.
+\]
+\end{remark}
+
+\subsection{Relatively Prime Integers}
+
+\begin{definition}[Relatively prime]
+Two integers $a,b$ are said to be \emph{relatively prime} (or coprime) if
+\[
+    \gcdop(a,b)=1.
+\]
+\end{definition}
+
+% ============================================================
+\section{Division Algorithm}
+% ============================================================
+
+\begin{theorem}[Division Algorithm]
+For any two given integers $a,b$ with $b>0$, there exists a unique pair
+of integers $(q,r)$ such that
+\[
+    a=bq+r,
+    \qquad
+    0\le r<b.
+\]
+\end{theorem}
+
+\begin{proof}[Proof sketch]
+Consider the set
+\[
+    S=\{\,y\in\Z:y=a-bx,\ x\in\Z,\ y\ge0\,\}.
+\]
+The set $S$ is non-empty: choose $m\in\N$ sufficiently large that
+\[
+    mb>-a,
+\]
+so that
+\[
+    a+mb>0.
+\]
+Hence $S$ has a least element; call it $r$.
+
+Then for some $q\in\Z$,
+\[
+    r=a-bq,
+\]
+or equivalently,
+\[
+    a=bq+r.
+\]
+It remains to show that $r<b$. If $r\ge b$, then
+\[
+    r-b=a-b(q+1)\ge0,
+\]
+so $r-b\in S$, contradicting the minimality of $r$. Thus
+\[
+    0\le r<b.
+\]
+
+For uniqueness, suppose
+\[
+    a=bq+r=bq'+r',
+    \qquad
+    0\le r,r'<b.
+\]
+Then
+\[
+    b(q-q')=r'-r.
+\]
+But
+\[
+    |r'-r|<b,
+\]
+so the only multiple of $b$ it can equal is $0$. Hence
+\[
+    r=r'
+    \qquad\text{and}\qquad
+    q=q'.
+\]
+\end{proof}
+
+% ============================================================
+\section{Euclidean Algorithm}
+% ============================================================
+
+\begin{lemma}
+If
+\[
+    a=qb+r,
+\]
+then
+\[
+    \gcdop(a,b)=\gcdop(r,b).
+\]
+\end{lemma}
+
+\begin{proof}
+Let $d=\gcdop(a,b)$. Since $d\mid a$ and $d\mid b$,
+\[
+    d\mid(a-qb)=r.
+\]
+Thus $d$ is a common divisor of $r,b$.
+
+Conversely, if $c\mid r$ and $c\mid b$, then
+\[
+    c\mid(qb+r)=a.
+\]
+Hence the common divisors of $(a,b)$ and $(r,b)$ are the same, so their
+greatest common divisors are equal.
+\end{proof}
+
+\subsection{Finding the GCD}
+
+Assume $a\ge b>0$. By the division algorithm,
+\[
+    a=q_1b+r_1,
+    \qquad 0\le r_1<b.
+\]
+Then
+\[
+    \gcdop(a,b)=\gcdop(b,r_1).
+\]
+Continue:
+\begin{align*}
+    b &= q_2r_1+r_2,
+        &0\le r_2<r_1,\\
+    r_1 &= q_3r_2+r_3,
+        &0\le r_3<r_2,\\
+    &\ \vdots\\
+    r_{n-2} &= q_nr_{n-1}+r_n,
+        &0\le r_n<r_{n-1},\\
+    r_{n-1} &= q_{n+1}r_n.
+\end{align*}
+The process terminates because the non-negative remainders form a strictly
+decreasing sequence until the last non-zero remainder.
+
+Using the lemma repeatedly,
+\[
+\begin{aligned}
+    \gcdop(a,b)
+    &=\gcdop(b,r_1)\\
+    &=\gcdop(r_1,r_2)\\
+    &=\cdots\\
+    &=\gcdop(r_{n-1},r_n)\\
+    &=r_n.
+\end{aligned}
+\]
+Thus the last non-zero remainder is $\gcdop(a,b)$.
+
+% ============================================================
+\section{Prime Numbers}
+% ============================================================
+
+\begin{definition}[Prime number]
+An integer $n>1$ is called \emph{prime} if its only positive divisors are
+$1$ and $n$.
+
+Equivalently, for every integer $a$,
+\[
+    a\mid n
+    \quad\Longrightarrow\quad
+    a=1\ \text{or}\ a=n
+\]
+when considering positive divisors.
+\end{definition}
+
+\subsection{Infinitely Many Primes}
+
+\begin{theorem}[Euclid]
+There are infinitely many prime numbers.
+\end{theorem}
+
+\begin{proof}
+Suppose, for contradiction, that there are only finitely many primes,
+say
+\[
+    p_1,p_2,\ldots,p_n.
+\]
+Consider
+\[
+    N=p_1p_2\cdots p_n+1.
+\]
+Let $p$ be any prime divisor of $N$. Then $p$ cannot be any of
+$p_1,\ldots,p_n$, because for each $i$,
+\[
+    N\equiv1\pmod{p_i}.
+\]
+Thus $N$ has a prime divisor not in the assumed complete list, a
+contradiction.
+\end{proof}
+
+\begin{remark}
+The lecture also mentions the question of whether there are infinitely many
+primes of the form
+\[
+    n^2+1.
+\]
+This is stated as a question in the lecture.
+\end{remark}
+
+\subsection{Fundamental Theorem of Arithmetic}
+
+\begin{theorem}[Fundamental Theorem of Arithmetic]
+Any integer $n>1$ can be written uniquely as a product of distinct prime
+powers:
+\[
+    n=p_1^{e_1}p_2^{e_2}\cdots p_k^{e_k},
+\]
+where the $p_i$ are distinct primes and $e_i\ge1$.
+\end{theorem}
+
+% ============================================================
+\section{Linear Diophantine Equations}
+% ============================================================
+
+\begin{theorem}[Solvability criterion]
+For $a,b,c\in\Z$, the linear Diophantine equation
+\[
+    ax+by=c
+\]
+has a solution in $\Z^2$ if and only if
+\[
+    \gcdop(a,b)\mid c.
+\]
+\end{theorem}
+
+\begin{proof}
+Suppose first that
+\[
+    ax+by=c
+\]
+has an integer solution. Since $\gcdop(a,b)$ divides both $a$ and $b$,
+it divides every integer linear combination of $a$ and $b$. Hence
+\[
+    \gcdop(a,b)\mid c.
+\]
+
+Conversely, suppose
+\[
+    \gcdop(a,b)\mid c.
+\]
+Let
+\[
+    d=\gcdop(a,b).
+\]
+By B\'ezout's identity, there exist $m,n\in\Z$ such that
+\[
+    d=am+bn.
+\]
+Since $d\mid c$, write
+\[
+    c=kd
+\]
+for some $k\in\Z$. Therefore
+\[
+    c=k(am+bn)=a(km)+b(kn),
+\]
+so
+\[
+    x=km,\qquad y=kn
+\]
+is an integer solution.
+\end{proof}
+
+\subsection{Example: $x+2y=5$}
+
+Consider
+\[
+    x+2y=5.
+\]
+Since
+\[
+    \gcdop(1,2)=1,
+\]
+the equation has integer solutions. One solution is
+\[
+    (x,y)=(5,0).
+\]
+
+The corresponding homogeneous equation is
+\[
+    x+2y=0.
+\]
+
+If $(x_0,y_0)$ is one solution of $ax+by=c$, then every other solution
+differs from it by a solution of the homogeneous equation
+\[
+    ax+by=0.
+\]
+Thus the solutions can be studied in a single framework.
+
+% ============================================================
+\section{Modular Arithmetic}
+% ============================================================
+
+\begin{definition}[Congruence modulo $m$]
+Let $m\in\N$ and $a,b\in\Z$. We say that $a$ is \emph{congruent to $b$
+modulo $m$}, denoted
+\[
+    a\equiv b\pmod m,
+\]
+if
+\[
+    m\mid(a-b).
+\]
+\end{definition}
+
+\subsection{Properties of Congruence}
+
+Let $m\in\N$ and $a,b,c,d\in\Z$.
+
+\begin{enumerate}[label=\arabic*.]
+    \item If
+    \[
+        a\equiv b\pmod m,
+        \qquad
+        c\equiv d\pmod m,
+    \]
+    then
+    \[
+        ac\equiv bd\pmod m.
+    \]
+    Also, for any $x,y\in\Z$,
+    \[
+        ax+cy\equiv bx+dy\pmod m.
+    \]
+    More generally, if $f$ is a polynomial with integer coefficients,
+    then
+    \[
+        f(a)\equiv f(b)\pmod m.
+    \]
+
+    \item If
+    \[
+        a\equiv b\pmod m
+    \]
+    and $d>0$, then
+    \[
+        ad\equiv bd\pmod{md}.
+    \]
+
+    \item If
+    \[
+        ac\equiv bc\pmod m,
+    \]
+    and
+    \[
+        d=\gcdop(m,c),
+    \]
+    then
+    \[
+        a\equiv b\pmod{m/d}.
+    \]
+    In particular, if $\gcdop(m,c)=1$, then
+    \[
+        ac\equiv bc\pmod m
+        \quad\Longrightarrow\quad
+        a\equiv b\pmod m.
+    \]
+
+    \item If
+    \[
+        a\equiv b\pmod m,
+    \]
+    then
+    \[
+        \gcdop(a,m)=\gcdop(b,m).
+    \]
+
+    \item If
+    \[
+        a\equiv b\pmod m
+    \]
+    and
+    \[
+        0\le |a-b|<m,
+    \]
+    then
+    \[
+        a=b.
+    \]
+\end{enumerate}
+
+\subsection{Congruence Classes}
+
+\begin{proposition}
+The congruence relation modulo $m$ is an equivalence relation on $\Z$:
+\[
+    a\,R\,b
+    \quad\Longleftrightarrow\quad
+    a\equiv b\pmod m.
+\]
+\end{proposition}
+
+The equivalence class of $a$ is
+\[
+    \overline{a}
+    =
+    \{\,x\in\Z:x\equiv a\pmod m\,\}.
+\]
+This is called the \emph{residue class of $a$ modulo $m$}.
+
+The residue classes
+\[
+    \overline{0},\overline{1},\overline{2},\ldots,\overline{m-1}
+\]
+are all distinct and disjoint, and
+\[
+    \Z
+    =
+    \overline{0}\cup\overline{1}\cup\cdots\cup\overline{m-1}.
+\]
+
+% ============================================================
+\section{Complete and Reduced Residue Systems}
+% ============================================================
+
+\begin{definition}[Complete residue system]
+A collection of representatives, one from each of the $m$ residue classes
+modulo $m$, is called a \emph{complete residue system} (CRS) modulo $m$.
+
+For example,
+\[
+    \{1,2,3,\ldots,m\}
+\]
+is a complete residue system modulo $m$.
+\end{definition}
+
+\begin{example}
+If
+\[
+    \{a_1,\ldots,a_m\}
+\]
+is a complete residue system modulo $m$ and
+\[
+    \gcdop(k,m)=1,
+\]
+then
+\[
+    \{ka_1,\ldots,ka_m\}
+\]
+is also a complete residue system modulo $m$.
+\end{example}
+
+\subsection{Euler's Phi Function}
+
+\begin{definition}[Euler's totient function]
+For $m\in\N$, Euler's phi function is
+\[
+    \phiE(m)
+    =
+    \#\{\,a:1\le a\le m,\ \gcdop(a,m)=1\,\}.
+\]
+\end{definition}
+
+\begin{remark}
+The lecture writes the count using $1\le a\le m$; equivalently, for
+$m>1$, one may use $1\le a<m$, since $m$ is not coprime to itself.
+\end{remark}
+
+\begin{definition}[Reduced residue system]
+A \emph{reduced residue system} (RRS) modulo $m$ is a collection of
+$\phiE(m)$ integers such that each integer is coprime to $m$ and no two
+of them are congruent modulo $m$.
+\end{definition}
+
+\begin{example}
+If
+\[
+    \{a_1,\ldots,a_{\phiE(m)}\}
+\]
+is an RRS modulo $m$ and
+\[
+    \gcdop(k,m)=1,
+\]
+then
+\[
+    \{ka_1,\ldots,ka_{\phiE(m)}\}
+\]
+is also an RRS modulo $m$.
+\end{example}
+
+% ============================================================
+\section{Euler's Theorem}
+% ============================================================
+
+\begin{theorem}[Euler's theorem]
+Let $m\in\N$ and let $a\in\Z$ satisfy
+\[
+    \gcdop(a,m)=1.
+\]
+Then
+\[
+    a^{\phiE(m)}\equiv1\pmod m.
+\]
+\end{theorem}
+
+\begin{proof}
+Let
+\[
+    \{a_1,a_2,\ldots,a_{\phiE(m)}\}
+\]
+be a reduced residue system modulo $m$.
+
+For each $i$, multiplication by $a$ gives another residue coprime to $m$.
+Moreover, the residues
+\[
+    aa_1,aa_2,\ldots,aa_{\phiE(m)}
+\]
+are pairwise incongruent modulo $m$.
+
+Indeed, if for some $i,j$,
+\[
+    aa_i\equiv aa_j\pmod m,
+\]
+then, since $\gcdop(a,m)=1$, cancellation is valid and gives
+\[
+    a_i\equiv a_j\pmod m.
+\]
+Hence $i=j$.
+
+Therefore
+\[
+    \{aa_1,\ldots,aa_{\phiE(m)}\}
+\]
+is also an RRS modulo $m$. Consequently,
+\[
+    aa_1\cdot aa_2\cdots aa_{\phiE(m)}
+    \equiv
+    a_1a_2\cdots a_{\phiE(m)}
+    \pmod m.
+\]
+Thus
+\[
+    a^{\phiE(m)}
+    a_1a_2\cdots a_{\phiE(m)}
+    \equiv
+    a_1a_2\cdots a_{\phiE(m)}
+    \pmod m.
+\]
+Every $a_i$ is coprime to $m$, so the product is also coprime to $m$ and
+may be cancelled. Hence
+\[
+    \boxed{a^{\phiE(m)}\equiv1\pmod m}.
+\]
+\end{proof}
+
+% ============================================================
+\section{Fermat's Little Theorem}
+% ============================================================
+
+\begin{theorem}[Fermat's Little Theorem]
+Let $p$ be a prime number and let $a\in\Z$. Then
+\[
+    a^p\equiv a\pmod p.
+\]
+\end{theorem}
+
+\begin{proof}
+If $p\mid a$, then
+\[
+    a^p\equiv a\equiv0\pmod p.
+\]
+
+If $p\not\mid a$, then
+\[
+    \gcdop(a,p)=1.
+\]
+By Euler's theorem,
+\[
+    a^{\phiE(p)}\equiv1\pmod p.
+\]
+Since $p$ is prime,
+\[
+    \phiE(p)=p-1.
+\]
+Thus
+\[
+    a^{p-1}\equiv1\pmod p.
+\]
+Multiplying by $a$ gives
+\[
+    a^p\equiv a\pmod p.
+\]
+\end{proof}
+
+% ============================================================
+\section{Computing Euler's Phi Function}
+% ============================================================
+
+For
+\[
+    m=p_1^{e_1}p_2^{e_2}\cdots p_r^{e_r},
+\]
+where the $p_i$ are distinct primes, the lecture derives
+\[
+    \boxed{
+    \phiE(m)
+    =
+    m\prod_{p\mid m}\left(1-\frac1p\right)
+    }.
+\]
+
+\subsection{Two Claims}
+
+\begin{claim}
+If
+\[
+    \gcdop(m,n)=1,
+\]
+then
+\[
+    \phiE(mn)=\phiE(m)\phiE(n).
+\]
+\end{claim}
+
+\begin{claim}
+If $p$ is prime and $e\ge1$, then
+\[
+    \phiE(p^e)=p^e-p^{e-1}
+    =
+    p^e\left(1-\frac1p\right).
+\]
+\end{claim}
+
+\subsection{Proof of Claim 2}
+
+Among
+\[
+    \{1,2,\ldots,p^e\},
+\]
+an integer is not coprime to $p^e$ precisely when it is divisible by $p$.
+There are
+\[
+    p^{e-1}
+\]
+multiples of $p$ in this set. Therefore
+\[
+    \phiE(p^e)
+    =
+    p^e-p^{e-1}.
+\]
+
+\subsection{Proof of Claim 1}
+
+\begin{proof}
+Assume
+\[
+    \gcdop(m,n)=1.
+\]
+Consider the $n\times m$ array whose rows are indexed by $0\le k\le n-1$
+and whose columns are indexed by $1\le\ell\le m$:
+\[
+\begin{pmatrix}
+1 & 2 & 3 & \cdots & m\\
+m+1 & m+2 & m+3 & \cdots & 2m\\
+2m+1 & 2m+2 & 2m+3 & \cdots & 3m\\
+\vdots & \vdots & \vdots & \ddots & \vdots\\
+(n-1)m+1 & (n-1)m+2 & (n-1)m+3 & \cdots & nm
+\end{pmatrix}
+\]
+with entries
+\[
+    km+\ell,
+    \qquad
+    0\le k\le n-1,\quad 1\le\ell\le m.
+\]
+
+The entries consist of a complete set of integers from $1$ through $mn$.
+
+We want to count the entries coprime to $mn$. Since
+\[
+    \gcdop(m,n)=1,
+\]
+an integer $x$ is coprime to $mn$ exactly when
+\[
+    \gcdop(x,m)=1
+    \qquad\text{and}\qquad
+    \gcdop(x,n)=1.
+\]
+
+Fix a column $\ell$ that is coprime to $m$. If two entries in this column,
+\[
+    k_1m+\ell
+    \qquad\text{and}\qquad
+    k_2m+\ell,
+\]
+are congruent modulo $n$, then
+\[
+    k_1m+\ell\equiv k_2m+\ell\pmod n,
+\]
+so
+\[
+    (k_1-k_2)m\equiv0\pmod n.
+\]
+Because $\gcdop(m,n)=1$,
+\[
+    k_1-k_2\equiv0\pmod n.
+\]
+But
+\[
+    0\le k_1,k_2\le n-1,
+\]
+hence
+\[
+    k_1=k_2.
+\]
+Thus the $n$ entries in such a column give distinct residue classes modulo $n$.
+
+Exactly $\phiE(n)$ of them are coprime to $n$. There are
+$\phiE(m)$ columns whose $\ell$ is coprime to $m$. Hence the total number
+of entries coprime to both $m$ and $n$ is
+\[
+    \phiE(m)\phiE(n).
+\]
+Therefore
+\[
+    \boxed{\phiE(mn)=\phiE(m)\phiE(n)}.
+\]
+\end{proof}
+
+\subsection{Deriving the Product Formula}
+
+Write the prime factorization of $m$ as
+\[
+    m=p_1^{e_1}p_2^{e_2}\cdots p_r^{e_r}.
+\]
+Since the prime powers are pairwise coprime, repeated application of
+Claim 1 gives
+\[
+    \phiE(m)
+    =
+    \phiE(p_1^{e_1})
+    \phiE(p_2^{e_2})
+    \cdots
+    \phiE(p_r^{e_r}).
+\]
+Using Claim 2,
+\begin{align*}
+    \phiE(m)
+    &=
+    \prod_{i=1}^r
+    \left(p_i^{e_i}-p_i^{e_i-1}\right)\\
+    &=
+    \prod_{i=1}^r
+    p_i^{e_i}\left(1-\frac1{p_i}\right)\\
+    &=
+    \left(\prod_{i=1}^r p_i^{e_i}\right)
+    \prod_{i=1}^r
+    \left(1-\frac1{p_i}\right)\\
+    &=
+    m\prod_{p\mid m}
+    \left(1-\frac1p\right).
+\end{align*}
+
+Thus
+\[
+    \boxed{
+    \phiE(m)
+    =
+    m\prod_{p\mid m}
+    \left(1-\frac1p\right)
+    }.
+\]
+
+% ============================================================
+\section*{Summary of the Lecture}
+% ============================================================
+
+The lecture develops the following chain of ideas:
+\[
+\boxed{
+\text{Divisibility}
+\longrightarrow
+\gcd
+\longrightarrow
+\text{Division Algorithm}
+\longrightarrow
+\text{Euclidean Algorithm}
+\longrightarrow
+\text{Primes}
+}
+\]
+followed by
+\[
+\boxed{
+\text{Diophantine Equations}
+\longrightarrow
+\text{Modular Arithmetic}
+\longrightarrow
+\text{Residue Systems}
+\longrightarrow
+\phiE(m)
+\longrightarrow
+\text{Euler's Theorem}
+\longrightarrow
+\text{Fermat's Little Theorem}
+}.
+\]
+
+The key formulas are
+\[
+    \gcdop(a,b)=\gcdop(b,r)
+    \quad\text{when }a=qb+r,
+\]
+\[
+    ax+by=c
+    \quad\Longleftrightarrow\quad
+    \gcdop(a,b)\mid c,
+\]
+\[
+    a^{\phiE(m)}\equiv1\pmod m
+    \qquad
+    \left(\gcdop(a,m)=1\right),
+\]
+\[
+    a^p\equiv a\pmod p
+    \qquad
+    (p\text{ prime}),
+\]
+and
+\[
+    \phiE(m)
+    =
+    m\prod_{p\mid m}\left(1-\frac1p\right).
+\]
+
+\clearpage
+
+\section*{Lecture 3 (continued)}
+\addcontentsline{toc}{section}{Lecture 3 (continued)}
+
+% ============================================================
+\section{Linear Congruences}
+% ============================================================
+
+We first recall the familiar case
+\[
+    ax\equiv b\pmod m,
+\]
+where
+\[
+    \gcdop(a,m)=1.
+\]
+Since $a$ is invertible modulo $m$,
+\[
+    x\equiv a^{\phiE(m)-1}b\pmod m.
+\]
+Thus there is a unique solution modulo $m$.
+
+\subsection{The General Case}
+
+The natural question is:
+
+\begin{center}
+\emph{What if $\gcdop(a,m)\neq1$?}
+\end{center}
+
+Consider
+\[
+    ax\equiv b\pmod m.
+\]
+This is equivalent to
+\[
+    ax+my=b.
+\]
+
+Let
+\[
+    d=\gcdop(a,m).
+\]
+Since
+\[
+    d\mid a,\qquad d\mid m,
+\]
+every integer of the form
+\[
+    ax+my
+\]
+is divisible by $d$. Hence a necessary condition for solvability is
+\[
+    d\mid b.
+\]
+
+\begin{theorem}
+The linear congruence
+\[
+    \boxed{ax\equiv b\pmod m}
+\]
+has a solution if and only if
+\[
+    \boxed{\gcdop(a,m)\mid b.}
+\]
+If
+\[
+    d=\gcdop(a,m)\mid b,
+\]
+then the congruence has exactly $d$ distinct solutions modulo $m$.
+\end{theorem}
+
+\subsection{Description of the Solutions}
+
+Suppose
+\[
+    d=\gcdop(a,m)\mid b.
+\]
+Then the congruence can be divided by $d$:
+\[
+    \frac ad x
+    \equiv
+    \frac bd
+    \pmod{\frac md}.
+\]
+Since
+\[
+    \gcdop\!\left(\frac ad,\frac md\right)=1,
+\]
+there is a unique solution modulo $m/d$. Let this solution be $t$:
+\[
+    \frac ad\,t
+    \equiv
+    \frac bd
+    \pmod{\frac md}.
+\]
+
+The complete set of solutions modulo $m$ is then
+\[
+    \boxed{
+    x\equiv t+\frac{km}{d}\pmod m,
+    \qquad
+    k=0,1,\ldots,d-1.
+    }
+\]
+
+\subsection{Proof That the Solutions Are Distinct}
+
+Suppose
+\[
+    t+\frac{km}{d}
+    \equiv
+    t+\frac{\ell m}{d}
+    \pmod m.
+\]
+Then
+\[
+    \frac{(k-\ell)m}{d}\equiv0\pmod m.
+\]
+Equivalently,
+\[
+    m\mid\frac{(k-\ell)m}{d},
+\]
+so
+\[
+    d\mid(k-\ell).
+\]
+But
+\[
+    0\le k,\ell\le d-1,
+\]
+hence
+\[
+    k=\ell.
+\]
+Therefore the $d$ displayed solutions are pairwise distinct modulo $m$.
+
+\subsection{Example}
+
+Consider
+\[
+    5x\equiv3\pmod{24}.
+\]
+Since
+\[
+    \gcdop(5,24)=1,
+\]
+we may use the inverse of $5$ modulo $24$:
+\[
+    5^{-1}\equiv5\pmod{24}.
+\]
+Therefore
+\[
+    x\equiv5\cdot3
+    \equiv15\pmod{24}.
+\]
+
+Thus the solution is
+\[
+    \boxed{x\equiv15\pmod{24}.}
+\]
+
+As another example, consider
+\[
+    25x\equiv15\pmod{120}.
+\]
+Here
+\[
+    \gcdop(25,120)=5
+\]
+and
+\[
+    5\mid15.
+\]
+Hence there are exactly $5$ solutions modulo $120$.
+
+Dividing the congruence by $5$ gives
+\[
+    5x\equiv3\pmod{24},
+\]
+so
+\[
+    x\equiv15\pmod{24}.
+\]
+Therefore the five solutions modulo $120$ are
+\[
+    \boxed{
+    15,\ 39,\ 63,\ 87,\ 111.
+    }
+\]
+
+% ============================================================
+\section{Systems of Linear Congruences}
+% ============================================================
+
+A system of linear congruences is a family such as
+\[
+    \begin{cases}
+        x\equiv b_1\pmod{m_1},\\
+        x\equiv b_2\pmod{m_2},\\
+        \vdots\\
+        x\equiv b_k\pmod{m_k}.
+    \end{cases}
+\]
+
+\begin{theorem}[Chinese Remainder Theorem]
+Let
+\[
+    m_1,m_2,\ldots,m_k
+\]
+be positive integers such that every two of them are coprime:
+\[
+    \gcdop(m_i,m_j)=1
+    \qquad(i\neq j).
+\]
+Then for any given integers
+\[
+    b_1,b_2,\ldots,b_k,
+\]
+the system
+\[
+    \boxed{
+    x\equiv b_i\pmod{m_i},
+    \qquad
+    1\le i\le k
+    }
+\]
+has a unique solution modulo
+\[
+    M=m_1m_2\cdots m_k.
+    \]
+\end{theorem}
+
+\subsection{Uniqueness}
+
+Suppose $x$ and $y$ are two solutions. Then for every $i$,
+\[
+    x\equiv y\pmod{m_i}.
+\]
+Thus
+\[
+    m_i\mid(x-y)
+    \qquad\text{for every }i.
+\]
+Since the moduli are pairwise coprime,
+\[
+    M=m_1m_2\cdots m_k
+\]
+also divides $x-y$. Hence
+\[
+    x\equiv y\pmod M.
+\]
+Therefore the solution is unique modulo $M$.
+
+\subsection{Existence}
+
+Let
+\[
+    M=m_1m_2\cdots m_k,
+    \qquad
+    M_i=\frac{M}{m_i}.
+\]
+Since $m_i$ is coprime to every other modulus,
+\[
+    \gcdop(M_i,m_i)=1.
+\]
+Hence there exists an integer $N_i$ such that
+\[
+    \boxed{
+    M_iN_i\equiv1\pmod{m_i}.
+    }
+\]
+Equivalently, there exist integers $N_i,r_i$ satisfying
+\[
+    \boxed{
+    1=M_iN_i+m_ir_i.
+    }
+\]
+
+Define
+\[
+    \boxed{
+    x=\sum_{i=1}^k b_iM_iN_i.
+    }
+\]
+
+Fix $j$. Modulo $m_j$, every term with $i\neq j$ vanishes because
+\[
+    m_j\mid M_i.
+\]
+Therefore
+\[
+    x
+    \equiv
+    b_jM_jN_j
+    \equiv
+    b_j
+    \pmod{m_j}.
+\]
+Thus
+\[
+    x\equiv b_j\pmod{m_j}
+\]
+for every $j$, proving existence.
+
+Hence
+\[
+    \boxed{
+    x\equiv
+    \sum_{i=1}^k b_iM_iN_i
+    \pmod M
+    }.
+\]
+
+\subsection{Constructing the $N_i$}
+
+The integers $N_i$ can be found using the Euclidean algorithm.
+
+Since
+\[
+    \gcdop(M_i,m_i)=1,
+\]
+Bezout's identity gives
+\[
+    M_iN_i+m_ir_i=1.
+\]
+Reducing modulo $m_i$ gives
+\[
+    M_iN_i\equiv1\pmod{m_i}.
+\]
+
+% ============================================================
+\section{Polynomial Congruences}
+% ============================================================
+
+The Chinese Remainder Theorem also gives a useful result for polynomial
+congruences.
+
+Let
+\[
+    m_1,m_2,\ldots,m_k
+\]
+be pairwise coprime positive integers, and let
+\[
+    M=m_1m_2\cdots m_k.
+\]
+
+\begin{corollary}
+Let $f(x)\in\Z[x]$. Then
+\[
+    f(x)\equiv0\pmod M
+\]
+has a solution if and only if
+\[
+    f(x)\equiv0\pmod{m_i}
+\]
+has a solution for every $i$.
+\end{corollary}
+
+Indeed, if
+\[
+    x_i
+\]
+is a solution modulo $m_i$, then the Chinese Remainder Theorem gives a
+simultaneous solution
+\[
+    x\equiv x_i\pmod{m_i}
+    \qquad(1\le i\le k).
+\]
+Since polynomial congruences respect congruence,
+\[
+    f(x)\equiv f(x_i)\equiv0\pmod{m_i}
+\]
+for every $i$. Hence
+\[
+    f(x)\equiv0\pmod M.
+\]
+
+Moreover, if
+\[
+    f(x)\equiv0\pmod{m_i}
+\]
+has
+\[
+    s(m_i)
+\]
+solutions modulo $m_i$, then
+\[
+    \boxed{
+    f(x)\equiv0\pmod M
+    }
+\]
+has
+\[
+    \boxed{
+    \prod_{i=1}^k s(m_i)
+    }
+\]
+solutions modulo $M$.
+
+% ============================================================
+\section{A Bound on the Number of Roots of a Polynomial Modulo a Prime}
+% ============================================================
+
+Consider
+\[
+    x^2\equiv1\pmod3.
+\]
+The solutions are
+\[
+    x\equiv1,2\pmod3.
+\]
+
+On the other hand,
+\[
+    x^2\equiv1\pmod8
+\]
+has four solutions:
+\[
+    \boxed{x\equiv1,3,5,7\pmod8.}
+\]
+
+Thus the familiar statement that a polynomial of degree $n$ has at most
+$n$ roots is not automatically true modulo an arbitrary composite
+modulus.
+
+The prime-modulus case behaves differently.
+
+\begin{theorem}[Lagrange]
+Let $p$ be a prime and let
+\[
+    f(x)
+    =
+    a_0+a_1x+\cdots+a_nx^n
+    \in\Z[x],
+\]
+with
+\[
+    a_n\not\equiv0\pmod p.
+\]
+Then
+\[
+    f(x)\equiv0\pmod p
+\]
+has at most $n$ solutions modulo $p$.
+\end{theorem}
+
+\begin{proof}
+We prove the result by induction on $n$.
+
+For
+\[
+    n=0,
+\]
+we have
+\[
+    f(x)\equiv a_0\not\equiv0\pmod p,
+\]
+so there are no solutions.
+
+Now assume the statement holds for degree $n-1$ polynomials.
+
+If
+\[
+    f(x)\equiv0\pmod p
+\]
+has no solution, we are done. Suppose it has a solution $x_0$, and let $r$
+be the total number of solutions modulo $p$. For any $x$,
+\begin{align*}
+    f(x)-f(x_0)
+    &=
+    \sum_{i=1}^n a_i(x^i-x_0^i)\\
+    &=
+    (x-x_0)g(x),
+\end{align*}
+where $g(x)$ is a polynomial of degree at most $n-1$.
+
+Let
+\[
+    x_1,\ldots,x_{r-1}
+\]
+be the remaining solutions of
+\[
+    f(x)\equiv0\pmod p
+\]
+(so there are $r-1$ of them if $r\ge 1$). For each such $x_i$,
+\[
+    f(x_i)-f(x_0)\equiv0\pmod p.
+\]
+Therefore
+\[
+    (x_i-x_0)g(x_i)\equiv0\pmod p.
+\]
+Since
+\[
+    x_i\not\equiv x_0\pmod p,
+\]
+we must have
+\[
+    g(x_i)\equiv0\pmod p.
+\]
+Thus $g$ has at least $r-1$ roots. By the induction hypothesis,
+\[
+    r-1\le n-1.
+\]
+Hence
+\[
+    r\le n.
+\]
+Therefore $f$ has at most $n$ roots modulo $p$.
+\end{proof}
+
+% ============================================================
+\section{A Useful Application}
+% ============================================================
+
+Let $p$ be a prime. Consider
+\[
+    f(x)
+    =
+    (x-1)(x-2)\cdots(x-(p-1)).
+\]
+Modulo $p$, this polynomial has the $p-1$ distinct roots
+\[
+    1,2,\ldots,p-1.
+\]
+
+Since
+\[
+    \deg f=p-1,
+\]
+Lagrange's theorem implies that these are all of its roots modulo $p$.
+The two monic polynomials $f(x)$ and $x^{p-1}-1$ of degree $p-1$ therefore
+have the same $p-1$ roots modulo $p$. Their difference has degree at most
+$p-2$ but has $p-1$ roots, so it is the zero polynomial modulo $p$. Thus
+\[
+    \boxed{
+    (x-1)(x-2)\cdots(x-(p-1))
+    \equiv
+    x^{p-1}-1
+    \pmod p.
+    }
+\]
+
+Comparing coefficients, all intermediate coefficients are divisible by
+$p$:
+\[
+    \boxed{
+    a_i\equiv0\pmod p,
+    \qquad
+    0<i<p-1.
+    }
+\]
+
+The constant term is also especially useful.
+
+% ============================================================
+\section{Wilson's Theorem}
+% ============================================================
+
+\begin{theorem}[Wilson]
+Let $p$ be a prime. Then
+\[
+    \boxed{
+    (p-1)!\equiv-1\pmod p.
+    }
+\]
+\end{theorem}
+
+\begin{proof}
+The case
+\[
+    p=2
+\]
+is immediate:
+\[
+    1!\equiv-1\pmod2.
+\]
+
+Now let $p$ be an odd prime. From the polynomial identity above,
+\[
+    (x-1)(x-2)\cdots(x-(p-1))
+    \equiv
+    x^{p-1}-1
+    \pmod p.
+\]
+
+The constant term on the left is
+\[
+    (-1)(-2)\cdots(-(p-1)).
+\]
+Since $p-1$ is even,
+\[
+    (-1)^{p-1}(p-1)!
+    =
+    (p-1)!.
+\]
+The constant term on the right is
+\[
+    -1.
+\]
+Therefore
+\[
+    (p-1)!\equiv-1\pmod p.
+\]
+\end{proof}
+
+\subsection{The Classical Pairing Proof}
+
+There is also a direct proof. For every
+\[
+    a\in\{1,2,\ldots,p-1\},
+\]
+there is a unique inverse
+\[
+    a^{-1}\pmod p.
+\]
+The elements satisfying
+\[
+    a\equiv a^{-1}\pmod p
+\]
+are precisely the solutions of
+\[
+    a^2\equiv1\pmod p,
+\]
+namely
+\[
+    a\equiv\pm1\pmod p.
+\]
+
+All other elements can therefore be paired with their distinct inverses.
+Their products contribute $1$ modulo $p$. Hence
+\[
+    (p-1)!
+    \equiv
+    1\cdot(-1)
+    \equiv-1
+    \pmod p.
+\]
+
+% ============================================================
+\section{Converse of Wilson's Theorem}
+% ============================================================
+
+\begin{theorem}[Converse]
+If $n>1$ and
+\[
+    \boxed{
+    (n-1)!\equiv-1\pmod n,
+    }
+\]
+then $n$ is prime.
+\end{theorem}
+
+\begin{proof}
+Suppose, for contradiction, that $n$ is composite.
+
+Then there exists an integer $d$ such that
+\[
+    1<d<n
+\]
+and
+\[
+    d\mid n.
+\]
+But
+\[
+    d\le n-1,
+\]
+so $d$ occurs among the factors of
+\[
+    (n-1)!.
+\]
+Hence
+\[
+    d\mid(n-1)!.
+\]
+On the other hand,
+\[
+    (n-1)!\equiv-1\pmod n
+\]
+implies
+\[
+    \gcdop((n-1)!,n)=1.
+\]
+This contradicts $d>1$ dividing both $(n-1)!$ and $n$.
+
+Therefore $n$ cannot be composite, and hence
+\[
+    \boxed{n\text{ is prime}.}
+\]
+\end{proof}
+
+% ============================================================
+\section*{Summary}
+% ============================================================
+
+The lecture develops the following progression:
+\[
+\boxed{
+\text{Linear congruences}
+\longrightarrow
+\text{CRT}
+\longrightarrow
+\text{Polynomial congruences}
+\longrightarrow
+\text{Lagrange's theorem}
+\longrightarrow
+\text{Wilson's theorem}
+}.
+\]
+
+The main results are
+
+\[
+    ax\equiv b\pmod m
+    \text{ is solvable}
+    \quad\Longleftrightarrow\quad
+    \gcdop(a,m)\mid b,
+\]
+and if
+\[
+    d=\gcdop(a,m)\mid b,
+\]
+then there are exactly $d$ solutions modulo $m$:
+\[
+    \boxed{
+    x\equiv t+\frac{km}{d}\pmod m,
+    \qquad
+    k=0,\ldots,d-1.
+    }
+\]
+
+For pairwise coprime moduli,
+\[
+    M=m_1\cdots m_k,
+\]
+the Chinese Remainder Theorem gives
+\[
+    \boxed{
+    x\equiv
+    \sum_{i=1}^k b_iM_iN_i
+    \pmod M,
+    \qquad
+    M_i=\frac{M}{m_i},
+    \quad
+    M_iN_i\equiv1\pmod{m_i}.
+    }
+\]
+
+For a polynomial of degree $n$ over $\Fp$ with nonzero leading
+coefficient,
+\[
+    f(x)\equiv0\pmod p
+\]
+has at most $n$ solutions.
+
+Finally,
+\[
+    \boxed{
+    p\text{ is prime}
+    \quad\Longleftrightarrow\quad
+    (p-1)!\equiv-1\pmod p.
+    }
+\]
+
+\clearpage
+
+\section*{Lecture 4}
+\addcontentsline{toc}{section}{Lecture 4}
+
+% ============================================================
+\section{Application of Wilson's Theorem}
+% ============================================================
+
+\begin{theorem}
+Let $p$ be an odd prime. The congruence
+\[
+    x^2\equiv -1\pmod p
+\]
+has a solution if and only if
+\[
+    p\equiv 1\pmod 4.
+\]
+\end{theorem}
+
+\begin{proof}
+First suppose there is a solution: $a^2\equiv -1\pmod p$. Then $p\nmid a$, so
+Fermat's little theorem gives
+\[
+    a^{p-1}\equiv 1\pmod p.
+\]
+Hence
+\[
+    \bigl(a^2\bigr)^{(p-1)/2}\equiv 1\pmod p,
+\]
+and therefore
+\[
+    (-1)^{(p-1)/2}\equiv 1\pmod p.
+\]
+If $p\equiv 3\pmod 4$, write $p=4n+3$. Then
+\[
+    \frac{p-1}{2}=2n+1
+\]
+is odd, so $(-1)^{(p-1)/2}=-1$, a contradiction. Thus $p\equiv 1\pmod 4$.
+
+Conversely, suppose $p\equiv 1\pmod 4$, so $p=4n+1$. Wilson's theorem yields
+\[
+    (p-1)!\equiv -1\pmod p,
+\]
+that is
+\[
+    (4n)!\equiv -1\pmod p.
+\]
+Pair the factors $k$ and $p-k$:
+\[
+    p-k\equiv -k\pmod p.
+\]
+There are $2n$ such pairs, and $2n$ is even, so
+\[
+    1\cdot 2\cdots (2n)\cdot(2n+1)\cdots(4n)
+    \equiv
+    (2n)!\,(-1)^{2n}(2n)!
+    \equiv
+    \bigl((2n)!\bigr)^2
+    \pmod p.
+\]
+Hence
+\[
+    \bigl((2n)!\bigr)^2\equiv -1\pmod p.
+\]
+Taking $x=(2n)!$ gives a solution of $x^2\equiv -1\pmod p$.
+\end{proof}
+
+% ============================================================
+\section{Quadratic Congruences}
+% ============================================================
+
+Let $p$ be an odd prime. We wish to study
+\[
+    x^2\equiv n\pmod p
+\]
+and, more generally, the quadratic congruence
+\[
+    ax^2+bx+c\equiv 0\pmod p,
+    \qquad p\nmid a.
+\]
+Multiplying by $4a$ (which is invertible modulo $p$) gives the equivalent
+congruence
+\[
+    4a^2x^2+4abx+4ac\equiv 0\pmod p,
+\]
+or
+\[
+    (2ax+b)^2\equiv b^2-4ac\pmod p.
+\]
+Setting $Y=2ax+b$ and $n=b^2-4ac$, we are reduced to
+\[
+    Y^2\equiv n\pmod p.
+\]
+
+\subsection{Two solutions when one exists}
+
+Assume $p$ is odd and $n\not\equiv 0\pmod p$. If $a$ is a solution of
+$x^2\equiv n\pmod p$, then so is $p-a$, because
+\[
+    (p-a)^2=p^2-2ap+a^2\equiv a^2\pmod p.
+\]
+These two solutions are distinct: $a\equiv p-a\pmod p$ would force
+$p\mid 2a$, hence $p\mid a$ (since $p$ is odd), contradicting $n\not\equiv 0$.
+
+% ============================================================
+\section{Quadratic Residues}
+% ============================================================
+
+\begin{definition}[Quadratic residue]
+Let $n\in\Z$ with $n\not\equiv 0\pmod p$. We say that $n$ is a
+\emph{quadratic residue} modulo $p$ if
+\[
+    x^2\equiv n\pmod p
+\]
+has a solution. Otherwise $n$ is a \emph{quadratic non-residue} modulo $p$.
+\end{definition}
+
+\begin{example}
+For $p=11$,
+\[
+\begin{array}{c|cccccccccc}
+a&1&2&3&4&5&6&7&8&9&10\\
+\hline
+a^2&1&4&9&5&3&3&5&9&4&1
+\end{array}
+\pmod{11}.
+\]
+The quadratic residues modulo $11$ are
+\[
+    \{1,3,4,5,9\},
+\]
+and the non-residues are
+\[
+    \{2,6,7,8,10\}.
+\]
+\end{example}
+
+Since $a^2\equiv(p-a)^2\pmod p$, the distinct nonzero squares modulo $p$
+are represented by
+\[
+    1^2,2^2,\ldots,\Bigl(\frac{p-1}{2}\Bigr)^2.
+\]
+Thus there are at most $(p-1)/2$ quadratic residues.
+
+\begin{theorem}
+Let $p$ be an odd prime. Among $1,2,\ldots,p-1$ there are exactly
+$(p-1)/2$ quadratic residues and $(p-1)/2$ quadratic non-residues modulo
+$p$. The residues are precisely
+\[
+    1^2,2^2,\ldots,\Bigl(\frac{p-1}{2}\Bigr)^2\pmod p.
+\]
+\end{theorem}
+
+\begin{proof}
+The displayed squares are pairwise incongruent. Indeed, if
+\[
+    a^2\equiv b^2\pmod p
+    \qquad\text{with}\qquad
+    1\le a,b\le\frac{p-1}{2},
+\]
+then
+\[
+    (a-b)(a+b)\equiv 0\pmod p,
+\]
+so $p\mid(a-b)$ or $p\mid(a+b)$. The bounds force $a=b$. Hence there are
+exactly $(p-1)/2$ distinct nonzero squares, and therefore equally many
+non-residues.
+\end{proof}
+
+% ============================================================
+\section{The Legendre Symbol}
+% ============================================================
+
+\begin{definition}[Legendre symbol]
+Let $p$ be an odd prime. For any integer $n$, set
+\[
+\left(\frac np\right)
+=
+\begin{cases}
+0,& n\equiv 0\pmod p,\\[1mm]
+1,& n\text{ is a quadratic residue modulo }p,\\[1mm]
+-1,& n\text{ is a quadratic non-residue modulo }p.
+\end{cases}
+\]
+For $p=2$ the lecture uses the convention
+\[
+\left(\frac n2\right)
+=
+\begin{cases}
+0,& n\text{ even},\\[1mm]
+1,& n\text{ odd}.
+\end{cases}
+\]
+\end{definition}
+
+The value $\bigl(\frac np\bigr)$ depends only on $n\bmod p$.
+
+% ============================================================
+\section{Euler's Criterion}
+% ============================================================
+
+\begin{theorem}[Euler's criterion]
+Let $p$ be an odd prime. Then
+\[
+    \boxed{
+    \left(\frac np\right)
+    \equiv
+    n^{(p-1)/2}
+    \pmod p.
+    }
+\]
+\end{theorem}
+
+\begin{proof}
+If $p\mid n$, both sides are $0$ modulo $p$.
+
+Now assume $p\nmid n$. By Fermat, $n^{p-1}\equiv 1\pmod p$, so
+\[
+    \bigl(n^{(p-1)/2}\bigr)^2\equiv 1\pmod p.
+\]
+The congruence $X^2\equiv 1\pmod p$ has only the two solutions $X\equiv\pm 1$,
+hence
+\[
+    n^{(p-1)/2}\equiv\pm 1\pmod p.
+\]
+
+If $\bigl(\frac np\bigr)=1$, then $n\equiv a^2\pmod p$ for some $a$ with
+$p\nmid a$. Thus
+\[
+    n^{(p-1)/2}\equiv a^{p-1}\equiv 1\pmod p.
+\]
+There are exactly $(p-1)/2$ quadratic residues, and each is a root of
+\[
+    X^{(p-1)/2}-1\equiv 0\pmod p.
+\]
+A polynomial of degree $(p-1)/2$ over the field $\Z/p\Z$ has at most
+$(p-1)/2$ roots, so these residues are \emph{all} the roots. Therefore if
+$\bigl(\frac np\bigr)=-1$, we cannot have $n^{(p-1)/2}\equiv 1$, and must have
+\[
+    n^{(p-1)/2}\equiv -1\pmod p.
+\]
+\end{proof}
+
+\begin{corollary}[Complete multiplicativity]
+The map $n\mapsto\bigl(\frac np\bigr)$ is completely multiplicative:
+\[
+    \left(\frac{mn}{p}\right)
+    =
+    \left(\frac mp\right)
+    \left(\frac np\right).
+\]
+\end{corollary}
+
+\begin{proof}
+Both sides are congruent to $(mn)^{(p-1)/2}=m^{(p-1)/2}n^{(p-1)/2}$
+modulo $p$, and both sides take values in $\{0,\pm 1\}$.
+\end{proof}
+
+\begin{corollary}
+\[
+\left(\frac{-1}{p}\right)
+=
+(-1)^{(p-1)/2}
+=
+\begin{cases}
+1,& p\equiv 1\pmod 4,\\[1mm]
+-1,& p\equiv 3\pmod 4.
+\end{cases}
+\]
+\end{corollary}
+
+This recovers the solvability criterion for $x^2\equiv -1\pmod p$.
+
+\begin{remark}[Two classical facts]
+\begin{enumerate}[label=\arabic*.]
+    \item An odd prime $p$ is a sum of two squares, $p=x^2+y^2$, if and only if
+    $p\equiv 1\pmod 4$. (For instance $2=1^2+1^2$.)
+
+    \item The only rational primes that remain prime in the Gaussian integers
+    $\Z[i]$ are the primes $p\equiv 3\pmod 4$.
+\end{enumerate}
+\end{remark}
+
+% ============================================================
+\section{The Supplementary Law for $2$}
+% ============================================================
+
+\begin{theorem}
+Let $p$ be an odd prime. Then
+\[
+\left(\frac 2p\right)
+=
+(-1)^{(p^2-1)/8}
+=
+\begin{cases}
+1,& p\equiv\pm 1\pmod 8,\\[1mm]
+-1,& p\equiv\pm 3\pmod 8.
+\end{cases}
+\]
+\end{theorem}
+
+\begin{proof}
+Write $N=(p-1)/2$. Among the even residues $2,4,\ldots,2N=p-1$, replace each
+term $2k>p/2$ by $2k-p\equiv -(p-2k)\pmod p$. The integers $p-2k$ arising
+in this way, together with the even numbers that were already less than
+$p/2$, are a rearrangement of $\{1,2,\ldots,N\}$. If $m$ is the number of
+replacements, then
+\[
+    2\cdot 4\cdots(p-1)
+    \equiv
+    (-1)^m N!
+    \pmod p.
+\]
+The left-hand side is $2^N N!$, so
+\[
+    2^N\equiv(-1)^m\pmod p.
+\]
+The integers $k\in\{1,\ldots,N\}$ with $2k>p/2$ are those with $k>p/4$, and
+a check of the four odd classes modulo $8$ gives
+\[
+    m\equiv\frac{p^2-1}{8}\pmod 2.
+\]
+Euler's criterion now yields
+\[
+    \left(\frac 2p\right)
+    \equiv
+    2^{(p-1)/2}
+    \equiv
+    (-1)^{(p^2-1)/8}
+    \pmod p.
+\]
+(The same count of $m$ is the special case $n=2$ of Gauss's lemma below.)
+\end{proof}
+
+\begin{corollary}
+\[
+\left(\frac{-2}{p}\right)
+=
+\begin{cases}
+1,& p\equiv 1,3\pmod 8,\\[1mm]
+-1,& p\equiv 5,7\pmod 8.
+\end{cases}
+\]
+\end{corollary}
+
+\begin{proof}
+Multiply the formulae for $\bigl(\frac{-1}{p}\bigr)$ and $\bigl(\frac 2p\bigr)$.
+\end{proof}
+
+\begin{remark}
+The lecture records that an odd prime $p$ has the form $p=x^2+2y^2$ if and
+only if $p\equiv 1,3\pmod 8$. This is consistent with the evaluation of
+$\bigl(\frac{-2}{p}\bigr)$, but the representation theorem itself is not
+proved here. A standard reference is Cox, \emph{Primes of the Form
+$x^2+ny^2$}.
+\end{remark}
+
+% ============================================================
+\section{Gauss's Lemma}
+% ============================================================
+
+\begin{theorem}[Gauss's lemma]
+Let $p$ be an odd prime and $p\nmid n$. Consider the least positive residues
+modulo $p$ of
+\[
+    n,\ 2n,\ \ldots,\ \frac{p-1}{2}n.
+\]
+If exactly $m$ of these residues are greater than $p/2$, then
+\[
+    \boxed{\left(\frac np\right)=(-1)^m.}
+\]
+\end{theorem}
+
+\begin{example}
+The integer $4$ is a quadratic residue modulo $11$, and $\bigl(\frac{4}{11}\bigr)=1$.
+The residues of $4,8,12,16,20$ modulo $11$ are
+\[
+    4,8,1,5,9.
+\]
+Exactly two of them ($8$ and $9$) exceed $11/2$, so $m=2$ and
+$(-1)^m=1$.
+\end{example}
+
+\begin{proof}
+Let $r_1,\ldots,r_{(p-1)/2}$ be the least positive residues of
+$n,2n,\ldots,\frac{p-1}{2}n$ modulo $p$. These residues are pairwise distinct:
+if $in\equiv jn\pmod p$ with $1\le i<j\le(p-1)/2$, then $p\mid n(j-i)$, hence
+$p\mid(j-i)$, which is impossible.
+
+Split them into two sets:
+\[
+    \{a_1,\ldots,a_\ell\}
+    =
+    \{r_k:r_k<p/2\},
+    \qquad
+    \{b_1,\ldots,b_m\}
+    =
+    \{r_k:r_k>p/2\},
+\]
+so $\ell+m=(p-1)/2$. Put $c_j=p-b_j$. Then $0<c_j<p/2$.
+
+\begin{claim}
+The integers $a_i$ and $c_j$ are pairwise distinct.
+\end{claim}
+
+If $a_i\equiv c_j\pmod p$, then $a_i+b_j\equiv 0\pmod p$, so
+\[
+    un+vn\equiv 0\pmod p
+\]
+for some $1\le u,v\le(p-1)/2$. Thus $p\mid n(u+v)$, hence $p\mid(u+v)$. But
+\[
+    2\le u+v\le p-1,
+\]
+a contradiction.
+
+Therefore
+\[
+    \{a_1,\ldots,a_\ell,c_1,\ldots,c_m\}
+    =
+    \Bigl\{1,2,\ldots,\frac{p-1}{2}\Bigr\}.
+\]
+Taking products modulo $p$,
+\begin{align*}
+    \Bigl(\frac{p-1}{2}\Bigr)!
+    &\equiv
+    a_1\cdots a_\ell\,c_1\cdots c_m
+    \pmod p\\
+    &\equiv
+    a_1\cdots a_\ell\,(p-b_1)\cdots(p-b_m)
+    \pmod p\\
+    &\equiv
+    (-1)^m a_1\cdots a_\ell\,b_1\cdots b_m
+    \pmod p\\
+    &\equiv
+    (-1)^m n\cdot 2n\cdots\frac{p-1}{2}n
+    \pmod p\\
+    &\equiv
+    (-1)^m n^{(p-1)/2}\Bigl(\frac{p-1}{2}\Bigr)!
+    \pmod p.
+\end{align*}
+The factorial is invertible modulo $p$, so
+\[
+    n^{(p-1)/2}\equiv(-1)^m\pmod p.
+\]
+Euler's criterion completes the proof.
+\end{proof}
+
+\begin{remark}[Exercise from the lecture]
+Write $r_k=kn-p\bigl\lfloor kn/p\bigr\rfloor$. Counting how often $r_k>p/2$
+yields the parity formula
+\[
+    m
+    \equiv
+    \frac{(n+1)(p^2-1)}{8}
+    -
+    \sum_{k=1}^{(p-1)/2}
+    \Bigl\lfloor\frac{kn}{p}\Bigr\rfloor
+    \pmod 2.
+\]
+In particular, if $n$ is odd (or if $p\equiv\pm 1\pmod 8$),
+\[
+    m
+    \equiv
+    \sum_{k=1}^{(p-1)/2}
+    \Bigl\lfloor\frac{kn}{p}\Bigr\rfloor
+    \pmod 2,
+\]
+while if $n$ is even and $p\equiv\pm 3\pmod 8$,
+\[
+    m
+    \equiv
+    1
+    +
+    \sum_{k=1}^{(p-1)/2}
+    \Bigl\lfloor\frac{kn}{p}\Bigr\rfloor
+    \pmod 2.
+\]
+The odd-numerator case will be used in the proof of quadratic reciprocity.
+\end{remark}
+
+% ============================================================
+\section*{Summary of the Lecture}
+% ============================================================
+
+The lecture develops the following chain of ideas:
+\[
+\boxed{
+\text{Wilson}
+\longrightarrow
+\text{quadratic residues}
+\longrightarrow
+\text{Legendre symbol}
+\longrightarrow
+\text{Euler's criterion}
+\longrightarrow
+\text{Gauss's lemma}
+}.
+\]
+
+The key formulas are
+\[
+    x^2\equiv -1\pmod p
+    \quad\text{solvable}
+    \quad\Longleftrightarrow\quad
+    p\equiv 1\pmod 4,
+\]
+\[
+    \left(\frac np\right)
+    \equiv
+    n^{(p-1)/2}\pmod p,
+\]
+\[
+    \left(\frac{-1}{p}\right)=(-1)^{(p-1)/2},
+    \qquad
+    \left(\frac 2p\right)=(-1)^{(p^2-1)/8},
+\]
+and
+\[
+    \left(\frac np\right)=(-1)^m
+    \qquad\text{by Gauss's lemma}.
+\]
+
+\clearpage
+
+\section*{Lecture 5}
+\addcontentsline{toc}{section}{Lecture 5}
+
+% ============================================================
+\section{The Quadratic Reciprocity Law}
+% ============================================================
+
+\begin{theorem}[Quadratic reciprocity]
+Let $p$ and $q$ be distinct odd primes. Then
+\[
+    \boxed{
+    \left(\frac pq\right)
+    \left(\frac qp\right)
+    =
+    (-1)^{(p-1)(q-1)/4}.
+    }
+\]
+Equivalently,
+\[
+\left(\frac pq\right)
+=
+\begin{cases}
+\displaystyle\left(\frac qp\right),
+    & \text{if at least one of }p,q\text{ is }\equiv 1\pmod 4,\\[2mm]
+\displaystyle -\left(\frac qp\right),
+    & \text{if }p\equiv q\equiv 3\pmod 4.
+\end{cases}
+\]
+\end{theorem}
+
+\subsection{What is a reciprocity law?}
+
+Following Wyman, a reciprocity law for a polynomial $f(x)\in\Z[x]$ is a
+rule that determines the set of primes $p$ for which $f(x)\pmod p$ splits
+completely (into linear factors).
+
+For $f(x)=x^2-n$, the congruence $x^2\equiv n\pmod p$ is solvable if and
+only if $f$ splits completely modulo $p$ (when $p\nmid n$). If $p\mid n$
+then $f(x)\equiv x^2\pmod p$. For $p=2$,
+\[
+    x^2-1\equiv(x-1)^2\pmod 2.
+\]
+If $n\equiv a^2\pmod p$, then
+\[
+    x^2-n\equiv(x-a)(x+a)\pmod p;
+\]
+if not, then $x^2-n$ is irreducible modulo $p$.
+
+Thus quadratic reciprocity computes $\bigl(\frac np\bigr)$ by exchanging
+the roles of the two primes, which determines the splitting of $x^2-n$.
+
+\begin{example}[$x^2-17$]
+For which odd primes $p$ does $x^2-17$ split completely modulo $p$? We need
+$\bigl(\frac{17}{p}\bigr)=1$. Since $17\equiv 1\pmod 4$,
+\[
+    \left(\frac{17}{p}\right)=\left(\frac{p}{17}\right).
+\]
+The squares modulo $17$ are
+\[
+    \{1^2,\ldots,8^2\}
+    \equiv
+    \{1,4,9,16,8,2,15,13\}\pmod{17},
+\]
+so the quadratic residues modulo $17$ are
+\[
+    \{1,2,4,8,9,13,15,16\}.
+\]
+Hence $x^2-17$ splits modulo an odd prime $p\neq 17$ if and only if
+\[
+    p\equiv 1,2,4,8,9,13,15,16\pmod{17}.
+\]
+\end{example}
+
+\begin{example}[$x^2-11$]
+Now $11\equiv 3\pmod 4$, so
+\[
+    \left(\frac{11}{p}\right)
+    =
+    (-1)^{(p-1)/2}
+    \left(\frac{p}{11}\right).
+\]
+The quadratic residues modulo $11$ are $\{1,3,4,5,9\}$. Therefore
+$\bigl(\frac{11}{p}\bigr)=1$ if and only if either
+\[
+    p\equiv 1\pmod 4
+    \qquad\text{and}\qquad
+    p\equiv 1,3,4,5,9\pmod{11},
+\]
+or
+\[
+    p\equiv 3\pmod 4
+    \qquad\text{and}\qquad
+    p\equiv 2,6,7,8,10\pmod{11}.
+\]
+The Chinese Remainder Theorem, working modulo $44$, yields the odd classes
+\[
+    p\equiv 1,5,7,9,19,25,35,37,39,43\pmod{44}.
+\]
+Thus $x^2-11$ splits completely modulo an odd prime $p\neq 11$ precisely
+for these residue classes modulo $44$.
+\end{example}
+
+% ============================================================
+\section{Proof of Quadratic Reciprocity}
+% ============================================================
+
+Let $p$ and $q$ be distinct odd primes. By Gauss's lemma and the counting
+exercise of Lecture~4 (the numerator $q$ is odd),
+\[
+    \left(\frac qp\right)=(-1)^m,
+    \qquad
+    m\equiv\sum_{x=1}^{(p-1)/2}\Bigl\lfloor\frac{qx}{p}\Bigr\rfloor\pmod 2,
+\]
+and similarly
+\[
+    \left(\frac pq\right)=(-1)^n,
+    \qquad
+    n\equiv\sum_{y=1}^{(q-1)/2}\Bigl\lfloor\frac{py}{q}\Bigr\rfloor\pmod 2.
+\]
+It is enough to prove
+\[
+    m+n\equiv\frac{(p-1)(q-1)}{4}\pmod 2.
+\]
+
+Consider the function
+\[
+    f(x,y)=qx-py
+\]
+on the rectangle
+\[
+    X\times Y
+    =
+    \Bigl\{1,\ldots,\frac{p-1}{2}\Bigr\}
+    \times
+    \Bigl\{1,\ldots,\frac{q-1}{2}\Bigr\}.
+\]
+There are $(p-1)(q-1)/4$ points in this set.
+
+The function $f$ never vanishes: $qx=py$ would force $p\mid x$, which is
+impossible. It is injective: if $f(x_1,y_1)=f(x_2,y_2)$, then
+\[
+    q(x_1-x_2)=p(y_1-y_2),
+\]
+so $p\mid(x_1-x_2)$ and $q\mid(y_1-y_2)$. The bounds force
+$(x_1,y_1)=(x_2,y_2)$. Thus the image of $f$ consists of
+$(p-1)(q-1)/4$ distinct nonzero integers.
+
+If $f(x,y)>0$, then $qx>py$, so $y<qx/p$. The admissible $y$ for fixed $x$
+are
+\[
+    1\le y\le\Bigl\lfloor\frac{qx}{p}\Bigr\rfloor.
+\]
+Hence the number of points with $f>0$ is
+\[
+    \sum_{x=1}^{(p-1)/2}\Bigl\lfloor\frac{qx}{p}\Bigr\rfloor.
+\]
+Likewise, the number of points with $f<0$ is
+\[
+    \sum_{y=1}^{(q-1)/2}\Bigl\lfloor\frac{py}{q}\Bigr\rfloor.
+\]
+Adding these two counts,
+\[
+    \frac{(p-1)(q-1)}{4}
+    =
+    \sum_{x=1}^{(p-1)/2}\Bigl\lfloor\frac{qx}{p}\Bigr\rfloor
+    +
+    \sum_{y=1}^{(q-1)/2}\Bigl\lfloor\frac{py}{q}\Bigr\rfloor.
+\]
+The right-hand side is $m+n$ modulo $2$, which proves quadratic reciprocity.
+
+\begin{example}
+Is $219$ a quadratic residue modulo $383$? Note that $383$ is prime and
+$383\equiv 3\pmod 4$, while $219=3\cdot 73$. Then
+\[
+    \left(\frac{219}{383}\right)
+    =
+    \left(\frac{3}{383}\right)
+    \left(\frac{73}{383}\right).
+\]
+Since $3\equiv 383\equiv 3\pmod 4$,
+\[
+    \left(\frac{3}{383}\right)
+    =
+    -\left(\frac{383}{3}\right)
+    =
+    -\left(\frac{2}{3}\right)
+    =
+    -(-1)
+    =1,
+\]
+because $383\equiv 2\pmod 3$ and $3\equiv 3\pmod 8$.
+
+Next $73\equiv 1\pmod 4$, so
+\[
+    \left(\frac{73}{383}\right)
+    =
+    \left(\frac{383}{73}\right)
+    =
+    \left(\frac{18}{73}\right)
+    =
+    \left(\frac{2}{73}\right)
+    \left(\frac{3}{73}\right)^2
+    =
+    \left(\frac{2}{73}\right).
+\]
+Since $73\equiv 1\pmod 8$, we have $\bigl(\frac{2}{73}\bigr)=1$. Therefore
+\[
+    \left(\frac{219}{383}\right)=1.
+\]
+\end{example}
+
+% ============================================================
+\section{The Jacobi Symbol}
+% ============================================================
+
+The Jacobi symbol extends the Legendre symbol to odd composite denominators.
+
+\begin{definition}[Jacobi symbol]
+Let $m>1$ be an odd integer, with prime factorization
+\[
+    m=\prod_{i=1}^r p_i^{\alpha_i}.
+\]
+For an integer $n$, the Jacobi symbol is
+\[
+    \boxed{
+    \left(\frac nm\right)
+    =
+    \prod_{i=1}^r
+    \left(\frac n{p_i}\right)^{\alpha_i}.
+    }
+\]
+It is a completely multiplicative function of $n$, taking values in
+$\{0,\pm 1\}$, and the factors on the right are Legendre symbols.
+\end{definition}
+
+\begin{remark}
+Let $m>1$ be odd and suppose $x^2\equiv n\pmod m$ has a solution. Then
+$\bigl(\frac nm\bigr)=1$ whenever $\gcdop(n,m)=1$. Indeed, if
+$a^2\equiv n\pmod m$, then for every prime $p\mid m$ we have
+$a^2\equiv n\pmod p$, so each Legendre factor is $1$.
+
+This implication is one-directional: the converse fails for composite $m$.
+For instance
+\[
+    \left(\frac{2}{9}\right)
+    =
+    \left(\frac{2}{3}\right)^2
+    =1,
+\]
+but the squares modulo $9$ are $0,1,4,7$, so $x^2\equiv 2\pmod 9$ has no
+solution.
+\end{remark}
+
+\begin{theorem}[Statements used without proof]
+Let $m,n>1$ be odd integers.
+
+\begin{enumerate}[label=\arabic*.]
+    \item
+    \[
+        \left(\frac{-1}{m}\right)=(-1)^{(m-1)/2},
+        \qquad
+        \left(\frac{2}{m}\right)=(-1)^{(m^2-1)/8}.
+    \]
+
+    \item If $\gcdop(m,n)=1$, then
+    \[
+        \left(\frac nm\right)
+        \left(\frac mn\right)
+        =
+        (-1)^{(m-1)(n-1)/4}.
+    \]
+\end{enumerate}
+\end{theorem}
+
+% ============================================================
+\section{Polynomial Congruences Modulo Prime Powers}
+% ============================================================
+
+By the Chinese Remainder Theorem, solving $f(x)\equiv 0\pmod m$ reduces to
+solving
+\[
+    f(x)\equiv 0\pmod{p^\alpha}
+\]
+for every prime power $p^\alpha$ exactly dividing $m$. A solution modulo
+$p^\alpha$ automatically gives a solution modulo $p^\beta$ for every
+$1\le\beta\le\alpha$: if $f(a)\equiv 0\pmod{p^\alpha}$ and $\beta<\alpha$,
+write $a=kp^\beta+r$ with $0\le r<p^\beta$; then $a\equiv r\pmod{p^\beta}$,
+so $f(r)\equiv f(a)\equiv 0\pmod{p^\beta}$.
+
+The converse lifting problem is: given $0\le r<p^{\alpha-1}$ with
+$f(r)\equiv 0\pmod{p^{\alpha-1}}$, can one find $0\le a<p^\alpha$ with
+\[
+    f(a)\equiv 0\pmod{p^\alpha}
+    \qquad\text{and}\qquad
+    a\equiv r\pmod{p^{\alpha-1}}?
+\]
+
+\begin{theorem}[Hensel's lemma]
+Let $p$ be a prime, let $\alpha\ge 2$, and let $f\in\Z[x]$. Suppose
+$0\le r<p^{\alpha-1}$ satisfies
+\[
+    f(r)\equiv 0\pmod{p^{\alpha-1}}.
+\]
+
+\begin{enumerate}[label=\arabic*.]
+    \item If $f'(r)\not\equiv 0\pmod p$, then there exists a unique $a$ with
+    $0\le a<p^\alpha$ such that
+    \[
+        f(a)\equiv 0\pmod{p^\alpha}
+        \qquad\text{and}\qquad
+        a\equiv r\pmod{p^{\alpha-1}}.
+    \]
+
+    \item If $f'(r)\equiv 0\pmod p$, then:
+    \begin{enumerate}[label=(\roman*)]
+        \item if $f(r)\equiv 0\pmod{p^\alpha}$, there are exactly $p$ distinct
+        solutions $a$ modulo $p^\alpha$ with $a\equiv r\pmod{p^{\alpha-1}}$;
+
+        \item if $f(r)\not\equiv 0\pmod{p^\alpha}$, there is no such solution.
+    \end{enumerate}
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}[Proof (not given in lecture)]
+Every candidate lift has the form $a=r+tp^{\alpha-1}$ with $0\le t<p$.
+Taylor expansion gives
+\[
+    f(r+tp^{\alpha-1})
+    =
+    f(r)+f'(r)\,tp^{\alpha-1}
+    +\frac{f''(r)}{2}(tp^{\alpha-1})^2
+    +\cdots.
+\]
+For $\alpha\ge 2$ one has $2(\alpha-1)\ge\alpha$, so every term of degree
+$\ge 2$ is $0$ modulo $p^\alpha$. Thus
+\[
+    f(r+tp^{\alpha-1})
+    \equiv
+    f(r)+f'(r)\,tp^{\alpha-1}
+    \pmod{p^\alpha}.
+\]
+Write $f(r)=kp^{\alpha-1}$. The congruence $f(a)\equiv 0\pmod{p^\alpha}$
+becomes
+\[
+    k+f'(r)\,t\equiv 0\pmod p.
+\]
+If $f'(r)\not\equiv 0\pmod p$, there is a unique solution $t$ modulo $p$.
+If $f'(r)\equiv 0\pmod p$, then either $k\equiv 0\pmod p$, in which case
+every $t$ works, or $k\not\equiv 0\pmod p$, in which case there is no
+solution.
+\end{proof}
+
+\begin{example}
+The congruence $x^2\equiv 2\pmod 4$ has no solution, since squares modulo
+$4$ are only $0$ and $1$. Thus a solution modulo $p$ need not lift when
+the derivative condition fails.
+\end{example}
+
+% ============================================================
+\section*{Summary of the Lecture}
+% ============================================================
+
+The lecture develops the following chain of ideas:
+\[
+\boxed{
+\text{Gauss's lemma}
+\longrightarrow
+\text{quadratic reciprocity}
+\longrightarrow
+\text{Jacobi symbol}
+\longrightarrow
+\text{Hensel lifting}
+}.
+\]
+
+The key formulas are
+\[
+    \left(\frac pq\right)
+    \left(\frac qp\right)
+    =
+    (-1)^{(p-1)(q-1)/4},
+\]
+the Jacobi symbol extends the Legendre symbol (though
+$\bigl(\tfrac nm\bigr)=1$ need not imply solvability for composite $m$),
+and Hensel gives a unique lift when $f'(r)\not\equiv 0\pmod p$.
+
+\clearpage
+
+\section*{Lecture 6}
+\addcontentsline{toc}{section}{Lecture 6}
+
+% ============================================================
+\section{Congruences Modulo Prime Powers}
+% ============================================================
+
+A solution of $f(x)\equiv 0\pmod{p^\alpha}$ with $\alpha\ge 2$ is in
+particular a solution modulo $p^{\alpha-1}$. Hensel's lemma of the previous
+lecture addresses the converse: when a solution modulo $p^{\alpha-1}$ lifts
+to a solution modulo $p^\alpha$ in the same residue class.
+
+% ============================================================
+\section{Units and Primitive Roots}
+% ============================================================
+
+Recall that a complete residue system modulo $m$ represents $\Z/m\Z$, while
+a reduced residue system represents the unit group
+\[
+    \units m.
+\]
+For example,
+\[
+    \units{2}=\{\overline 1\},
+    \qquad
+    \units{3}=\{\overline 1,\overline 2\},
+    \qquad
+    \units{4}=\{\overline 1,\overline 3\}.
+\]
+Groups of prime order are cyclic. Direct inspection gives:
+\begin{align*}
+    m=5&\colon
+    \units 5=\{\overline 1,\overline 2,\overline 3,\overline 4\}
+    \text{ is cyclic of order }4,\\
+    m=6&\colon
+    \units 6=\{\overline 1,\overline 5\}
+    \text{ is cyclic},\\
+    m=7&\colon
+    \units 7
+    \text{ is cyclic, with generator }\overline 5,\\
+    m=8&\colon
+    \units 8=\{\overline 1,\overline 3,\overline 5,\overline 7\}
+    \text{ is abelian but not cyclic}.
+\end{align*}
+
+By Euler's theorem, every $a\in\units m$ satisfies
+\[
+    a^{\phiE(m)}\equiv 1\pmod m.
+\]
+The natural question is whether there exists $a$ whose order is exactly
+$\phiE(m)$, i.e.\ $a^{\phiE(m)}\equiv 1\pmod m$ but $a^k\not\equiv 1\pmod m$
+for every $0<k<\phiE(m)$. In that case $\units m$ is cyclic.
+
+The complex analogue is a primitive $a$-th root of unity: a solution of
+$X^a=1$ which is not a solution of $X^b=1$ for any $0<b<a$. There are
+$\phiE(a)$ primitive $a$-th roots of unity.
+
+The multiplicative order $\ord_m(a)$ of a unit $a$ divides $\phiE(m)$.
+
+\begin{definition}[Primitive root]
+Let $m>1$ and let $a\in\Z$ with $\gcdop(a,m)=1$. We say that $a$ is a
+\emph{primitive root modulo $m$} if
+\[
+    \ord_m(a)=\phiE(m).
+\]
+Equivalently,
+\[
+    \{a,a^2,\ldots,a^{\phiE(m)}\}
+    =
+    \units m
+\]
+as sets of residue classes. Thus $a$ is a primitive root modulo $m$ if and
+only if $\units m$ is cyclic and $a$ generates it.
+\end{definition}
+
+\begin{remark}[Exercise]
+Let $m>1$, $\gcdop(a,m)=1$, and $\ord_m(a)=k$. Then:
+
+\begin{enumerate}[label=\arabic*.]
+    \item $a^g\equiv a^h\pmod m$ if and only if $g\equiv h\pmod k$;
+
+    \item $a^g\equiv 1\pmod m$ if and only if $k\mid g$;
+
+    \item $1,a,a^2,\ldots,a^{k-1}$ are pairwise incongruent modulo $m$.
+\end{enumerate}
+\end{remark}
+
+% ============================================================
+\section{The Unit Group Modulo a Prime is Cyclic}
+% ============================================================
+
+\begin{lemma}
+Let $m>1$, $\gcdop(a,m)=1$, and $\ord_m(a)=k$. Then
+\[
+    \ord_m(a^g)
+    =
+    \frac{k}{\gcdop(k,g)}.
+\]
+\end{lemma}
+
+\begin{proof}
+Let $t=\ord_m(a^g)$. Then $a^{gt}\equiv 1\pmod m$, so $k\mid gt$, or
+equivalently $k/\gcdop(k,g)$ divides $t$.
+
+Conversely,
+\[
+    (a^g)^{k/\gcdop(k,g)}=a^{k\cdot(g/\gcdop(k,g))}\equiv 1,
+\]
+so $t$ divides $k/\gcdop(k,g)$.
+\end{proof}
+
+\begin{lemma}
+For every integer $n\ge 1$,
+\[
+    \sum_{d\mid n}\phiE(d)=n.
+\]
+\end{lemma}
+
+\begin{proof}
+Partition $\{1,2,\ldots,n\}$ according to $\gcdop(k,n)$. For each $d\mid n$,
+set
+\[
+    A_d=\{k:1\le k\le n,\ \gcdop(k,n)=d\}.
+\]
+The map $k\mapsto k/d$ is a bijection
+\[
+    A_d
+    \longrightarrow
+    \{j:1\le j\le n/d,\ \gcdop(j,n/d)=1\},
+\]
+so $|A_d|=\phiE(n/d)$. Therefore
+\[
+    n=\sum_{d\mid n}|A_d|=\sum_{d\mid n}\phiE(n/d)=\sum_{c\mid n}\phiE(c).
+\]
+\end{proof}
+
+\begin{theorem}
+Let $p$ be a prime and let $d\mid(p-1)$. Among $1,2,\ldots,p-1$ there are
+exactly $\phiE(d)$ integers of multiplicative order $d$ modulo $p$.
+\end{theorem}
+
+\begin{corollary}
+Taking $d=p-1$, there are $\phiE(p-1)$ elements of order $p-1$. In
+particular $\units p$ is cyclic, and there exists a primitive root modulo
+every prime $p$.
+\end{corollary}
+
+\begin{proof}
+For each $d\mid(p-1)$ define
+\[
+    B_d=\{a:1\le a\le p-1,\ \ord_p(a)=d\}.
+\]
+These sets partition the nonzero residues, so
+\[
+    p-1=\sum_{d\mid(p-1)}|B_d|.
+\]
+
+\begin{claim}
+If $B_d\neq\varnothing$, then $|B_d|=\phiE(d)$.
+\end{claim}
+
+Suppose $a\in B_d$, so $a^d\equiv 1\pmod p$ and $\ord_p(a)=d$. The $d$
+powers $a,a^2,\ldots,a^d$ are distinct and all satisfy $X^d\equiv 1\pmod p$.
+The polynomial $X^d-1$ has at most $d$ roots in the field $\Z/p\Z$, so these
+powers are \emph{all} the solutions of $X^d\equiv 1$. Any element of order
+$d$ is among them. By the first lemma,
+\[
+    \ord_p(a^k)=d
+    \quad\Longleftrightarrow\quad
+    \gcdop(k,d)=1.
+\]
+There are exactly $\phiE(d)$ such exponents, so $|B_d|=\phiE(d)$.
+
+Therefore
+\[
+    p-1
+    =
+    \sum_{\substack{d\mid(p-1)\\ B_d\neq\varnothing}}\phiE(d)
+    \le
+    \sum_{d\mid(p-1)}\phiE(d)
+    =p-1.
+\]
+Equality throughout forces $B_d\neq\varnothing$ for every $d\mid(p-1)$. In
+particular $B_{p-1}\neq\varnothing$, so a primitive root modulo $p$ exists,
+and $|B_d|=\phiE(d)$ for every such $d$.
+\end{proof}
+
+Thus for a prime $p$ there exists $a\in\{1,\ldots,p-1\}$ with
+\[
+    \{a,a^2,\ldots,a^{p-1}\}=\{1,2,\ldots,p-1\}
+\]
+as residue classes modulo $p$.
+
+\begin{remark}
+There is no integer $a$ which is a primitive root modulo every prime
+(consider a prime factor of $a$). There is also no integer $a$ which is a
+primitive root modulo all but finitely many primes.
+\end{remark}
+
+% ============================================================
+\section{Primitive Roots Cannot Be Squares}
+% ============================================================
+
+\begin{proposition}
+Let $p$ be an odd prime. A primitive root modulo $p$ cannot be a quadratic
+residue modulo $p$.
+\end{proposition}
+
+\begin{proof}
+If $a\equiv b^2\pmod p$ with $p\nmid a$, Euler's criterion gives
+\[
+    a^{(p-1)/2}\equiv 1\pmod p,
+\]
+so $\ord_p(a)$ divides $(p-1)/2$ and cannot equal $p-1$.
+\end{proof}
+
+\begin{theorem}
+Given an integer $a\in\Z$, there are infinitely many primes $p$ such that
+$a$ is not a primitive root modulo $p$.
+\end{theorem}
+
+\begin{proof}
+If $a=0$, then $\gcdop(0,p)=p\neq1$ for every prime $p$, so $0$ is never a
+primitive root. Thus every prime works.
+
+Now assume $a\neq 0$. It is enough to produce infinitely many primes modulo
+which $a$ is a nonzero square (then the previous proposition applies for
+odd primes, while $p=2$ is at most one exception). Write
+\[
+    a=\pm\,2^e b^2 c
+\]
+with $c$ odd and square-free, $c=p_1\cdots p_k$ a product of distinct odd
+primes (the finitely many primes dividing $a$ may be ignored).
+
+If $p\equiv 1\pmod 4$ and $p\equiv 1\pmod{p_i}$ for each $i$, quadratic
+reciprocity gives
+\[
+    \left(\frac{p_i}{p}\right)
+    =
+    \left(\frac{p}{p_i}\right)
+    =
+    \left(\frac{1}{p_i}\right)
+    =1,
+\]
+and likewise $\bigl(\frac{-1}{p}\bigr)=1$. The symbol $\bigl(\frac{2}{p}\bigr)$
+can be controlled by a congruence modulo $8$ if needed.
+
+By the Chinese Remainder Theorem there is a residue class modulo
+$4p_1\cdots p_k$ (or modulo $8$ times that product) consisting of integers
+$n\equiv 1$ at each of these moduli. Dirichlet's theorem on primes in
+arithmetic progressions supplies infinitely many primes in that class, and
+for all such primes $\bigl(\frac ap\bigr)=1$.
+\end{proof}
+
+\subsection{Artin's primitive root conjecture}
+
+A modified question: does there exist an integer $a$ which is a primitive
+root for infinitely many primes $p$?
+
+A stronger question: if $a$ is not a square and $a\neq -1$, do there exist
+infinitely many primes $p$ for which $a$ is a primitive root modulo $p$?
+
+Artin's primitive root conjecture asserts that the answer to the stronger
+question is yes. The conjecture is still open; one does not even know that
+the modified question has a positive answer for some explicit $a$.
+
+Known partial results recorded in the lecture:
+
+\begin{itemize}
+    \item Heath--Brown: at least one of $2$, $3$, $5$ is a primitive root for
+    infinitely many primes.
+
+    \item Hooley: Artin's conjecture is true if the Generalized Riemann
+    Hypothesis is assumed.
+\end{itemize}
+
+% ============================================================
+\section{Which Moduli Admit Primitive Roots?}
+% ============================================================
+
+\begin{theorem}
+Let $m\ge 2$. There exists a primitive root modulo $m$ if and only if
+\[
+    m\in\{2,4,p^n,2p^n\},
+\]
+where $p$ is an odd prime and $n\ge 1$. Equivalently, $\units m$ is cyclic
+precisely for these $m$.
+\end{theorem}
+
+The cases $m=2,4$ and the prime case $m=p$ have been checked. The remaining
+prime-power and twice prime-power cases, and the failure for all other $m$
+(already visible for $m=8$), are the content of the standard structure
+theorem for $\units m$.
+
+% ============================================================
+\section*{Summary of the Lecture}
+% ============================================================
+
+The lecture develops the following chain of ideas:
+\[
+\boxed{
+\text{unit groups}
+\longrightarrow
+\text{primitive roots}
+\longrightarrow
+(\Z/p\Z)^\times\text{ cyclic}
+\longrightarrow
+\text{Artin conjecture}
+}.
+\]
+
+The main results are that $\units p$ is cyclic for every prime $p$, a
+primitive root modulo an odd prime cannot be a square, and $\units m$ is
+cyclic if and only if $m\in\{2,4,p^n,2p^n\}$.
+
+\clearpage
+
+\section*{Lecture 7}
+\addcontentsline{toc}{section}{Lecture 7}
+
+% ============================================================
+\section{Primitive Roots Modulo $m$}
+% ============================================================
+
+Write $S$ for the set of moduli which admit a primitive root:
+\[
+    S=\{2,4,p^k,2p^k:p\text{ an odd prime},\ k\ge 1\}.
+\]
+
+\begin{theorem}
+The group $\units m$ is cyclic if and only if $m\in S$. In that case there
+are exactly
+\[
+    \boxed{\phiE(\phiE(m))}
+\]
+primitive roots modulo $m$. Equivalently, these are the residue classes $x$
+satisfying $\ord_m(x)=\phiE(m)$, and
+\[
+    \units m=\{a,a^2,\ldots,a^{\phiE(m)}\}
+\]
+whenever $a$ is one such primitive root.
+\end{theorem}
+
+\subsection{A Useful Criterion}
+
+Suppose $n>1$. If there exists an integer $a\ge1$ such that
+\[
+    a^{n-1}\equiv1\pmod n
+\]
+and, for every prime divisor $q$ of $n-1$,
+\[
+    a^{(n-1)/q}\not\equiv1\pmod n,
+\]
+then $n$ is prime.
+
+Indeed, the order of $a$ modulo $n$ must divide $n-1$. The displayed
+conditions force
+\[
+    \ord_n(a)=n-1.
+\]
+Since
+\[
+    \ord_n(a)\mid\phiE(n),
+\]
+we obtain
+\[
+    n-1\mid\phiE(n).
+\]
+But
+\[
+    \phiE(n)\le n-1
+\]
+for $n>1$, and hence
+\[
+    \phiE(n)=n-1.
+\]
+Therefore $n$ is prime.
+
+% ============================================================
+\section{Index / Discrete Logarithm}
+% ============================================================
+
+Let $m\in\N$ be such that $\units m$ is cyclic, and let $a$ be a
+primitive root modulo $m$. Then
+\[
+    \units m
+    =
+    \{a,a^2,\ldots,a^{\phiE(m)}\}.
+\]
+
+\begin{definition}[Index / discrete logarithm]
+For any
+\[
+    b\in\units m,
+\]
+there exists a unique integer
+\[
+    1\le n\le\phiE(m)
+\]
+such that
+\[
+    b\equiv a^n\pmod m.
+\]
+We define
+\[
+    \boxed{\ind_a b=n}
+\]
+and call $n$ the \emph{index} (or discrete logarithm) of $b$ to the base
+$a$ modulo $m$.
+\end{definition}
+
+Thus
+\[
+    b\equiv a^{\ind_a b}\pmod m.
+\]
+
+For positive real numbers $x,y,z$ with $x\neq 1$ and $y\neq 1$,
+\[
+    x=y^z
+    \quad\Longrightarrow\quad
+    \log_y x=z,
+\]
+and hence
+\[
+    \log_x z
+    =
+    \frac{\log_y z}{\log_y x}.
+\]
+The index satisfies analogous change-of-base and logarithm-like identities.
+
+\subsection{Basic Properties of the Index}
+
+Let $m\in S$, where $S$ denotes the moduli for which a primitive root
+exists, and let $a$ be a primitive root modulo $m$.
+
+Let $b_1,b_2$ be integers satisfying
+\[
+    \gcdop(b_1,m)=\gcdop(b_2,m)=1.
+\]
+Then:
+
+\begin{enumerate}[label=\Roman*.]
+    \item
+    \[
+        \ind_a(b_1b_2)
+        \equiv
+        \ind_a b_1+\ind_a b_2
+        \pmod{\phiE(m)}.
+    \]
+
+    \item For any integer $n$,
+    \[
+        \ind_a(b_1^n)
+        \equiv
+        n\,\ind_a b_1
+        \pmod{\phiE(m)}.
+    \]
+
+    \item
+    \[
+        \ind_a(1)
+        \equiv
+        \phiE(m)
+        \equiv0
+        \pmod{\phiE(m)}.
+    \]
+
+    \item If $m>2$, then
+    \[
+        \ind_a(-1)
+        \equiv
+        \frac{\phiE(m)}2
+        \pmod{\phiE(m)}.
+    \]
+
+    \item Let $a,a_1$ be two primitive roots modulo $m$ and $b\in\units m$.
+    Then
+    \[
+        \ind_a b
+        \equiv
+        (\ind_{a_1} b)\,(\ind_a a_1)
+        \pmod{\phiE(m)},
+    \]
+    the analogue of $\log_x y=(\log_z y)(\log_x z)$.
+\end{enumerate}
+
+\begin{proof}[Proof (not given in lecture)]
+Write
+\[
+    b_1\equiv a^{r}\pmod m,
+    \qquad
+    b_2\equiv a^{s}\pmod m.
+\]
+Then
+\[
+    b_1b_2\equiv a^{r+s}\pmod m,
+\]
+which gives the first identity modulo $\phiE(m)$.
+
+Similarly,
+\[
+    b_1^n\equiv a^{nr}\pmod m,
+\]
+giving the second identity.
+
+Since
+\[
+    a^{\phiE(m)}\equiv1\pmod m,
+\]
+the index of $1$ is $0$ modulo $\phiE(m)$, which is represented by
+$\phiE(m)$ in the lecture's convention.
+
+Finally,
+\[
+    (-1)^2\equiv1\pmod m,
+\]
+and the order of $-1$ is $2$ (for $m>2$). Therefore its index is the
+unique exponent giving order $2$, namely
+\[
+    \frac{\phiE(m)}2
+\]
+modulo $\phiE(m)$.
+
+For the change-of-base formula, write $b\equiv a_1^{r}\pmod m$ and
+$a_1\equiv a^{s}\pmod m$. Then $b\equiv a^{rs}\pmod m$, so
+$\ind_a b\equiv rs\equiv(\ind_{a_1}b)(\ind_a a_1)$ modulo $\phiE(m)$.
+\end{proof}
+
+\subsection{Squares via the Index}
+
+Let $m\in S$ with $m>2$, and let $b\in\units m$. Then $b$ is a square modulo
+$m$ if and only if $\ind_a b$ is even, for some primitive root $a$ modulo
+$m$. Equivalently, the index is even for every primitive root modulo $m$.
+
+\subsection{Solving Exponential Congruences}
+
+Consider
+\[
+    x^k\equiv b\pmod m,
+    \qquad
+    m\in S,
+    \qquad
+    k\ge 1,
+    \qquad
+    \gcdop(b,m)=1,
+\]
+where $x$ is sought in $\units m$.
+Let $a$ be a primitive root modulo $m$. Write
+\[
+    b\equiv a^{\ind_a b}\pmod m
+\]
+and
+\[
+    x\equiv a^{\ind_a x}\pmod m.
+\]
+Then
+\[
+    x^k\equiv b\pmod m
+\]
+is equivalent to
+\[
+    k\,\ind_a x
+    \equiv
+    \ind_a b
+    \pmod{\phiE(m)}.
+\]
+
+Therefore the exponential congruence has a solution if and only if
+\[
+    \boxed{
+    \gcdop\!\left(k,\phiE(m)\right)
+    \mid
+    \ind_a b
+    }.
+\]
+
+In that case, it has exactly
+\[
+    \gcdop\!\left(k,\phiE(m)\right)
+\]
+solutions.
+
+\begin{theorem}
+For $m\in S$, $k\ge 1$, and $\gcdop(b,m)=1$, the congruence
+\[
+    x^k\equiv b\pmod m
+\]
+in $\units m$ has a solution if and only if
+\[
+    \boxed{
+    b^{\phiE(m)/d}\equiv1\pmod m
+    },
+    \qquad
+    d=\gcdop(k,\phiE(m)).
+    \]
+\end{theorem}
+
+\begin{proof}
+Since $a$ is primitive,
+\[
+    b\equiv a^{\ind_a b}\pmod m.
+\]
+The linear congruence
+\[
+    k\,\ind_a x
+    \equiv
+    \ind_a b
+    \pmod{\phiE(m)}
+\]
+is solvable if and only if
+\[
+    d\mid\ind_a b,
+    \qquad
+    d=\gcdop(k,\phiE(m)).
+\]
+This is equivalent to
+\[
+    \phiE(m)\mid
+    \frac{\phiE(m)}d\,\ind_a b.
+\]
+Hence
+\[
+    a^{(\phiE(m)/d)\ind_a b}
+    \equiv1\pmod m.
+\]
+But
+\[
+    a^{\ind_a b}\equiv b\pmod m,
+\]
+so this is exactly
+\[
+    b^{\phiE(m)/d}\equiv1\pmod m.
+\]
+\end{proof}
+
+\subsection{Example: $x^3\equiv4\pmod{13}$}
+
+Consider
+\[
+    x^3\equiv4\pmod{13}.
+\]
+Take $2$ as a primitive root modulo $13$. The powers of $2$ modulo $13$
+are
+\[
+\begin{array}{c|cccccccccccc}
+k&1&2&3&4&5&6&7&8&9&10&11&12\\
+\hline
+2^k&2&4&8&3&6&12&11&9&5&10&7&1
+\end{array}
+\]
+so
+\[
+    \ind_2(4)=2.
+\]
+The congruence becomes
+\[
+    3\ind_2 x\equiv2\pmod{12}.
+\]
+Since
+\[
+    \gcdop(3,12)=3
+\]
+and
+\[
+    3\nmid2,
+\]
+there is no solution.
+
+Thus
+\[
+    \boxed{x^3\equiv4\pmod{13}\text{ has no solution}.}
+\]
+
+\subsection{Example: $x^3\equiv5\pmod{13}$}
+
+Again use $2$ as a primitive root modulo $13$. Since
+\[
+    2^9\equiv5\pmod{13},
+\]
+we have
+\[
+    \ind_2(5)=9.
+\]
+Thus
+\[
+    3\ind_2 x\equiv9\pmod{12}.
+\]
+Dividing by $3$ gives
+\[
+    \ind_2 x\equiv3\pmod4.
+\]
+Therefore
+\[
+    \ind_2 x\in\{3,7,11\}.
+\]
+The corresponding solutions are
+\[
+    x\in\{2^3,2^7,2^{11}\}\pmod{13},
+\]
+i.e.
+\[
+    \boxed{x\equiv8,11,7\pmod{13}.}
+\]
+
+\subsection{Example: $4x^9\equiv 7\pmod{13}$}
+
+Again take the primitive root $2$ modulo $13$. From the table,
+\[
+    \ind_2 4=2,
+    \qquad
+    \ind_2 7=11.
+\]
+The congruence becomes
+\[
+    \ind_2 4+9\ind_2 x\equiv\ind_2 7\pmod{12},
+\]
+that is
+\[
+    2+9\ind_2 x\equiv 11\pmod{12},
+    \qquad
+    9\ind_2 x\equiv 9\pmod{12}.
+\]
+Dividing by $3$ yields
+\[
+    3\ind_2 x\equiv 3\pmod 4,
+    \qquad
+    \ind_2 x\equiv 1\pmod 4.
+\]
+Thus $\ind_2 x\in\{1,5,9\}$, and
+\[
+    \boxed{x\equiv 2,\ 6,\ 5\pmod{13}.}
+\]
+
+% ============================================================
+\section{Exponential Congruences: General Form}
+% ============================================================
+
+Consider
+\[
+    b^x\equiv c\pmod m,
+    \qquad
+    m\in S,
+    \qquad
+    \gcdop(b,m)=\gcdop(c,m)=1.
+\]
+Taking indices with respect to a primitive root $a$ gives
+\[
+    \ind_a(b^x)
+    \equiv
+    \ind_a(c)
+    \pmod{\phiE(m)}.
+\]
+Using the index laws,
+\[
+    x\,\ind_a b
+    \equiv
+    \ind_a c
+    \pmod{\phiE(m)}.
+\]
+
+Thus the problem reduces to a linear congruence:
+\[
+    \boxed{
+    x\,\ind_a b
+    \equiv
+    \ind_a c
+    \pmod{\phiE(m)}
+    }.
+\]
+
+It has a solution precisely when
+\[
+    \boxed{
+    \gcdop(\ind_a b,\phiE(m))
+    \mid
+    \ind_a c
+    }.
+\]
+
+\begin{example}
+As an exercise, solve
+\[
+    10^x\equiv 9\pmod{13}.
+\]
+\end{example}
+
+% ============================================================
+\section{Finite Fields}
+% ============================================================
+
+\subsection{The Field $\Z/2\Z$}
+
+The lecture begins the finite-field discussion with
+\[
+    \Z/2\Z.
+\]
+
+Let $F$ be a finite field with $q$ elements. Then
+\[
+    F^\times=F\setminus\{0\}
+\]
+is a multiplicative group with
+\[
+    |F^\times|=q-1.
+\]
+Consequently every element of $F^\times$ satisfies
+\[
+    x^{q-1}=1.
+\]
+Equivalently, every element of $F$ satisfies
+\[
+    \boxed{x^q-x=0.}
+\]
+
+\subsection{Polynomial Root Bound}
+
+\begin{lemma}
+Let $F$ be a field and let
+\[
+    f(x)\in F[x]
+\]
+be a non-zero polynomial of degree $n\ge1$. Then $f$ has at most $n$
+distinct roots in $F$.
+\end{lemma}
+
+\begin{proof}
+Suppose $f$ has distinct roots
+\[
+    \alpha_1,\ldots,\alpha_r.
+\]
+Then each root gives a factor:
+\[
+    (x-\alpha_i)\mid f(x).
+\]
+Since the roots are distinct,
+\[
+    \prod_{i=1}^r(x-\alpha_i)\mid f(x).
+\]
+Therefore
+\[
+    r\le\deg f=n.
+\]
+\end{proof}
+
+\subsection{Factorization of $x^q-x$}
+
+Since every element of $F$ satisfies
+\[
+    x^q-x=0,
+\]
+the polynomial $x^q-x$ has all $q$ elements of $F$ as roots. Since its
+degree is $q$, it follows that
+\[
+    \boxed{
+    x^q-x
+    =
+    \prod_{\alpha\in F}(x-\alpha)
+    }.
+\]
+
+\begin{corollary}
+Let $F$ be a finite field with $q$ elements, and let $L$ be any extension
+field of $F$. An element $\alpha\in L$ lies in $F$ if and only if
+$\alpha^q=\alpha$.
+\end{corollary}
+
+\begin{corollary}
+Let $F$ be a finite field with $q$ elements and let $f(x)\in F[x]$ have
+degree $d$ and divide $x^q-x$. Then $f$ has $d$ distinct roots in $F$.
+\end{corollary}
+
+\begin{proof}
+Write $x^q-x=f(x)g(x)$. The left-hand side is a product of $q$ distinct
+linear factors, so $f$ is square-free and splits completely in $F$.
+\end{proof}
+
+More generally, if $F$ is a finite field with $q$ elements and
+$K\subseteq F$ is a subfield with $|K|=q'$, then every $\alpha\in K$
+satisfies $\alpha^{q'}=\alpha$.
+
+% ============================================================
+\section{Cyclicity of the Multiplicative Group of a Finite Field}
+% ============================================================
+
+Finite fields share the cyclicity property observed earlier for the
+groups
+\[
+    \units m
+\]
+for the moduli $m$ admitting primitive roots.
+
+\begin{theorem}
+Let $F$ be a finite field with $q$ elements. Then
+\[
+    \boxed{F^\times\text{ is cyclic}.}
+\]
+In particular, there exists $\alpha\in F^\times$ such that
+\[
+    \ord(\alpha)=q-1.
+\]
+\end{theorem}
+
+\subsection{Proof}
+
+Every element $\alpha\in F^\times$ satisfies
+\[
+    \alpha^{q-1}=1.
+\]
+Hence the order of every element divides $q-1$.
+
+For every divisor
+\[
+    d\mid q-1,
+\]
+define
+\[
+    B_d
+    =
+    \{\,\alpha\in F^\times:\ord(\alpha)=d\,\}.
+\]
+
+The sets $B_d$ partition $F^\times$. Thus
+\[
+    q-1
+    =
+    \sum_{d\mid q-1}|B_d|.
+\]
+
+\subsection{Claim: $|B_d|\le\phiE(d)$}
+
+Suppose
+\[
+    B_d\neq\varnothing
+\]
+and choose $\alpha\in B_d$. Then
+\[
+    \ord(\alpha)=d.
+\]
+The elements
+\[
+    \alpha,\alpha^2,\ldots,\alpha^d
+\]
+are all distinct, and all satisfy $X^d=1$. The polynomial $X^d-1$ has at
+most $d$ roots in the field $F$, so these powers are all the solutions of
+$X^d=1$. Any element of order $d$ is therefore among them.
+
+For
+\[
+    1\le k\le d,
+\]
+we have
+\[
+    \ord(\alpha^k)
+    =
+    \frac{d}{\gcdop(k,d)}.
+\]
+Therefore
+\[
+    \ord(\alpha^k)=d
+    \quad\Longleftrightarrow\quad
+    \gcdop(k,d)=1.
+\]
+There are exactly $\phiE(d)$ such values of $k$. Hence
+\[
+    |B_d|=\phiE(d)
+\]
+whenever $B_d\neq\varnothing$.
+
+Consequently,
+\[
+    q-1
+    =
+    \sum_{\substack{d\mid q-1\\B_d\neq\varnothing}}
+    \phiE(d).
+\]
+
+\subsection{Existence of an Element of Order $q-1$}
+
+Suppose, for contradiction, that $F^\times$ has no element of order
+$q-1$. Then
+\[
+    B_{q-1}=\varnothing.
+\]
+Hence
+\[
+    q-1
+    =
+    \sum_{\substack{d\mid q-1\\d<q-1\\B_d\neq\varnothing}}
+    \phiE(d)
+    \le
+    \sum_{\substack{d\mid q-1\\d<q-1}}\phiE(d).
+\]
+But
+\[
+    \sum_{d\mid n}\phiE(d)=n,
+\]
+so
+\[
+    \sum_{\substack{d\mid q-1\\d<q-1}}\phiE(d)
+    =
+    (q-1)-\phiE(q-1)
+    <q-1,
+\]
+a contradiction.
+
+Therefore
+\[
+    B_{q-1}\neq\varnothing.
+\]
+Thus there exists $\alpha\in F^\times$ with
+\[
+    \ord(\alpha)=q-1,
+\]
+and hence
+\[
+    F^\times=\langle\alpha\rangle.
+\]
+
+This proves that
+\[
+    \boxed{F^\times\text{ is cyclic}.}
+\]
+
+% ============================================================
+\section{Finite Fields Have Prime-Power Size}
+% ============================================================
+
+Let $F$ be a finite field with $q$ elements.
+
+Consider the prime subfield
+\[
+    K=\{0,1,2,\ldots,p-1\},
+\]
+where $p$ is the characteristic of $F$. Thus
+\[
+    K\cong\Z/p\Z
+\]
+and $K$ has $p$ elements.
+
+Hence $K$ is a subfield of $F$:
+\[
+    K\subseteq F.
+\]
+
+Now regard $F$ as a vector space over $K$. Let
+\[
+    \dim_KF=n.
+\]
+Choose a basis
+\[
+    e_1,\ldots,e_n.
+\]
+Every element of $F$ has a unique representation
+\[
+    a_1e_1+\cdots+a_ne_n,
+    \qquad
+    a_i\in K.
+\]
+Since there are $p$ choices for each coefficient,
+\[
+    |F|=p^n.
+\]
+
+Therefore every finite field has prime-power cardinality:
+\[
+    \boxed{|F|=p^n.}
+\]
+
+In particular, there are no finite fields with $6$ elements, since $6$ is
+not a prime power.
+
+\begin{remark}
+The lecture notes that a finite field of size $q$ must have
+\[
+    q=p^n
+\]
+for a prime $p$ and integer $n\ge1$.
+\end{remark}
+
+% ============================================================
+\section*{Summary}
+% ============================================================
+
+The lecture develops the following chain:
+\[
+\boxed{
+\text{Primitive roots}
+\longrightarrow
+\text{cyclic }\units m
+\longrightarrow
+\text{index / discrete logarithm}
+\longrightarrow
+\text{solving exponential congruences}
+}
+\]
+and then moves to finite fields:
+\[
+\boxed{
+\text{finite field}
+\longrightarrow
+F^\times
+\longrightarrow
+\text{orders of elements}
+\longrightarrow
+F^\times\text{ cyclic}
+}.
+\]
+
+The main formulas and results are
+\[
+    \ord_m(a)=\phiE(m)
+    \quad\Longleftrightarrow\quad
+    a\text{ is a primitive root modulo }m,
+\]
+\[
+    \units m\text{ is cyclic}
+    \quad\Longleftrightarrow\quad
+    m\in\{2,4,p^k,2p^k\},
+\]
+\[
+    \#\{\text{primitive roots mod }m\}
+    =
+    \phiE(\phiE(m))
+    \qquad
+    \text{when }\units m\text{ is cyclic},
+\]
+\[
+    \ind_a(b_1b_2)
+    \equiv
+    \ind_a b_1+\ind_a b_2
+    \pmod{\phiE(m)},
+\]
+\[
+    x^k\equiv b\pmod m
+    \quad\Longleftrightarrow\quad
+    k\ind_a x\equiv\ind_a b
+    \pmod{\phiE(m)},
+\]
+\[
+    x^k\equiv b\pmod m
+    \text{ is solvable}
+    \quad\Longleftrightarrow\quad
+    b^{\phiE(m)/d}\equiv1\pmod m,
+    \quad
+    d=\gcdop(k,\phiE(m)),
+\]
+\[
+    x^q-x
+    =
+    \prod_{\alpha\in F}(x-\alpha)
+    \qquad(|F|=q),
+\]
+\[
+    \boxed{F^\times\text{ is cyclic for every finite field }F},
+\]
+and
+\[
+    \boxed{|F|=p^n}
+\]
+for some prime $p$ and integer $n\ge1$.
+
+\clearpage
+
+\section*{Lecture 8}
+\addcontentsline{toc}{section}{Lecture 8}
+
+% ============================================================
+\section{Finite Fields and Their Characteristic}
+% ============================================================
+
+Let $F$ be a finite field with $q$ elements.
+
+A finite field with $q$ elements is characterized by the equation
+\[
+    \boxed{x^q-x=0.}
+\]
+Indeed, every element $\alpha\in F$ satisfies
+\[
+    \alpha^q=\alpha.
+\]
+
+\begin{proposition}
+The additive order of $1\in F$ is a prime number $p$, called the
+characteristic of $F$.
+\end{proposition}
+
+Thus
+\[
+    \charp(F)=p
+\]
+for some prime $p$.
+
+The prime subfield of $F$ is
+\[
+    \boxed{\Z/p\Z}.
+\]
+
+% ============================================================
+\section{Freshman's Dream / Wishful Shortcut}
+% ============================================================
+
+\begin{theorem}[Freshman's dream / wishful shortcut]
+Let $F$ be a finite field of characteristic $p$. Then for
+\[
+    \alpha,\beta\in F
+\]
+and
+\[
+    n\in\N,
+\]
+we have
+\[
+    \boxed{
+    (\alpha+\beta)^{p^n}
+    =
+    \alpha^{p^n}+\beta^{p^n}.
+    }
+\]
+\end{theorem}
+
+\begin{proof}
+For $n=1$,
+\[
+    (\alpha+\beta)^p
+    =
+    \sum_{i=0}^{p}
+    \binom{p}{i}\alpha^i\beta^{p-i}.
+\]
+For
+\[
+    1\le i\le p-1,
+\]
+we have
+\[
+    p\mid\binom{p}{i}.
+\]
+Since $\charp(F)=p$, all the intermediate binomial coefficients vanish
+in $F$. Hence
+\[
+    (\alpha+\beta)^p
+    =
+    \alpha^p+\beta^p.
+\]
+
+Iterating this identity gives
+\[
+    (\alpha+\beta)^{p^2}
+    =
+    \left((\alpha+\beta)^p\right)^p
+    =
+    (\alpha^p+\beta^p)^p
+    =
+    \alpha^{p^2}+\beta^{p^2},
+\]
+and in general
+\[
+    (\alpha+\beta)^{p^n}
+    =
+    \alpha^{p^n}+\beta^{p^n}.
+\]
+\end{proof}
+
+% ============================================================
+\section{Divisibility of $x^\ell-1$ and $x^m-1$}
+% ============================================================
+
+\begin{theorem}
+Let $F$ be a field, and let $\ell,m$ be positive integers. Then
+\[
+    \boxed{
+    x^\ell-1\divides x^m-1
+    \quad\Longleftrightarrow\quad
+    \ell\mid m.
+    }
+\]
+\end{theorem}
+
+\begin{proof}
+First suppose
+\[
+    \ell\mid m.
+\]
+Write
+\[
+    m=\ell r.
+\]
+Then
+\[
+    x^m-1
+    =
+    x^{\ell r}-1
+    =
+    (x^\ell)^r-1,
+\]
+and hence
+\[
+    x^m-1
+    =
+    (x^\ell-1)
+    \left(
+        1+x^\ell+x^{2\ell}+\cdots+x^{(r-1)\ell}
+    \right).
+\]
+Therefore
+\[
+    x^\ell-1\divides x^m-1.
+\]
+
+Conversely, suppose
+\[
+    x^\ell-1\divides x^m-1.
+\]
+By the division algorithm for integers, write
+\[
+    m=\ell q+r,
+    \qquad
+    0\le r<\ell.
+\]
+Then
+\begin{align*}
+    x^m-1
+    &=
+    x^{\ell q+r}-x^r+x^r-1\\
+    &=
+    x^r\frac{x^{\ell q}-1}{x^\ell-1}(x^\ell-1)
+    +(x^r-1).
+\end{align*}
+The first term is divisible by $x^\ell-1$. Since the whole polynomial
+$x^m-1$ is assumed divisible by $x^\ell-1$, it follows that
+\[
+    x^\ell-1\divides x^r-1.
+\]
+But
+\[
+    \deg(x^r-1)<\deg(x^\ell-1)
+\]
+when $0<r<\ell$. Hence this is possible only if
+\[
+    r=0.
+\]
+Therefore
+\[
+    \ell\mid m.
+\]
+\end{proof}
+
+The same argument with $x$ replaced by an integer $a>1$ shows that, for
+positive integers $\ell,m$,
+\[
+    a^\ell-1\mid a^m-1
+    \quad\Longleftrightarrow\quad
+    \ell\mid m.
+\]
+
+% ============================================================
+\section{Subfields of a Finite Field}
+% ============================================================
+
+Let $F$ be a finite field of characteristic $p$. Let
+\[
+    \Z/p\Z\subseteq K\subseteq F.
+\]
+Write
+\[
+    |F|=p^n,
+    \qquad
+    |K|=p^d.
+\]
+
+Since $F$ is a vector space over $K$, say of finite dimension $r$,
+\[
+    F\cong K^r
+\]
+as a $K$-vector space. Hence
+\[
+    |F|=|K|^r.
+\]
+Therefore
+\[
+    p^n=(p^d)^r=p^{dr},
+\]
+so
+\[
+    n=dr.
+\]
+Consequently,
+\[
+    \boxed{d\mid n.}
+\]
+
+Thus a necessary condition for a subfield of order $p^d$ to exist inside
+a field of order $p^n$ is
+\[
+    d\mid n.
+\]
+
+\begin{remark}
+For example, if
+\[
+    |F|=p^3,
+\]
+then there is no subfield strictly between
+\[
+    \Z/p\Z
+\]
+and $F$, since the only positive divisors of $3$ are $1$ and $3$.
+\end{remark}
+
+% ============================================================
+\section{Three Key Questions}
+% ============================================================
+
+The lecture isolates three key questions:
+
+\begin{enumerate}[label=\arabic*.]
+    \item Can we always find a subfield of order $p^d$ given
+    \[
+        d\mid n?
+    \]
+
+    \item How many such fields can we get?
+
+    \item For a given prime $p$ and integer $n>1$, does a finite field
+    of order
+    \[
+        p^n
+    \]
+    exist?
+\end{enumerate}
+
+% ============================================================
+\section{The Subfield Theorem}
+% ============================================================
+
+\begin{theorem}
+Let $F$ be a finite field of order
+\[
+    p^n.
+\]
+Then the subfields of $F$ are in one-to-one correspondence with the
+divisors of $n$.
+
+In particular, for every
+\[
+    d\mid n,
+\]
+there is a unique subfield of $F$ having
+\[
+    p^d
+\]
+elements.
+\end{theorem}
+
+\subsection{Construction of the Subfield}
+
+Let
+\[
+    d\mid n.
+\]
+Define
+\[
+    K
+    =
+    \{\alpha\in F:\alpha^{p^d}=\alpha\}.
+\]
+Equivalently, $K$ is the set of roots in $F$ of
+\[
+    x^{p^d}-x.
+\]
+
+We first show that $K$ is a field.
+
+Let
+\[
+    \alpha,\beta\in K.
+\]
+Then
+\[
+    \alpha^{p^d}=\alpha,
+    \qquad
+    \beta^{p^d}=\beta.
+\]
+Using Freshman's dream,
+\[
+    (\alpha+\beta)^{p^d}
+    =
+    \alpha^{p^d}+\beta^{p^d}
+    =
+    \alpha+\beta.
+\]
+Hence
+\[
+    \alpha+\beta\in K.
+\]
+In particular $0=\alpha+(-\alpha)$ will lie in $K$ once we check additive
+inverses. Freshman's dream gives
+\[
+    0=(\alpha+(-\alpha))^{p^d}
+    =
+    \alpha^{p^d}+(-\alpha)^{p^d},
+\]
+so
+\[
+    (-\alpha)^{p^d}=-\alpha^{p^d}=-\alpha.
+\]
+Thus $-\alpha\in K$.
+
+Similarly,
+\[
+    (\alpha\beta)^{p^d}
+    =
+    \alpha^{p^d}\beta^{p^d}
+    =
+    \alpha\beta,
+\]
+so
+\[
+    \alpha\beta\in K.
+\]
+
+If $\alpha\neq0$, then
+\[
+    (\alpha^{-1})^{p^d}
+    =
+    (\alpha^{p^d})^{-1}
+    =
+    \alpha^{-1},
+\]
+so
+\[
+    \alpha^{-1}\in K.
+\]
+Therefore $K$ is a field.
+
+% ============================================================
+\section{Why $K$ Has $p^d$ Elements}
+% ============================================================
+
+All elements of $K$ are roots of
+\[
+    x^{p^d}-x.
+\]
+Conversely, every root of this polynomial in $F$ belongs to $K$.
+
+Since
+\[
+    x^{p^d}-x
+\]
+has degree $p^d$, it has at most $p^d$ roots. The lecture shows that,
+for $d\mid n$, all its roots occur in $F$, so
+\[
+    |K|=p^d.
+\]
+
+Indeed, since
+\[
+    d\mid n,
+\]
+we have
+\[
+    p^d-1\mid p^n-1.
+\]
+Using the divisibility result,
+\[
+    x^{p^d}-x
+    \divides
+    x^{p^n}-x.
+\]
+The polynomial $x^{p^n}-x$ has derivative $-1$ in characteristic $p$, so it
+is square-free and splits into $p^n$ distinct linear factors in $F$. Any
+divisor is therefore also square-free and splits completely in $F$. Hence
+the roots of
+\[
+    x^{p^d}-x
+\]
+lie in $F$.
+
+Therefore
+\[
+    \boxed{|K|=p^d.}
+\]
+
+% ============================================================
+\section{Uniqueness of the Subfield}
+% ============================================================
+
+Let $K'$ be any other \emph{subfield of $F$} with $p^d$ elements.
+
+Since $K'$ is a finite field of characteristic $p$,
+every $\alpha\in K'$ satisfies
+\[
+    \alpha^{p^d}-\alpha=0.
+\]
+Hence every element of $K'$ is a root of
+\[
+    x^{p^d}-x.
+\]
+But $K$ consists precisely of the roots of this polynomial in $F$.
+Therefore
+\[
+    K'\subseteq K,
+\]
+and comparing cardinalities gives $K'=K$.
+
+Thus, inside a fixed finite field $F$, the subfield of order $p^d$ is
+unique.
+
+\begin{corollary}
+The subfields of a finite field $F$ of order $p^n$ correspond exactly to
+the divisors of $n$:
+\[
+    d\mid n
+    \quad\longleftrightarrow\quad
+    \text{unique subfield of order }p^d.
+\]
+\end{corollary}
+
+% ============================================================
+\section{Constructing a Finite Field of Order $p^n$}
+% ============================================================
+
+\begin{theorem}
+Let $K$ be a field and let
+\[
+    f(x)\in K[x]
+\]
+be an irreducible polynomial of degree $n$. Then there exists a field
+$F$ containing $K$ and a zero $\alpha$ of $f(x)$ such that
+\[
+    [F:K]=n.
+\]
+\end{theorem}
+
+\begin{proof}
+Since $K[x]$ is a Euclidean domain, it is a PID and hence a UFD.
+Because $f(x)$ is irreducible,
+\[
+    (f(x))
+\]
+is a maximal ideal of $K[x]$. Therefore
+\[
+    \boxed{K[x]/(f(x))}
+\]
+is a field.
+
+Let
+\[
+    F=K[x]/(f(x)).
+\]
+The natural embedding
+\[
+    K\hookrightarrow F
+\]
+identifies $K$ with a subfield of $F$.
+
+Let
+\[
+    \alpha=x+(f(x))
+\]
+be the residue class of $x$. Then
+\[
+    f(\alpha)=0
+\]
+in $F$.
+
+Every element of $F$ has a unique representative of degree less than $n$:
+\[
+    a_0+a_1\alpha+\cdots+a_{n-1}\alpha^{n-1},
+    \qquad
+    a_i\in K.
+\]
+Hence
+\[
+    1,\alpha,\ldots,\alpha^{n-1}
+\]
+form a basis of $F$ over $K$, and therefore
+\[
+    [F:K]=n.
+\]
+\end{proof}
+
+% ============================================================
+\section{Irreducible Polynomials and Field Construction}
+% ============================================================
+
+The goal is therefore:
+
+\begin{center}
+\boxed{\text{Construct a field with }p^n\text{ elements.}}
+\end{center}
+
+Start with
+\[
+    \Fp=\Z/p\Z
+\]
+and find an irreducible polynomial of degree $n$:
+\[
+    f(x)\in\Fp[x].
+\]
+Then
+\[
+    \boxed{
+    \Fp[x]/(f(x))
+    }
+\]
+is a field with
+\[
+    p^n
+\]
+elements.
+
+Indeed, each element has a unique representation
+\[
+    a_0+a_1x+\cdots+a_{n-1}x^{n-1}+(f(x)),
+    \qquad
+    a_i\in\Fp,
+\]
+so there are
+\[
+    p^n
+\]
+such elements.
+
+\subsection{Examples}
+
+Over $\Z/2\Z$,
+\[
+    x^2+x+1
+\]
+is irreducible in
+\[
+    (\Z/2\Z)[x].
+\]
+Therefore
+\[
+    \boxed{
+    \frac{(\Z/2\Z)[x]}{(x^2+x+1)}
+    }
+\]
+is a field with
+\[
+    2^2=4
+\]
+elements.
+
+Over $\Z/3\Z$,
+\[
+    x^2+1
+\]
+is irreducible. Hence
+\[
+    \boxed{
+    \frac{(\Z/3\Z)[x]}{(x^2+1)}
+    }
+\]
+is a field with
+\[
+    3^2=9
+\]
+elements.
+
+% ============================================================
+\section{Counting Irreducible Polynomials}
+% ============================================================
+
+The next aim is to count irreducible polynomials.
+
+Let
+\[
+    N_d
+\]
+denote the number of monic irreducible polynomials in
+\[
+    \Fp[x]
+\]
+of degree $d$.
+
+The lecture uses the factorization of
+\[
+    x^{p^n}-x
+\]
+to count these polynomials.
+
+\begin{theorem}
+For every $n\ge1$,
+\[
+    \boxed{
+    x^{p^n}-x
+    =
+    \prod_{d\mid n}
+    \prod_{\deg f=d} f(x),
+    }
+\]
+where the inner product is over all monic irreducible polynomials
+$f(x)\in\Fp[x]$ of degree $d$.
+\end{theorem}
+
+\subsection{Why the Irreducible Factors Have Degree Dividing $n$}
+
+Let
+\[
+    f(x)
+\]
+be an irreducible polynomial of degree $d$ dividing
+\[
+    x^{p^n}-x.
+\]
+Let
+\[
+    \alpha
+\]
+be a zero of $f(x)$, and let
+\[
+    K=\Fp[x]/(f(x)).
+\]
+Then
+\[
+    |K|=p^d.
+\]
+
+Since $f(x)\mid x^{p^n}-x$, we have
+\[
+    \alpha^{p^n}=\alpha
+\]
+in $K$. The Frobenius map $\beta\mapsto\beta^{p^n}$ is a field automorphism
+of $K$ (by Freshman's dream), and it fixes $\alpha$. Because
+$K=\Fp(\alpha)$, the map is the identity on $K$. Thus every $\beta\in K$
+satisfies $\beta^{p^n}=\beta$. Every element of $K$ is therefore a root of
+the square-free polynomial $x^{p^d}-x$, and also a root of $x^{p^n}-x$.
+Hence
+\[
+    x^{p^d}-x
+    \divides
+    x^{p^n}-x
+\]
+in $\Fp[x]$. Therefore
+\[
+    p^d-1\mid p^n-1,
+\]
+and the integer divisibility criterion already proved yields
+\[
+    d\mid n.
+\]
+
+Therefore every irreducible factor of
+\[
+    x^{p^n}-x
+\]
+has degree dividing $n$.
+
+\subsection{Conversely}
+
+Suppose
+\[
+    d\mid n
+\]
+and let
+\[
+    f(x)
+\]
+be an irreducible polynomial of degree $d$ over $\Fp$.
+
+Let $\alpha$ be a root of $f(x)$. If $\alpha=0$, then $f(x)=x$ (up to units),
+and $x$ divides $x^{p^n}-x$. Now assume $\alpha\neq0$. Then
+\[
+    \Fp(\alpha)
+\]
+has
+\[
+    p^d
+\]
+elements.
+
+Since
+\[
+    d\mid n,
+\]
+we have
+\[
+    p^d-1\mid p^n-1.
+\]
+Thus
+\[
+    \alpha^{p^n-1}=1,
+\]
+and hence
+\[
+    \alpha^{p^n}=\alpha.
+\]
+Therefore
+\[
+    f(x)\mid x^{p^n}-x.
+\]
+
+Consequently,
+\[
+    \boxed{
+    f(x)\mid x^{p^n}-x
+    \quad\Longleftrightarrow\quad
+    \deg f\mid n
+    }
+\]
+for irreducible $f(x)\in\Fp[x]$.
+
+% ============================================================
+\section{Counting Formula}
+% ============================================================
+
+Since
+\[
+    x^{p^n}-x
+\]
+is the product of all monic irreducible polynomials whose degrees divide
+$n$, taking degrees gives
+\[
+    p^n
+    =
+    \sum_{d\mid n} dN_d.
+\]
+
+Thus
+\[
+    \boxed{
+    p^n=\sum_{d\mid n}dN_d.
+    }
+\]
+
+This is the fundamental counting identity for irreducible polynomials
+over $\Fp$.
+
+% ============================================================
+\section{Möbius Inversion}
+% ============================================================
+
+For $n>0$, Möbius inversion gives
+\[
+    N_n
+    =
+    \frac1n
+    \sum_{d\mid n}
+    \mu(d)p^{n/d}.
+\]
+
+Equivalently,
+\[
+    \boxed{
+    N_n
+    =
+    \frac1n
+    \sum_{d\mid n}
+    \mu(d)p^{n/d}.
+    }
+\]
+
+Writing the terms explicitly,
+\[
+    N_n
+    =
+    \frac1n
+    \left(
+        p^n
+        +\sum_{\substack{d\mid n\\d>1}}
+        \mu(d)p^{n/d}
+    \right).
+\]
+
+The lecture then observes that the correction term is strictly smaller
+than $p^n$, which proves positivity. In full:
+\[
+    N_n
+    \ge
+    \frac1n
+    \Biggl(
+        p^n
+        -
+        \sum_{\substack{d\mid n\\ d>1}}
+        p^{n/d}
+    \Biggr).
+\]
+For $n=1$ one has $N_1=p>0$. For $n>1$ each proper exponent $n/d$ is at
+most $n-1$, so
+\[
+    \sum_{\substack{d\mid n\\ d>1}}
+    p^{n/d}
+    \le
+    \sum_{j=1}^{n-1}p^j
+    =
+    p\frac{p^{n-1}-1}{p-1}
+    <p^n.
+\]
+Thus $N_n>0$.
+
+Hence for every prime $p$ and every $n\ge1$, there exists an irreducible
+polynomial of degree $n$ over $\Fp$.
+
+% ============================================================
+\section{A Useful Bound}
+% ============================================================
+
+From
+\[
+    N_n
+    =
+    \frac1n
+    \sum_{d\mid n}\mu(d)p^{n/d},
+\]
+we obtain
+\[
+    nN_n
+    \le
+    p^n.
+\]
+
+The identity $p^n=\sum_{d\mid n}dN_d$ together with $N_n>0$ (already
+proved) immediately gives, for $n>1$,
+\[
+    \sum_{\substack{d\mid n\\d<n}}dN_d
+    =
+    p^n-nN_n
+    <p^n.
+\]
+The lecture also sketches a direct estimate not using M\"obius inversion.
+
+It also records the elementary estimate
+\[
+    N_d\le p^d.
+\]
+Hence
+\[
+    \sum_{\substack{d\mid n\\d<n}}dN_d
+    \le
+    \sum_{\substack{d\mid n\\d<n}}dp^d.
+\]
+
+Since every proper divisor satisfies
+\[
+    d\le\frac n2,
+\]
+the lecture bounds the sum by a geometric-series type expression and
+obtains an upper bound of the form
+\[
+    \sum_{\substack{d\mid n\\d<n}}dp^d
+    <
+    2n\,p^{n/2}.
+\]
+This last inequality may be checked directly for $2\le n\le 9$, while for
+$n\ge 10$ one has $2n<p^{n/2}$ and therefore
+\[
+    \sum_{\substack{d\mid n\\d<n}}dp^d
+    <p^n.
+\]
+
+The purpose of this estimate is to show directly that the leading term
+$p^n$ in Möbius inversion dominates all the lower-order contributions.
+
+% ============================================================
+\section{Factorization of $x^{p^n}-x$}
+% ============================================================
+
+The polynomial
+\[
+    x^{p^n}-x
+\]
+is a product of irreducible polynomials.
+
+Let
+\[
+    f(x)
+\]
+be an irreducible factor. Since
+\[
+    x^{p^n}-x
+\]
+has derivative
+\[
+    \frac{d}{dx}(x^{p^n}-x)
+    =
+    p^n x^{p^n-1}-1
+    =
+    -1
+\]
+in characteristic $p$, it has no repeated roots.
+
+Equivalently, if
+\[
+    x^{p^n}-x=g(x)^2h(x),
+\]
+then differentiation would give
+\[
+    p^n x^{p^n-1}-1
+    =
+    2g(x)g'(x)h(x)+g(x)^2h'(x),
+\]
+and the right-hand side would be divisible by $g(x)$, whereas the left
+side is
+\[
+    -1.
+\]
+This is impossible.
+
+Thus
+\[
+    x^{p^n}-x
+\]
+is square-free.
+
+% ============================================================
+\section{Final Characterization of the Irreducible Factors}
+% ============================================================
+
+Let
+\[
+    f(x)
+\]
+be an irreducible polynomial of degree $d$ over $\Fp$.
+
+Then
+\[
+    f(x)\mid x^{p^n}-x
+\]
+if and only if
+\[
+    d\mid n.
+\]
+
+\begin{proof}
+Suppose first that
+\[
+    f(x)\mid x^{p^n}-x.
+\]
+Let $\alpha$ be a root of $f(x)$. Then
+\[
+    \alpha^{p^n}=\alpha.
+\]
+Write $K=\Fp[x]/(f(x))\cong\Fp(\alpha)$, so $|K|=p^d$. The Frobenius map
+$\beta\mapsto\beta^{p^n}$ is a field automorphism of $K$ fixing $\alpha$,
+hence the identity on $K=\Fp(\alpha)$. Thus every element of $K$ satisfies
+$X^{p^n}-X=0$, so $x^{p^d}-x$ divides $x^{p^n}-x$. Therefore
+\[
+    p^d-1\mid p^n-1,
+\]
+and we conclude
+\[
+    d\mid n.
+\]
+
+Conversely, suppose
+\[
+    d\mid n.
+\]
+Since
+\[
+    \Fp(\alpha)
+\]
+has $p^d$ elements,
+\[
+    \alpha^{p^d}=\alpha.
+\]
+Iterating this identity,
+\[
+    \alpha^{p^n}=\alpha
+\]
+because $d\mid n$. Therefore $\alpha$ is a root of
+\[
+    x^{p^n}-x.
+\]
+Since $f(x)$ is the minimal polynomial of $\alpha$ over $\Fp$,
+\[
+    f(x)\mid x^{p^n}-x.
+\]
+\end{proof}
+
+Thus
+\[
+    \boxed{
+    x^{p^n}-x
+    =
+    \prod_{d\mid n}
+    \prod_{\substack{f\ \mathrm{monic}\\
+                      f\ \mathrm{irreducible}\\
+                      \deg f=d}}
+    f(x).
+    }
+\]
+
+% ============================================================
+\section*{Summary of the Lecture}
+% ============================================================
+
+The lecture develops the following chain:
+\[
+\boxed{
+\text{Finite fields}
+\longrightarrow
+\text{Freshman's dream}
+\longrightarrow
+\text{subfields}
+\longrightarrow
+\text{irreducible polynomials}
+\longrightarrow
+\text{counting irreducibles}
+}.
+\]
+
+The main results are:
+
+\[
+    (\alpha+\beta)^{p^n}
+    =
+    \alpha^{p^n}+\beta^{p^n},
+\]
+\[
+    x^\ell-1\mid x^m-1
+    \quad\Longleftrightarrow\quad
+    \ell\mid m,
+\]
+\[
+    |F|=p^n,\quad K\subseteq F
+    \quad\Longrightarrow\quad
+    |K|=p^d\text{ for some }d\mid n,
+\]
+\[
+    d\mid n
+    \quad\Longleftrightarrow\quad
+    \text{there is a unique subfield of order }p^d,
+\]
+\[
+    \Fp[x]/(f(x))
+    \text{ is a field whenever }f(x)\text{ is irreducible},
+\]
+\[
+    |\Fp[x]/(f(x))|=p^{\deg f},
+\]
+\[
+    p^n=\sum_{d\mid n}dN_d,
+\]
+and
+\[
+    \boxed{
+    N_n
+    =
+    \frac1n\sum_{d\mid n}\mu(d)p^{n/d}.
+    }
+\]
+
+Finally,
+\[
+    \boxed{
+    f(x)\mid x^{p^n}-x
+    \quad\Longleftrightarrow\quad
+    \deg f\mid n
+    }
+\]
+for every irreducible polynomial $f(x)\in\Fp[x]$.
+
+\end{document}

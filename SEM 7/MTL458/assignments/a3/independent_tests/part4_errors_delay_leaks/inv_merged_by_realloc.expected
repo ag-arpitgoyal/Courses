@@ -1,0 +1,11 @@
+error: invalid pointer
+region 0 65536
+  32 A 256 100
+  288 A 128 10
+  416 F 65120
+error: double free (block 0:160)
+region 0 65536
+  32 A 128 10
+  160 F 128
+  288 A 128 10
+  416 F 65120

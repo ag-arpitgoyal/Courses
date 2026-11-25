@@ -1,0 +1,19 @@
+1
+1
+1
+--
+region 0 65536
+  32 A 128 50
+  160 A 352 300
+  512 F 65024
+d at a 1
+b data 1
+region 0 65536
+  32 A 128 10
+  160 A 352 300
+  512 A 128 10
+  640 F 64896
+leak: block 0:32 (10 bytes)
+leak: block 0:160 (300 bytes)
+leak: block 0:512 (10 bytes)
+leak summary: 3 blocks, 320 bytes

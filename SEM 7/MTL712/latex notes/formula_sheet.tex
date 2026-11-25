@@ -1,0 +1,769 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.6in,headheight=13pt]{geometry}
+\usepackage{amsmath,amssymb,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+\setlength{\abovedisplayskip}{4pt plus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt}
+\setlength{\abovedisplayshortskip}{2pt}
+\setlength{\belowdisplayshortskip}{3pt}
+\setlength{\jot}{3pt}
+\setlist{leftmargin=*,itemsep=1pt,topsep=2pt,parsep=0pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Formula Sheet}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\hb}{\bar h}
+\newcommand{\head}[1]{\par\smallskip\noindent\textbf{\color{blue!50!black}#1}\par\nobreak}
+
+\title{\textbf{MTL712: Computational Methods for Differential Equations}\\[4pt]
+\large Formula Sheet}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+\thispagestyle{plain}
+{\small\tableofcontents}
+
+%=====================================================================
+\section{IVPs, One-Step and Runge--Kutta Methods, Adams-Type Formulas (Note 1)}
+%=====================================================================
+
+\head{Existence, Lipschitz, Picard}
+Solution of \(y'=f(x,y)\), \(y(x_0)=y_0\) exists uniquely on
+\(|x-x_0|\le h=\min\bigl(a,\tfrac bM\bigr)\), \(M=\max_R|f|\), on
+\(R=\{|x-x_0|\le a,\ |y-y_0|\le b\}\).
+\[
+  |f(x,y_1)-f(x,y_2)|\le L|y_1-y_2|,
+  \qquad
+  y_{n+1}(x)=y_0+\int_{x_0}^x f\bigl(s,y_n(s)\bigr)\,ds .
+\]
+
+\head{Taylor series method (order \(p\))}
+\[
+  F_1=f,\quad F_{j+1}=\pd{F_j}{x}+f\pd{F_j}{u},
+  \qquad
+  y_{n+1}=y_n+\sum_{j=1}^p\frac{h^j}{j!}F_j(x_n,y_n),
+  \qquad
+  \text{LTE}=\frac{h^{p+1}}{(p+1)!}y^{(p+1)}(\xi).
+\]
+\[
+  y''=f_x+ff_y,\qquad
+  y'''=f_{xx}+2ff_{xy}+f^2f_{yy}+f_y(f_x+ff_y).
+\]
+Global error bound and its lemma:
+\[
+  |e_n|\le\frac{e^{L(x_n-a)}-1}{L}\cdot\frac{M_{p+1}h^p}{(p+1)!},
+  \qquad
+  w_{k+1}\le(1+a)w_k+B,\ w_0=0\ \Rightarrow\ w_n\le\frac Ba\bigl(e^{na}-1\bigr).
+\]
+
+\head{\(\theta\)-method and trapezoidal family}
+\[
+  y_{n+1}=y_n+h\bigl[(1-\theta)f(x_n,y_n)+\theta f(x_{n+1},y_{n+1})\bigr]
+\]
+\(\theta=0\): explicit Euler \(y_{n+1}=y_n+hf_n\);
+\(\theta=1\): backward Euler \(y_{n+1}=y_n+hf_{n+1}\);
+\(\theta=\frac12\): trapezoidal \(y_{n+1}=y_n+\frac h2(f_n+f_{n+1})\).
+
+\head{Second-order Runge--Kutta family}
+\[
+  k_1=hf(x_n,y_n),\quad k_2=hf(x_n+\alpha_2h,\ y_n+\beta_{21}k_1),\quad
+  y_{n+1}=y_n+w_1k_1+w_2k_2,
+\]
+\[
+  w_1+w_2=1,\quad w_2\alpha_2=\tfrac12,\quad w_2\beta_{21}=\tfrac12
+  \ \Longrightarrow\
+  \beta_{21}=\alpha_2,\quad w_2=\frac1{2\alpha_2},\quad w_1=1-\frac1{2\alpha_2}.
+\]
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Method & \(\alpha_2=\beta_{21}\) & \((w_1,w_2)\) & Formula\\
+\midrule
+Improved Euler (Heun) & \(1\) & \((\frac12,\frac12)\) & \(y_{n+1}=y_n+\frac12(k_1+k_2)\)\\
+Modified Euler (midpoint) & \(\frac12\) & \((0,1)\) & \(y_{n+1}=y_n+hf\bigl(x_n+\frac h2,y_n+\frac{k_1}2\bigr)\)\\
+Ralston & \(\frac23\) & \((\frac14,\frac34)\) & minimises LTE bound\\
+\bottomrule
+\end{tabular}
+\end{center}
+LTE of RK2:
+\(\;h^3\Bigl[\bigl(\tfrac16-\tfrac{\alpha_2}4\bigr)(f_{xx}+2ff_{xy}+f^2f_{yy})
++\tfrac16(f_xf_y+ff_y^2)\Bigr]_n+O(h^4)\).
+
+\head{Third- and fourth-order Runge--Kutta (Butcher tableaux \(c\,|\,A\), bottom row \(b^T\))}
+\[
+\renewcommand{\arraystretch}{1.15}
+\underset{\text{Heun (3rd)}}{
+\begin{array}{c|ccc}
+0&&&\\ \frac13&\frac13&&\\ \frac23&0&\frac23&\\ \hline &\frac14&0&\frac34
+\end{array}}
+\qquad
+\underset{\text{Nystr\"om (3rd)}}{
+\begin{array}{c|ccc}
+0&&&\\ \frac23&\frac23&&\\ \frac23&0&\frac23&\\ \hline &\frac28&\frac38&\frac38
+\end{array}}
+\qquad
+\underset{\text{Ralston (3rd)}}{
+\begin{array}{c|ccc}
+0&&&\\ \frac12&\frac12&&\\ \frac34&0&\frac34&\\ \hline &\frac29&\frac39&\frac49
+\end{array}}
+\qquad
+\underset{\text{Classical RK4}}{
+\begin{array}{c|cccc}
+0&&&&\\ \frac12&\frac12&&&\\ \frac12&0&\frac12&&\\ 1&0&0&1&\\ \hline &\frac16&\frac26&\frac26&\frac16
+\end{array}}
+\]
+General \(\nu\)-stage: \(k_i=hf\bigl(x_n+\alpha_ih,\ y_n+\sum_j\beta_{ij}k_j\bigr)\),
+\(\alpha_i=\sum_j\beta_{ij}\), \(y_{n+1}=y_n+\sum_iw_ik_i\).
+Explicit: \(\beta_{ij}=0\) for \(i\le j\); semi-implicit: \(\beta_{ij}=0\) for \(i<j\).
+
+\head{Absolute stability (test equation \(y'=\lambda y\), \(z=\lambda h\), \(y_{n+1}=E(z)y_n\))}
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Method & \(E(z)\) & Real interval of absolute stability\\
+\midrule
+Euler & \(1+z\) & \((-2,0)\); region: disk centre \(-1\), radius \(1\)\\
+RK2 (any member) & \(1+z+\frac{z^2}2\) & \((-2,0)\), i.e.\ \(h<2/|\lambda|\)\\
+RK3 & \(1+z+\frac{z^2}2+\frac{z^3}6\) & \((-2.5127,0)\)\\
+RK4 & \(1+z+\frac{z^2}2+\frac{z^3}6+\frac{z^4}{24}\) & \((-2.7853,0)\); imaginary axis \(\pm2\sqrt2\,i\)\\
+Backward Euler & \(\frac1{1-z}\) & \((-\infty,0)\): A-stable and L-stable\\
+Trapezoidal & \(\frac{2+z}{2-z}\) & whole left half-plane: A-stable, not L-stable\\
+\bottomrule
+\end{tabular}
+\end{center}
+Error propagation:
+\(e_{n+1}=\bigl[e^{\lambda h}-E(\lambda h)\bigr]y(x_n)+E(\lambda h)e_n\);
+absolutely stable if \(|E(z)|<1\), relatively stable if \(|E(z)|<e^{\operatorname{Re}z}\).
+
+\head{General one-step method \(y_{n+1}=y_n+h\Phi(x_n,y_n;h)\)}
+\[
+  T_n=\frac{y(x_{n+1})-y(x_n)}{h}-\Phi\bigl(x_n,y(x_n);h\bigr),
+  \qquad
+  |e_n|\le e^{L(x_n-x_0)}|e_0|+\frac{e^{L(x_n-x_0)}-1}{L}\,T,
+  \quad T=\max|T_n|.
+\]
+Consistency: \(\Phi(x,y;0)=f(x,y)\).
+Euler: \(\Phi=f(x_n,y_n)\); improved Euler:
+\(\Phi=\frac12\bigl[f(x_n,y_n)+f(x_n+h,y_n+hf(x_n,y_n))\bigr]\).
+
+\head{Systems \(Y'=f(x,Y)\)}
+RK4: \(Y_{n+1}=Y_n+\frac16(k_1+2k_2+2k_3+k_4)\) with vector stages.
+Euler for \(y'=f(x,y,z)\), \(z'=\phi(x,y,z)\):
+\(y_{n+1}=y_n+hf(x_n,y_n,z_n)\), \(z_{n+1}=z_n+h\phi(x_n,y_n,z_n)\).
+Taylor-2: \(Y_{n+1}=Y_n+hY_n'+\frac{h^2}2Y_n''\), \(Y''=f_x+f_Yf\).
+
+\head{Multistep methods from integration (\(s=(x-x_n)/h\))}
+Explicit (interpolate \(f_n,\dots,f_{n-k+1}\)):
+\[
+  y_{n+1}=y_{n-l}+h\sum_{m=0}^{k-1}\beta_m^{(l)}\nabla^mf_n,
+  \qquad
+  \beta_m^{(l)}=\int_{-l}^1(-1)^m\binom{-s}{m}ds
+  =\int_{-l}^1\frac{s(s+1)\cdots(s+m-1)}{m!}\,ds .
+\]
+Implicit (interpolate through \(f_{n+1}\)):
+\[
+  y_{n+1}=y_{n-l}+h\sum_{m=0}^{k}\gamma_m^{(l)}\nabla^mf_{n+1},
+  \qquad
+  \gamma_m^{(l)}=\int_{-l}^1(-1)^m\binom{1-s}{m}ds
+  =\int_{-l}^1\frac{(s-1)s(s+1)\cdots(s+m-2)}{m!}\,ds .
+\]
+\(l=0\): Adams--Bashforth / Adams--Moulton; \(l=1\): Nystr\"om / Milne.
+\begin{center}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{@{}lcccccc@{}}
+\toprule
+\(m\) & 0 & 1 & 2 & 3 & 4 & 5\\
+\midrule
+AB \(\beta_m^{(0)}\) & \(1\) & \(\frac12\) & \(\frac5{12}\) & \(\frac38\) & \(\frac{251}{720}\) & \\
+Nystr\"om \(\beta_m^{(1)}\) & \(2\) & \(0\) & \(\frac13\) & \(\frac13\) & \(\frac{29}{90}\) & \\
+AM \(\gamma_m^{(0)}\) & \(1\) & \(-\frac12\) & \(-\frac1{12}\) & \(-\frac1{24}\) & \(-\frac{19}{720}\) & \(-\frac3{160}\)\\
+Milne \(\gamma_m^{(1)}\) & \(2\) & \(-2\) & \(\frac13\) & \(0\) & \(-\frac1{90}\) & \\
+\bottomrule
+\end{tabular}
+\end{center}
+Adams--Bashforth:
+\[
+  y_{n+1}=y_n+hf_n,\quad
+  y_{n+1}=y_n+\tfrac h2(3f_n-f_{n-1}),\quad
+  y_{n+1}=y_n+\tfrac h{12}(23f_n-16f_{n-1}+5f_{n-2}),
+\]
+\[
+  y_{n+1}=y_n+\tfrac h{24}(55f_n-59f_{n-1}+37f_{n-2}-9f_{n-3}).
+\]
+Adams--Moulton:
+\(y_{n+1}=y_n+\frac h2(f_{n+1}+f_n)\),\quad
+\(y_{n+1}=y_n+\frac h{12}(5f_{n+1}+8f_n-f_{n-1})\).
+
+Nystr\"om: \(y_{n+1}=y_{n-1}+2hf_n\) (\(k=1,2\)),\quad
+\(y_{n+1}=y_{n-1}+\frac h3(7f_n-2f_{n-1}+f_{n-2})\) (\(k=3\)).
+
+Milne--Simpson: \(y_{n+1}=y_{n-1}+\frac h3(f_{n+1}+4f_n+f_{n-1})\),
+LTE \(=-\frac{h^5}{90}y^{(5)}(\eta)\) (order 4; \(k=3\) is identical).
+
+\head{Local truncation errors of multistep formulas}
+\[
+  \text{explicit: }
+  \text{LTE}=\frac{h^{k+1}}{k!}\int_{-l}^1 s(s+1)\cdots(s+k-1)\,y^{(k+1)}(\xi_s)\,ds,
+  \qquad
+  \text{AB: }\text{LTE}=h^{k+1}\beta_k^{(0)}y^{(k+1)}(\eta),
+\]
+\[
+  \text{implicit: }
+  \text{LTE}=h^{k+2}\int_{-l}^1\frac{(s-1)s(s+1)\cdots(s+k-1)}{(k+1)!}\,y^{(k+2)}(\xi_s)\,ds,
+  \qquad
+  \text{AM: }\text{LTE}=h^{k+2}\gamma_{k+1}^{(0)}y^{(k+2)}(\eta).
+\]
+Leapfrog (\(y_{n+1}=y_{n-1}+2hf_n\)) has LTE \(\frac{h^3}3y'''(\eta)\).
+
+%=====================================================================
+\section{Milne Predictor--Corrector Methods and Zero-Stability (Note 2)}
+%=====================================================================
+
+\head{Milne predictor (\(l=3,\ k=4\)) and corrector}
+\(\beta_0^{(3)}=4,\ \beta_1^{(3)}=-4,\ \beta_2^{(3)}=\frac83,\ \beta_3^{(3)}=0\).
+\[
+  P:\ y_{n+1}^{(p)}=y_{n-3}+\frac{4h}3\bigl(2f_n-f_{n-1}+2f_{n-2}\bigr),
+  \qquad
+  C:\ y_{n+1}^{(c)}=y_{n-1}+\frac h3\bigl(f_{n+1}^{(p)}+4f_n+f_{n-1}\bigr),
+\]
+\[
+  D^{(p)}=\frac{14}{45}h^5y^{(5)}(\xi),
+  \qquad
+  D^{(c)}=-\frac1{90}h^5y^{(5)}(\eta)
+  \qquad(\text{both order }4).
+\]
+Milne LTE (implicit, \(l=1\)):
+\(\text{LTE}=h^{k+2}\int_{-1}^1\frac{(s-1)s\cdots(s+k-1)}{(k+1)!}y^{(k+2)}(\xi_s)\,ds=O(h^{k+2})\).
+
+\head{Euler--trapezoidal pair}
+\(P:\ y_{n+1}^{(p)}=y_n+hf_n\) (order 1),\qquad
+\(C:\ y_{n+1}^{(c)}=y_n+\frac h2\bigl(f_n+f_{n+1}^{(p)}\bigr)\) (order 2).
+
+\head{Predictor--corrector modes}
+PECE: predict \(\to\) evaluate \(f^{(p)}_{n+1}\) \(\to\) correct \(\to\)
+evaluate \(f^{(c)}_{n+1}\).\;
+P(EC)\(^2\)E \(=\) PECECE (two corrections).\;
+PEC: no final evaluation.\; PECEC \(=\) PECECE without last E.
+(Default: PECE; starting values from an RK method.)
+
+\head{General linear \(k\)-step method}
+\[
+  \sum_{j=0}^k\alpha_jy_{n+j}=h\sum_{j=0}^k\beta_jf_{n+j},
+  \qquad \alpha_k\ne0,\quad |\alpha_0|+|\beta_0|\ne0;
+  \qquad \beta_k=0\text{ explicit},\ \beta_k\ne0\text{ implicit}.
+\]
+\[
+  \rho(z)=\sum_{j=0}^k\alpha_jz^j,\qquad
+  \sigma(z)=\sum_{j=0}^k\beta_jz^j .
+\]
+AB4: \(y_{n+4}=y_{n+3}+\frac h{24}(55f_{n+3}-59f_{n+2}+37f_{n+1}-9f_n)\);\quad
+AM (3-step): \(y_{n+4}=y_{n+3}+\frac h{24}(9f_{n+4}+19f_{n+3}-5f_{n+2}+f_{n+1})\).
+
+\head{Zero-stability and root condition}
+\[
+  |y_n-\hat y_n|\le K\max_{0\le j\le k-1}|y_j-\hat y_j|;
+  \qquad
+  \rho(z)=0\Rightarrow|z|\le1,\quad |z|=1\Rightarrow z\text{ simple}.
+\]
+
+%=====================================================================
+\section{Stability, Difference Equations and Order Conditions (Note 3)}
+%=====================================================================
+
+\head{Stability polynomial of an LMM}
+With \(Ey_n=y_{n+1}\): \(\rho(E)y_n=h\sigma(E)f_n\). For \(y'=\lambda y\),
+\(\hb=h\lambda\):
+\[
+  \pi(z,\hb)=\rho(z)-\hb\,\sigma(z).
+\]
+Absolutely stable: \(|z_r|<1\ \forall r\).\;
+Relatively stable: \(|z_r|<|z_1|\), \(r\ge2\) (\(z_1\to1\) as \(\hb\to0\)).
+
+\head{Schur criterion}
+\(\phi(z)=c_0z^k+\cdots+c_k\),\quad
+\(\hat\phi(z)=\bar c_kz^k+\bar c_{k-1}z^{k-1}+\cdots+\bar c_0\),
+\[
+  \phi_1(z)=\frac{\hat\phi(0)\phi(z)-\phi(0)\hat\phi(z)}{z};
+  \qquad
+  \phi\text{ Schur}\iff|\hat\phi(0)|>|\phi(0)|\ (\text{i.e. }|c_0|>|c_k|)\ \text{and }\phi_1\text{ Schur}.
+\]
+
+\head{Routh--Hurwitz criterion}
+\[
+  w=\frac{z-1}{z+1},\qquad z=\frac{1+w}{1-w},\qquad
+  (1-w)^k\pi\Bigl(\frac{1+w}{1-w},\hb\Bigr)=a_0w^k+a_1w^{k-1}+\cdots+a_k,\ a_0>0.
+\]
+\(k=2\): \(a_0,a_1,a_2>0\).\;
+\(k=3\): \(a_i>0\), \(a_1a_2-a_0a_3>0\).\;
+\(k=4\): \(a_i>0\), \(a_1a_2a_3-a_0a_3^2-a_1^2a_4>0\).
+Hurwitz matrix rows: \((a_1,a_3,a_5,\dots)\), \((a_0,a_2,a_4,\dots)\),
+\((0,a_1,a_3,\dots)\), \((0,a_0,a_2,\dots)\), \dots
+
+\head{Order conditions}
+\[
+  L[y(x);h]=\sum_{j=0}^k\bigl[\alpha_jy(x+jh)-h\beta_jy'(x+jh)\bigr]
+  =c_0y+c_1hy'+c_2h^2y''+\cdots,
+\]
+\[
+  c_0=\sum\alpha_j=\rho(1),\quad
+  c_1=\sum j\alpha_j-\sum\beta_j=\rho'(1)-\sigma(1),\quad
+  c_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-1)!}\sum j^{q-1}\beta_j\ (q\ge2).
+\]
+Order \(p\): \(c_0=\cdots=c_p=0\), \(c_{p+1}\ne0\);\quad
+error constant \(C=\dfrac{c_{p+1}}{\sigma(1)}\);\quad
+consistency: \(\rho(1)=0,\ \rho'(1)=\sigma(1)\).
+\[
+  T_n=\frac{\sum_j[\alpha_jy(x_{n+j})-h\beta_jy'(x_{n+j})]}{h\sigma(1)}
+  =\frac{c_{p+1}}{\sigma(1)}h^py^{(p+1)}(x_n)+O(h^{p+1}).
+\]
+Order via logarithm:
+\(\Psi(z)=\dfrac{\rho(z)}{\log z}-\sigma(z)\) has a zero of multiplicity \(p\) at \(z=1\).
+Maximal-order \(\sigma\):
+\(\sigma(z)=\sum_{m=0}^k\frac{R^{(m)}(1)}{m!}(z-1)^m\), \(R=\rho/\log z\).
+
+\head{Linear difference equations \(\phi(E)y_n=f(n)\)}
+\(\phi(\xi)=a_0\xi^k+a_1\xi^{k-1}+\cdots+a_k=0\) (characteristic equation);
+\(\Delta=E-1\).
+\begin{itemize}
+  \item distinct roots: \(y_n=c_1\xi_1^n+\cdots+c_k\xi_k^n\);
+  \item root \(\xi_1\) of multiplicity \(r\): \((c_1+c_2n+\cdots+c_rn^{r-1})\xi_1^n\);
+  \item \(\xi=a\pm ib=\rho_0(\cos\theta\pm i\sin\theta)\):
+    \(\rho_0^n\bigl(A\cos n\theta+B\sin n\theta\bigr)\), \(\rho_0=\sqrt{a^2+b^2}\).
+\end{itemize}
+Complete solution \(y_n=u_n+v_n\) (complementary \(+\) particular),
+\(v_n=\dfrac1{\phi(E)}f(n)\).
+\[
+  \frac1{\phi(E)}\beta^n=\frac{\beta^n}{\phi(\beta)}\ (\phi(\beta)\ne0),
+  \qquad
+  \phi(E)\bigl[\beta^nv(n)\bigr]=\beta^n\phi(\beta E)v(n),
+  \qquad
+  \frac1{\phi(E)}\bigl[\beta^nv(n)\bigr]=\beta^n\frac1{\phi(\beta E)}v(n).
+\]
+Factorial polynomials \(n^{(p)}=n(n-1)\cdots(n-p+1)\):
+\[
+  \Delta n^{(p)}=pn^{(p-1)},\quad
+  \Delta^mn^{(p)}=p^{(m)}n^{(p-m)},\quad
+  \Delta^pn^{(p)}=p!,\quad
+  \frac1{\Delta^m}1=\frac{n^{(m)}}{m!}.
+\]
+Polynomial forcing: write \(f(n)\) in the factorial basis and apply
+\(\dfrac1{\phi(1+\Delta)}\), expanded in powers of \(\Delta\).
+
+%=====================================================================
+\section{LMM Theory, \(y''=f\), BVPs and Parabolic PDEs (Note 4)}
+%=====================================================================
+
+\head{Order via \(\varphi\) and Henrici construction}
+\[
+  \varphi(\zeta)=\frac{\rho(\zeta)}{\log\zeta}-\sigma(\zeta)
+  =C_{p+1}(\zeta-1)^p+O\bigl((\zeta-1)^{p+1}\bigr),
+  \qquad
+  g(h)=\rho(e^h)-h\sigma(e^h)=\sum_qC_qh^q .
+\]
+With \(w=\zeta-1\):
+\[
+  \log(1+w)=w-\frac{w^2}2+\frac{w^3}3-\cdots,
+  \qquad
+  \frac w{\log(1+w)}=1+\frac w2-\frac{w^2}{12}+\frac{w^3}{24}-\frac{19w^4}{720}+\cdots.
+\]
+Recipe: \(\rho\) given \(\Rightarrow\) expand \(\rho/\log\zeta\) and truncate after
+\(w^k\) (implicit) or \(w^{k-1}\) (explicit); \(\sigma\) given \(\Rightarrow\) expand
+\(\sigma\log\zeta\) to get \(\rho\).
+
+Example \(\rho=(\zeta-1)(\zeta-\lambda)\), implicit maximal order:
+\[
+  y_{n+2}-(1+\lambda)y_{n+1}+\lambda y_n
+  =h\Bigl[\tfrac{5+\lambda}{12}f_{n+2}+\tfrac{2(1-\lambda)}3f_{n+1}-\tfrac{1+5\lambda}{12}f_n\Bigr],
+  \quad C_4=-\tfrac{1+\lambda}{24}.
+\]
+\(\lambda=0\): AM2; \(\lambda=-1\): Milne--Simpson, order \(4\), \(C_5=-\frac1{90}\).
+AB3 from \(\sigma=\frac1{12}(23\zeta^2-16\zeta+5)\): \(\rho=\zeta^3-\zeta^2\), \(C_4=\frac38\).
+
+\head{Barrier, absolute stability, convergence}
+Dahlquist: zero-stable order \(\le k+1\) (\(k\) odd), \(\le k+2\) (\(k\) even).\;
+\(\pi(z,\hb)=\sum(\alpha_j-\hb\beta_j)z^j\);\;
+\(\pi(e^{\hb},\hb)=\sum_{q\ge p+1}C_q\hb^q\), so \(r_1(\hb)=e^{\hb}+O(\hb^{p+1})\).\;
+Consistent starting values: \(\eta_s(h)\to y_0\).\;
+Consistency proof uses \(y_n=Knh\), \(K=\sigma(1)/\rho'(1)=1\).
+
+\head{LMM for \(y''=f(x,y)\)}
+\[
+  \sum_{j=0}^k\alpha_jy_{n+j}=h^2\sum_{j=0}^k\beta_jf_{n+j},
+  \qquad
+  C_0=\sum\alpha_j,\ \ C_1=\sum j\alpha_j,\ \
+  C_q=\frac1{q!}\sum j^q\alpha_j-\frac1{(q-2)!}\sum j^{q-2}\beta_j\ (q\ge2).
+\]
+Order \(p\): \(C_0=\cdots=C_{p+1}=0\), \(C_{p+2}\ne0\);\;
+error constant \(C_{p+2}/\sigma(1)\);\;
+\(T_n=\frac{C_{p+2}}{\sigma(1)}h^py^{(p+2)}+O(h^{p+1})\).\;
+Consistency: \(\rho(1)=\rho'(1)=0\), \(\rho''(1)=2\sigma(1)\).\;
+\(\varphi(\zeta)=\dfrac{\rho(\zeta)}{(\log\zeta)^2}-\sigma(\zeta)\).
+
+Two-step coefficients for \(y_{n+1}+a_1y_n+a_2y_{n-1}=h^2[b_0y''_{n+1}+b_1y''_n+b_2y''_{n-1}]\):
+\[
+  C_0=1+a_1+a_2,\ C_1=1-a_2,\ C_2=\tfrac12(1+a_2)-(b_0+b_1+b_2),\
+  C_3=\tfrac16(1-a_2)-(b_0-b_2),
+\]
+\[
+  C_4=\tfrac1{24}(1+a_2)-\tfrac12(b_0+b_2),\
+  C_5=\tfrac1{120}(1-a_2)-\tfrac16(b_0-b_2),\
+  C_6=\tfrac1{720}(1+a_2)-\tfrac1{24}(b_0+b_2).
+\]
+\[
+  \text{St\"ormer: } y_{n+1}-2y_n+y_{n-1}=h^2f_n,\ \ \text{LTE}=\tfrac1{12}h^4y^{(4)};
+\]
+\[
+  \text{Numerov: } y_{n+1}-2y_n+y_{n-1}=\tfrac{h^2}{12}(f_{n+1}+10f_n+f_{n-1}),\ \
+  \text{LTE}=-\tfrac1{240}h^6y^{(6)}\ (\text{order }4).
+\]
+Higher St\"ormer: \(y_{n+1}-2y_n+y_{n-1}=h^2\bigl[f_n+\frac1{12}\nabla^2f_n+\frac1{12}\nabla^3f_n+\frac{19}{240}\nabla^4f_n+\cdots\bigr]\):
+\[
+  \text{order 3: } \tfrac{h^2}{12}(13f_n-2f_{n-1}+f_{n-2}),
+  \qquad
+  \text{order 4: } \tfrac{h^2}{12}(14f_n-5f_{n-1}+4f_{n-2}-f_{n-3}).
+\]
+Numerov for linear \(f=-q(x)y\):
+\(y_{n+1}\bigl(1+\frac{h^2}{12}q_{n+1}\bigr)=2y_n-y_{n-1}-\frac{h^2}{12}(10q_ny_n+q_{n-1}y_{n-1})\);
+for \(y''=-y\): \(y_{n+1}=\frac{2-\frac56h^2}{1+\frac1{12}h^2}y_n-y_{n-1}\).
+Halving \(h\) reduces an order-\(p\) global error by \(2^p\).
+
+\head{Finite differences for BVPs (\(x_i=a+ih\), \(h=(b-a)/N\))}
+\[
+  y''_i\approx\frac{y_{i+1}-2y_i+y_{i-1}}{h^2},\quad
+  y'_i\approx\frac{y_{i+1}-y_{i-1}}{2h},\quad
+  y'_0\approx\frac{-3y_0+4y_1-y_2}{2h},\quad
+  y'_N\approx\frac{3y_N-4y_{N-1}+y_{N-2}}{2h}\quad(\text{all }O(h^2)).
+\]
+For \(y''+py'+qy=f\), \(a_0y(a)+b_0y'(a)=c_0\), \(a_1y(b)+b_1y'(b)=c_1\):
+\[
+  \Bigl(\frac1{h^2}-\frac{p_i}{2h}\Bigr)y_{i-1}-\Bigl(\frac2{h^2}-q_i\Bigr)y_i+\Bigl(\frac1{h^2}+\frac{p_i}{2h}\Bigr)y_{i+1}=f_i,
+\]
+\[
+  \Bigl(a_0-\frac{3b_0}{2h}\Bigr)y_0+\frac{4b_0}{2h}y_1-\frac{b_0}{2h}y_2=c_0,
+  \qquad
+  \frac{b_1}{2h}y_{N-2}-\frac{4b_1}{2h}y_{N-1}+\Bigl(a_1+\frac{3b_1}{2h}\Bigr)y_N=c_1.
+\]
+Dirichlet \(y''-qy=f\): \(y_{n-1}-(2+h^2q_n)y_n+y_{n+1}=h^2f_n\) (strictly diagonally dominant for \(q>0\)).
+
+\head{Thomas algorithm (\(A_iy_{i-1}+C_iy_i+B_iy_{i+1}=F_i\))}
+\[
+  \alpha_1=-\frac{B_0}{C_0},\quad\beta_1=\frac{F_0}{C_0},\quad
+  \alpha_{i+1}=\frac{-B_i}{C_i+\alpha_iA_i},\quad
+  \beta_{i+1}=\frac{F_i-\beta_iA_i}{C_i+\alpha_iA_i},\quad
+  y_N=\beta_{N+1},\quad y_i=\alpha_{i+1}y_{i+1}+\beta_{i+1}.
+\]
+LU form: \(u_0=C_0\), \(l_i=A_i/u_{i-1}\), \(u_i=C_i-l_iB_{i-1}\). Cost \(O(N)\).
+
+\head{Non-linear BVP: Newton}
+\(G(Y)=MY-F(Y)=0\):\;
+\(J(Y^{(n)})\bigl(Y^{(n+1)}-Y^{(n)}\bigr)=-G(Y^{(n)})\);\;
+for \(y''=f(x,y)\), Dirichlet: \(J=A-h^2\operatorname{diag}\bigl(f_y(x_i,y_i)\bigr)\), \(A=\operatorname{tridiag}(1,-2,1)\).
+
+\head{Collocation}
+Condition \((a_0b_1-a_1b_0)+a_0a_1(b-a)\ne0\);\;
+\(\tilde y=y-d\), \(d=\alpha x+\beta\) (homogenise BCs), \(\tilde f=f-L(d)\).
+\[
+  y_N=\sum_{i=1}^N\xi_i\psi_i(x),\qquad
+  \sum_i\xi_i(L\psi_i)(x_j)=f(x_j),\ j=1,\dots,N.
+\]
+Spectral (\(-y''+qy=f\) on \((0,\pi)\)): \(\psi_i=\sin ix\), \(x_j=\frac{j\pi}{N+1}\),
+\(\sum_i\xi_i[i^2+q(x_j)]\sin\frac{ij\pi}{N+1}=f(x_j)\), \(S^{-1}=\frac2{N+1}S\).
+
+\head{Classification of \(Au_{xx}+2Bu_{xy}+Cu_{yy}+\cdots=G\)}
+\(\dfrac{dy}{dx}=\dfrac{B\pm\sqrt{B^2-AC}}A\);\;
+\(B^2-AC>0\) hyperbolic,\; \(=0\) parabolic,\; \(<0\) elliptic.
+
+\head{Difference operators (\(r=k/h^2\))}
+\[
+  E=e^{hD},\quad \delta=E^{1/2}-E^{-1/2}=2\sinh\tfrac{hD}2,\quad
+  D=\frac2h\sinh^{-1}\frac\delta2=\frac1h\Bigl(\delta-\frac{\delta^3}{24}+\frac{3\delta^5}{640}-\cdots\Bigr),
+\]
+\[
+  D^2=\frac1{h^2}\Bigl[\delta^2-\frac1{12}\delta^4+\frac1{90}\delta^6-\cdots\Bigr],\qquad
+  \delta^2U_m=U_{m+1}-2U_m+U_{m-1},\quad
+  \delta^4U_m=U_{m+2}-4U_{m+1}+6U_m-4U_{m-1}+U_{m-2}.
+\]
+Exact two-level relation: \(u_m^{n+1}=\exp(kL)u_m^n\).
+
+\head{Schemes for \(u_t=u_{xx}\)}
+\[
+  u_m^{n+1}=\Bigl[1+r\delta^2+\tfrac12r\bigl(r-\tfrac16\bigr)\delta^4
+  +\tfrac16r\bigl(r^2-\tfrac12r+\tfrac1{15}\bigr)\delta^6+\cdots\Bigr]u_m^n .
+\]
+\begin{itemize}
+  \item Explicit: \(U_m^{n+1}=(1-2r)U_m^n+r(U_{m+1}^n+U_{m-1}^n)\).
+  \item Five-point explicit:
+    \(U_m^{n+1}=\frac12(2-5r+6r^2)U_m^n+\frac23r(2-3r)(U_{m+1}^n+U_{m-1}^n)-\frac1{12}r(1-6r)(U_{m+2}^n+U_{m-2}^n)\).
+  \item \(u_t=a(x)u_{xx}\): \(U_m^{n+1}=(1-2ra)U_m^n+ra(U_{m+1}^n+U_{m-1}^n)\).
+  \item \(u_t=(a(x)u_x)_x\):
+    \(U_m^{n+1}=(1-2ra)U_m^n+r(a+\frac12ha')U_{m+1}^n+r(a-\frac12ha')U_{m-1}^n\).
+  \item Crank--Nicolson: \((1-\frac12r\delta^2)U_m^{n+1}=(1+\frac12r\delta^2)U_m^n\), i.e.\
+    \((1+r)U_m^{n+1}-\frac r2(U_{m+1}^{n+1}+U_{m-1}^{n+1})=(1-r)U_m^n+\frac r2(U_{m+1}^n+U_{m-1}^n)\); error \(O(k^3+kh^2)\).
+  \item Fully implicit: \(-rU_{m-1}^{n+1}+(1+2r)U_m^{n+1}-rU_{m+1}^{n+1}=U_m^n\).
+\end{itemize}
+
+\head{LTE, consistency and convergence of the explicit scheme}
+\[
+  T_m^n=\tfrac12k^2\Bigl(u_{tt}-\frac1{6r}u_{xxxx}\Bigr)+\cdots=O(k^2+kh^2)
+  \quad(\text{vanishes at }r=\tfrac16),
+  \qquad
+  \text{consistent if } T_m^n/k\to0.
+\]
+\[
+  z_m^{n+1}=(1-2r)z_m^n+r(z_{m+1}^n+z_{m-1}^n)+T_m^n,
+  \qquad
+  \max_m|z_m^n|\le TA(k+h^2),\ \ A=\max\bigl(\tfrac12M_{tt},\tfrac1{12}M_{xxxx}\bigr).
+\]
+
+\head{Von Neumann amplification factors (\(z_m^n=\xi^ne^{i\beta mh}\), \(s=\sin^2\frac{\beta h}2\))}
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Scheme & \(\xi\) & Stability\\
+\midrule
+Explicit & \(1-4rs\) & \(0<r\le\frac12\)\\
+Fully implicit & \(\dfrac1{1+4rs}\) & unconditional\\
+Crank--Nicolson & \(\dfrac{1-2rs}{1+2rs}\) & unconditional\\
+2D five-point explicit & \(1-4r(s_1+s_2)\) & \(r\le\frac14\) (\(d\) dims: \(r\le\frac1{2d}\))\\
+2D nine-point explicit & \((1-4rs_1)(1-4rs_2)\) & \(r\le\frac12\)\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\head{Matrix method}
+\[
+  B\mathbf U_{j+1}=C\mathbf U_j+\mathbf d_j\ \Rightarrow\
+  \mathbf U_{j+1}=A\mathbf U_j+\mathbf f_j,\ \ A=B^{-1}C;
+  \qquad
+  \mathbf e_j=A^j\mathbf e_0,\quad \|\mathbf e_j\|\le\|A^j\|\|\mathbf e_0\|.
+\]
+Lax--Richtmyer: \(\|A^j\|\le M\);\; sufficient: \(\|A\|\le1\);\;
+symmetric \(A\): \(\|A\|_2=\rho(A)\).
+\[
+  \operatorname{tridiag}(c,a,b)_{N\times N}:\quad
+  \lambda_s=a+2b\sqrt{c/b}\,\cos\frac{s\pi}{N+1},\quad
+  (\mathbf v_s)_j=(c/b)^{j/2}\sin\frac{js\pi}{N+1},\quad s=1,\dots,N.
+\]
+Explicit: \(\lambda_s=1-4r\sin^2\frac{s\pi}{2N}\).\;
+CN: \(\lambda_s(A^{-1}B)=\dfrac{1-2r\sin^2\frac{s\pi}{2N}}{1+2r\sin^2\frac{s\pi}{2N}}\).
+
+\head{Derivative BCs with CN (\(u_x-pu=f_0\) at \(x=0\), \(u_x+qu=f_1\) at \(x=1\))}
+\[
+  U_{-1}=U_1-2hpU_0-2hf_0,\qquad U_{M+1}=U_{M-1}-2hqU_M+2hf_1,
+\]
+\[
+  \delta^2U_0=2U_1-2(1+ph)U_0-2hf_0,\qquad
+  \delta^2U_M=2U_{M-1}-2(1+qh)U_M+2hf_1,
+\]
+\[
+  (I-\tfrac12rQ)\mathbf U^{n+1}=(I+\tfrac12rQ)\mathbf U^n+\mathbf k^n,\quad
+  Q=\begin{pmatrix}-2(1+ph)&2&&\\1&-2&1&\\&\ddots&\ddots&\ddots\\&&2&-2(1+qh)\end{pmatrix},\quad
+  D=\operatorname{diag}(\sqrt2,1,\dots,1,\sqrt2).
+\]
+\(\mu_j=\dfrac{1+\frac12r\lambda_j}{1-\frac12r\lambda_j}\) with \(\lambda_j(Q)\le0\).
+
+\head{Parabolic equations in 2D (\(r=k/h^2\))}
+\[
+  \text{five-point: } U_{l,m}^{n+1}=(1-4r)U_{l,m}^n+r\bigl(U_{l\pm1,m}^n+U_{l,m\pm1}^n\bigr),
+  \qquad
+  \text{nine-point: } U^{n+1}=(1+r\delta_{x_1}^2)(1+r\delta_{x_2}^2)U^n .
+\]
+Self-adjoint \(u_t=\sum_i(a_iu_{x_i})_{x_i}\):
+\(U^{n+1}_{l,m}=U^n_{l,m}+r\bigl\{(a_1)_{l+\frac12,m}(U_{l+1,m}-U_{l,m})-(a_1)_{l-\frac12,m}(U_{l,m}-U_{l-1,m})+(x_2\text{ terms})\bigr\}^n\).
+
+%=====================================================================
+\section{ADI Methods and Three-Level Schemes (Note 5)}
+%=====================================================================
+
+\head{2D Crank--Nicolson (from \(\exp(-\frac12kL)u^{n+1}=\exp(\frac12kL)u^n\))}
+\[
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)\bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}
+  =\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n .
+\]
+
+\head{Peaceman--Rachford ADI}
+\[
+  \bigl(1-\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}=\bigl(1+\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^n,
+  \qquad
+  \bigl(1-\tfrac12r\delta_{x_2}^2\bigr)U_{l,m}^{n+1}=\bigl(1+\tfrac12r\delta_{x_1}^2\bigr)U_{l,m}^{n+\frac12}.
+\]
+Step 1: implicit in \(x_1\), explicit in \(x_2\); step 2: the reverse.
+
+\head{Richardson's three-level scheme}
+\[
+  \frac{U_m^{n+1}-U_m^{n-1}}{2k}=\frac{\delta_x^2U_m^n}{h^2}
+  \iff
+  U_m^{n+1}=2r\delta_x^2U_m^n+U_m^{n-1}.
+\]
+With \(V_m^n=U_m^{n-1}\), \(W=[U,V]^T\):
+\[
+  W^{n+1}=\begin{bmatrix}-8r\sin^2\frac{\beta h}2&1\\1&0\end{bmatrix}W^n,
+  \qquad
+  \lambda^2+8r\lambda\sin^2\tfrac{\beta h}2-1=0,
+  \qquad
+  \lambda_{1,2}=-4r\sin^2\tfrac{\beta h}2\pm\Bigl(1+16r^2\sin^4\tfrac{\beta h}2\Bigr)^{1/2}.
+\]
+\(|\lambda_2|>1\) for all \(r>0\): unconditionally unstable.
+
+\head{Du Fort--Frankel (replace \(U_m^n\to\frac12(U_m^{n+1}+U_m^{n-1})\))}
+\[
+  (1+2r)U_m^{n+1}=2r\bigl(U_{m+1}^n+U_{m-1}^n\bigr)+(1-2r)U_m^{n-1},
+  \qquad
+  U_m^{n+1}=\frac{2r}{1+2r}\bigl(U_{m+1}^n+U_{m-1}^n\bigr)+\frac{1-2r}{1+2r}U_m^{n-1}.
+\]
+
+%=====================================================================
+\section{Matrix Stability, Elliptic Equations, ADI Iterations, Hyperbolic Equations (Note 6)}
+%=====================================================================
+
+\head{Du Fort--Frankel by the matrix method}
+\[
+  W^{n+1}=BW^n+g^n,\qquad
+  B=\begin{bmatrix}\frac{2r}{1+2r}A&\frac{1-2r}{1+2r}I\\ I&0\end{bmatrix},\quad
+  A=\operatorname{tridiag}(1,0,1),\quad \lambda_k(A)=2\cos\frac{k\pi}N,
+\]
+\[
+  \lambda^2-\frac{2r\lambda_k}{1+2r}\lambda-\frac{1-2r}{1+2r}=0,
+  \qquad
+  \lambda=\frac{2r\cos\frac{k\pi}N\pm\bigl(1-4r^2\sin^2\frac{k\pi}N\bigr)^{1/2}}{1+2r}.
+\]
+Real roots: \(|\lambda|<1\);\; complex roots: \(|\lambda|=\sqrt{\frac{4r^2-1}{4r^2+4r+1}}<1\).
+
+\head{Five-point formula for Laplace's equation}
+\[
+  U_{l-1,m}+U_{l+1,m}+U_{l,m-1}+U_{l,m+1}-4U_{l,m}=0,
+  \qquad
+  \text{LTE}=\frac{h^2}{12}\Bigl(\frac{\partial^4u}{\partial x_1^4}+\frac{\partial^4u}{\partial x_2^4}\Bigr)+\cdots.
+\]
+Poisson: right-hand side \(h^2f_{l,m}\).\;
+\(AU=b\), \(A=\operatorname{tridiag}(I,B,I)\), \(B=\operatorname{tridiag}(1,-4,1)\), order \((N-1)^2\);
+\[
+  \lambda_{ij}(A)=-4\Bigl(\sin^2\frac{i\pi}{2N}+\sin^2\frac{j\pi}{2N}\Bigr),\quad 1\le i,j\le N-1.
+\]
+Rectangular mesh, \(\theta=h_1/h_2\):
+\[
+  \theta^{-1}(U_{l+1,m}+U_{l-1,m})+\theta(U_{l,m+1}+U_{l,m-1})-2(\theta+\theta^{-1})U_{l,m}=0,
+  \quad
+  \text{LTE}=\tfrac1{12}\bigl(h_1^2u_{x_1x_1x_1x_1}+h_2^2u_{x_2x_2x_2x_2}\bigr).
+\]
+
+\head{Peaceman--Rachford iteration (Dirichlet), \(\lambda\) = iteration parameter}
+\(H=\operatorname{diag}(C,\dots,C)\), \(C=\operatorname{tridiag}(-1,2,-1)\);
+\(V=\operatorname{tridiag}(-J,2J,-J)\); five-point system \((H+V)U=K\).
+\[
+  \Bigl(\frac2{\lambda_{n+1}}I+H\Bigr)U^{n+1*}=\Bigl(\frac2{\lambda_{n+1}}I-V\Bigr)U^n+K,
+  \qquad
+  \Bigl(\frac2{\lambda_{n+1}}I+V\Bigr)U^{n+1}=\Bigl(\frac2{\lambda_{n+1}}I-H\Bigr)U^{n+1*}+K,
+\]
+\[
+  T_{n+1}=\Bigl(\tfrac2{\lambda}I+V\Bigr)^{-1}\Bigl(\tfrac2{\lambda}I+H\Bigr)^{-1}
+  \Bigl(\tfrac2{\lambda}I-H\Bigr)\Bigl(\tfrac2{\lambda}I-V\Bigr),
+  \qquad
+  \text{eig}=\frac{(1-a)(1-b)}{(1+a)(1+b)}=1-\frac{2(a+b)}{(1+a)(1+b)},
+\]
+\(a=2\lambda\sin^2\frac{p\pi}{2N}\), \(b=2\lambda\sin^2\frac{q\pi}{2N}\);
+\(\lambda(H)=4\sin^2\frac{p\pi}{2N}\), \(\lambda(V)=4\sin^2\frac{q\pi}{2N}\).
+Variant with \(1/\lambda\): \(a=4\lambda\sin^2\frac{p\pi}{2N}\), \(b=4\lambda\sin^2\frac{q\pi}{2N}\).
+
+\head{Douglas--Rachford ADI}
+\[
+  (1-\lambda\delta_{x_1}^2)(1-\lambda\delta_{x_2}^2)U^{n+1}=(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2)U^n;
+  \qquad
+  (1-\lambda\delta_{x_1}^2)U^{n+1*}=(1+\lambda\delta_{x_2}^2)U^n,\ \
+  (1-\lambda\delta_{x_2}^2)U^{n+1}=U^{n+1*}-\lambda\delta_{x_2}^2U^n.
+\]
+
+\head{Neumann problem (\(\partial u/\partial n=g\)), all \((N+1)^2\) points unknown}
+\[
+  u_{-1,0}=u_{1,0}+2hg_{0,0},\quad u_{0,-1}=u_{0,1}+2hg_{0,0};\qquad
+  \text{corner: } 4u_{0,0}-2u_{1,0}-2u_{0,1}=4hg_{0,0},
+\]
+\[
+  \text{side: } 4u_{0,m}-2u_{1,m}-u_{0,m+1}-u_{0,m-1}=2hg_{0,m};
+\]
+\(AU=2hG\), \(A=\operatorname{tridiag}(-I,B,-I)\) with \(-2I\) in the first and last block rows;
+\(B=\operatorname{tridiag}(-1,4,-1)\) with \(-2\) in the corner entries;
+\(G=2g\) at corners, \(g\) on sides, \(0\) inside.\;
+\(A=X+Y\), \(X=\operatorname{diag}(\tilde C)\), \(\tilde C=\operatorname{tridiag}(-1,2,-1)\) with corner \(-2\)'s;
+\(\lambda(\tilde C)=4\sin^2\frac{p\pi}{2N}\), \(p=0,\dots,N\), eigenvectors \(\cos\frac{lp\pi}N\).
+Same PR iteration with \(X,Y,2hG\).
+
+\head{Robin problem (\(u_{x_1}-p_1u=f_0\), \(u_{x_1}+q_1u=f_1\), etc.)}
+\[
+  u_{-1,m}=u_{1,m}-2hp_1u_{0,m}-2hf_{0,m},\qquad
+  u_{N+1,m}=u_{N-1,m}-2hq_1u_{N,m}+2hf_{1,m},
+\]
+\[
+  E=\begin{pmatrix}2(1+hp_1)&-2&&\\-1&2&-1&\\&\ddots&\ddots&\ddots\\&&-2&2(1+hq_1)\end{pmatrix},\quad
+  V_1=\begin{pmatrix}2(1+hp_2)I&-2I&&\\-I&2I&-I&\\&\ddots&\ddots&\ddots\\&&-2I&2(1+hq_2)I\end{pmatrix},
+\]
+\(AU=hG\), \(A=H_1+V_1\), \(H_1=\operatorname{diag}(E,\dots,E)\);
+\(G_{l,m}=2(-f_{0,m}[l{=}0]+f_{1,m}[l{=}N]-g_{0,l}[m{=}0]+g_{1,l}[m{=}N])\);
+\(W=\operatorname{diag}(\frac12,1,\dots,1,\frac12)\) makes \(WE\) SPD;
+iteration eigenvalues \(\frac{(1-a)(1-b)}{(1+a)(1+b)}\), \(a=\frac{\lambda\mu_p}2\), \(b=\frac{\lambda\nu_q}2\).
+
+\head{Wave equation \(u_{tt}=u_{xx}\), \(r=k/h\)}
+\[
+  U_m^{n+1}=2(1-r^2)U_m^n+r^2\bigl(U_{m+1}^n+U_{m-1}^n\bigr)-U_m^{n-1},
+  \qquad
+  U_m^1=(1-r^2)f_m+\frac{r^2}2(f_{m+1}+f_{m-1})+kg_m,
+\]
+using \(U_m^{-1}=U_m^1-2kg_m\).
+\[
+  \text{LTE}: \tfrac1{12}\bigl(k^2u_{tttt}-h^2u_{xxxx}\bigr)=\tfrac{h^2}{12}(r^2-1)u_{xxxx}+\cdots=O(k^2+h^2);
+  \qquad
+  \xi^2-2(1-2r^2s)\xi+1=0\ \Rightarrow\ r\le1\ (\text{CFL}).
+\]
+Implicit:
+\(\delta_t^2U_m^n=r^2\delta_x^2\bigl[\theta U_m^{n+1}+(1-2\theta)U_m^n+\theta U_m^{n-1}\bigr]\);
+\(\theta\ge\frac14\) unconditional, \(0\le\theta<\frac14\): \(r^2\le\frac1{1-4\theta}\).
+\(\theta=\frac14\): \((1-\frac14r^2\delta_x^2)\delta_t^2U_m^n=r^2\delta_x^2U_m^n\).
+
+2D wave:
+\(U_{l,m}^{n+1}=2(1-2r^2)U_{l,m}^n+r^2(U_{l\pm1,m}^n+U_{l,m\pm1}^n)-U_{l,m}^{n-1}\), stable for \(r\le\frac1{\sqrt2}\);
+implicit \(\bigl[1-\theta r^2(\delta_{x_1}^2+\delta_{x_2}^2)\bigr]\delta_t^2U=r^2(\delta_{x_1}^2+\delta_{x_2}^2)U\):
+\(\theta\ge\frac14\) unconditional, else \(r^2\le\frac1{2(1-4\theta)}\).
+
+\head{Heat equation: comparison of schemes (\(r=k/h^2\))}
+\begin{center}
+\renewcommand{\arraystretch}{1.35}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Scheme & Formula & Truncation error & Stability\\
+\midrule
+Explicit (Schmidt) & \(U^{n+1}=(1+r\delta_x^2)U^n\) & \(O(k+h^2)\) & \(r\le\frac12\)\\
+Crank--Nicolson & \((1-\frac r2\delta_x^2)U^{n+1}=(1+\frac r2\delta_x^2)U^n\) & \(O(k^2+h^2)\) & unconditional\\
+Du Fort--Frankel & \((1+2r)U_m^{n+1}=2r(U_{m+1}^n+U_{m-1}^n)+(1-2r)U_m^{n-1}\) & \(O(k^2+h^2+k^2/h^2)\) & unconditional\\
+Douglas & \([1-\frac12(r-\frac16)\delta_x^2]U^{n+1}=[1+\frac12(r+\frac16)\delta_x^2]U^n\) & \(O(k^2+h^4)\) & unconditional\\
+\bottomrule
+\end{tabular}
+\end{center}
+Douglas: \(\xi=\dfrac{1-2(r+\frac16)s}{1+2(r-\frac16)s}\).\;
+Du Fort--Frankel is consistent only if \(k/h\to0\).\;
+Douglas ADI split (Mitchell--Fairweather):
+\(\bigl(1-\tfrac12(r-\tfrac16)\delta_{x_1}^2\bigr)U^{n+1*}=\bigl(1+\tfrac12(r+\tfrac16)\delta_{x_2}^2\bigr)U^n\),\;
+\(\bigl(1-\tfrac12(r-\tfrac16)\delta_{x_2}^2\bigr)U^{n+1}=\bigl(1+\tfrac12(r+\tfrac16)\delta_{x_1}^2\bigr)U^{n+1*}\).
+
+\end{document}

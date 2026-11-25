@@ -1,0 +1,59 @@
+exact 1
+split128 1
+absorb16 1
+absorb112 1
+tail 1
+data 1 1 1 1 1
+region 0 65536
+  32 A 288 248
+  320 A 160 120
+  480 F 128
+  608 A 288 232
+  896 A 288 136
+  1184 A 1040 1000
+  2224 F 63312
+c moved 1 data 1
+e moved 1 data 1
+region 0 65536
+  32 A 288 248
+  320 F 864
+  1184 A 1040 1000
+  2224 A 352 300
+  2576 A 640 600
+  3216 F 62320
+i moved 1 data 1
+region 0 65536
+  32 A 288 248
+  320 F 1904
+  2224 A 352 300
+  2576 A 640 600
+  3216 A 1552 1500
+  4768 F 60768
+c moved 1 data 1
+region 0 65536
+  32 A 288 248
+  320 A 448 400
+  768 F 1456
+  2224 D 352 300
+  2576 F 640
+  3216 A 1552 1500
+  4768 F 60768
+same 1
+same 1
+region 0 65536
+  32 A 288 248
+  320 A 448 400
+  768 F 2448
+  3216 A 62320 62280
+i moved 1 data 1
+region 0 65536
+  32 A 288 248
+  320 A 448 400
+  768 F 64768
+region 1 65536
+  32 A 62336 62281
+  62368 F 3168
+leak: block 0:32 (248 bytes)
+leak: block 0:320 (400 bytes)
+leak: block 1:32 (62281 bytes)
+leak summary: 3 blocks, 62929 bytes

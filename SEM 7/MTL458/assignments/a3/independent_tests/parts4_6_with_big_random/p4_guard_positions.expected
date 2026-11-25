@@ -1,0 +1,21 @@
+region 0 65536
+  32 A 128 10
+  160 A 128 24
+  288 A 128 1
+  416 A 144 100
+  560 A 128 88
+  688 A 128 33
+  816 A 128 7
+  944 A 160 120
+  1104 A 128 50
+  1232 F 64304
+error: overflow detected (block 0:32)
+error: overflow detected (block 0:160)
+error: overflow detected (block 0:288)
+error: overflow detected (block 0:416)
+error: overflow detected (block 0:560)
+error: overflow detected (block 0:688)
+error: overflow detected (block 0:816)
+error: overflow detected (block 0:944)
+region 0 65536
+  32 F 65504

@@ -1,0 +1,8 @@
+error: double free (block 0:32)
+r=NULL
+error: invalid pointer
+r=NULL
+error: double free (block 0:32)
+r=NULL
+region 0 65536
+  32 F 65504

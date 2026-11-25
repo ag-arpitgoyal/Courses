@@ -1,0 +1,77 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows.meta,calc}
+\usepackage{microtype}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage{xcolor}
+
+\usepackage{setspace}
+\usepackage{needspace}
+\usepackage[breakable,skins]{tcolorbox}
+\usepackage{titlesec}
+
+\setstretch{1.2}
+\setlength{\parskip}{0.75em}
+\setlength{\parindent}{0pt}
+\setlist{itemsep=0.35em,topsep=0.5em}
+\setlength{\abovedisplayskip}{10pt}
+\setlength{\belowdisplayskip}{10pt}
+\renewcommand{\arraystretch}{1.3}
+\titlespacing*{\paragraph}{0pt}{1.1em}{0.6em}
+\titleformat{\section}{\Large\bfseries\color{blue!45!black}}{\thesection}{0.8em}{}[\vspace{0.2em}\titlerule]
+\titlespacing*{\section}{0pt}{1.5em}{1.2em}
+
+\tikzset{tm/.style={->,>=Stealth,shorten >=1pt,auto,semithick,
+    every state/.style={draw,minimum size=9mm,inner sep=1pt,fill=blue!5},
+    every node/.append style={font=\small},
+    every loop/.style={looseness=6}},
+  lab/.style={align=center,font=\footnotesize}}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\dom}[2]{\left[\genfrac{}{}{0pt}{0}{\mathstrut #1}{\mathstrut #2}\right]}
+\newcommand{\blank}{\sqcup}
+\newcommand{\enc}[1]{\langle #1\rangle}
+\newcommand{\comp}[1]{\overline{#1}}
+\newcommand{\Atm}{A_{\mathrm{TM}}}
+\newcommand{\Etm}{E_{\mathrm{TM}}}
+\newcommand{\HALTtm}{\mathit{HALT}_{\mathrm{TM}}}
+\newcommand{\EQtm}{\mathit{EQ}_{\mathrm{TM}}}
+\newcommand{\redm}{\le_{m}}
+\newcommand{\redp}{\le_{\mathrm{P}}}
+\newcommand{\cP}{\mathrm{P}}
+\newcommand{\NP}{\mathrm{NP}}
+\newcommand{\coNP}{\mathrm{coNP}}
+\newtcolorbox{questionbox}[1]{enhanced,colback=white,colframe=black!45,colbacktitle=black!8,coltitle=black,
+  boxrule=0.6pt,arc=2pt,left=8pt,right=8pt,top=6pt,bottom=6pt,
+  fonttitle=\bfseries,title={#1}}
+\newenvironment{question}[1]{\par\bigskip\phantomsection
+  \addcontentsline{toc}{section}{#1}\begin{questionbox}{#1}}{\end{questionbox}}
+\newenvironment{soln}{\par\medskip\needspace{7\baselineskip}{\large\bfseries Solution.}\par\nopagebreak\smallskip}{\par\nopagebreak\bigskip\nopagebreak
+  \noindent{\color{black!25}\rule{\linewidth}{0.4pt}}\par\medskip}
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14pt}
+\lhead{MTL783}
+\rhead{Sipser Chapter 5 -- Exercises and Problems}
+\cfoot{\thepage}
+
+\title{\textbf{MTL783: Tutorial Sheet 3}\\[0.3em]\large Complete solutions}
+\date{}
+
+\begin{document}
+{\centering\Large\bfseries Sipser (3rd ed.), Chapter 5: Exercises and Problems -- Solutions\par}
+{\centering\small $\bigstar$ marks a problem that is starred (harder) in the book.\par}
+
+\input{parts/part1}
+\input{parts/part2}
+\input{parts/part3}
+
+\end{document}

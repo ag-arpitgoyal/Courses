@@ -1,0 +1,509 @@
+               EXERCISES
+                 7.1 Answer each part TRUE or FALSE.
+                                a. 2n = O(n).                                                                A
+                                                                                                                 d. n log n = O(n2 ).
+                               b. n2 = O(n).                                                                     e. 3n = 2O(n) .
+                                                                                                                      n         n
+                              A
+                                c. n2 = O(n log 2 n).                                                            f. 22 = O(22 ).
+
+                 7.2 Answer each part TRUE or FALSE.
+                                                                                                             A
+                                a. n = o(2n).                                                                    d. 1 = o(n).
+                               b. 2n = o(n2 ).                                                                   e. n = o(log n).
+                              A
+                                c. 2n = o(3n ).                                                                  f. 1 = o(1/n).
+
+                 7.3 Which of the following pairs of numbers are relatively prime? Show the calcula-
+                     tions that led to your conclusions.
+                                a. 1274 and 10505
+                                b. 7289 and 8029
+                 7.4 Fill out the table described in the polynomial time algorithm for context-free lan-
+                     guage recognition from Theorem 7.16 for string w = baba and CFG G:
+
+                                                                                            S → RT
+                                                                                            R → TR | a
+                                                                                            T → TR | b
+
+                 7.5 Is the following formula satisfiable?
+
+                                                                  (x ∨ y) ∧ (x ∨ y) ∧ (x ∨ y) ∧ (x ∨ y)
+
+                 7.6 Show that P is closed under union, concatenation, and complement.
+                 7.7 Show that NP is closed under union and concatenation.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                                                          PROBLEMS                          323
+
+                   7.8 Let CONNECTED = {hGi| G is a connected undirected graph}. Analyze the
+                       algorithm given on page 185 to show that this language is in P.
+                   7.9 A triangle in an undirected graph is a 3-clique. Show that TRIANGLE ∈ P, where
+                       TRIANGLE = {hGi| G contains a triangle}.
+                  7.10 Show that ALLDFA is in P.
+                  7.11 In both parts, provide an analysis of the time complexity of your algorithm.
+                                 a. Show that EQ DFA ∈ P.
+                                 b. Say that a language A is star-closed if A = A∗ . Give a polynomial time
+                                    algorithm to test whether a DFA recognizes a star-closed language. (Note
+                                    that EQ NFA is not known to be in P.)
+                  7.12 Call graphs G and H isomorphic if the nodes of G may be reordered so that it is
+                       identical to H. Let ISO = {hG, Hi| G and H are isomorphic graphs}. Show that
+                       ISO ∈ NP.
+
+
+
+
+                  PROBLEMS
+                  7.13 Let
+
+                                          MODEXP = {ha, b, c, pi| a, b, c, and p are positive binary integers
+                                                                                           such that ab ≡ c (mod p)}.
+
+                            Show that MODEXP ∈ P. (Note that the most obvious algorithm doesn’t run in
+                            polynomial time. Hint: Try it first where b is a power of 2.)
+                  7.14 A permutation on the set {1, . . . , k} is a one-to-one, onto function on this set.
+                       When p is a permutation, pt means the composition of p with itself t times. Let
+
+                                        PERM-POWER = {hp, q, ti| p = q t where p and q are permutations
+                                                                                                on {1, . . . , k} and t is a binary integer}.
+
+                            Show that PERM-POWER ∈ P. (Note that the most obvious algorithm doesn’t
+                            run within polynomial time. Hint: First try it where t is a power of 2.)
+                  7.15 Show that P is closed under the star operation. (Hint: Use dynamic programming.
+                       On input y = y1 · · · yn for yi ∈ Σ, build a table indicating for each i ≤ j whether
+                       the substring yi · · · yj ∈ A∗ for any A ∈ P.)
+              A
+                  7.16 Show that NP is closed under the star operation.
+                  7.17 Let UNARY-SSUM be the subset sum problem in which all numbers are repre-
+                       sented in unary. Why does the NP-completeness proof for SUBSET-SUM fail to
+                       show UNARY-SSUM is NP-complete? Show that UNARY-SSUM ∈ P.
+                  7.18 Show that if P = NP, then every language A ∈ P, except A = ∅ and A = Σ∗ , is
+                       NP-complete.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                 324              CHAPTER 7 / TIME COMPLEXITY
+
+             ?
+                 7.19 Show that PRIMES = {m| m is a prime number in binary} ∈ NP. (Hint: For
+                      p > 1, the multiplicative group Zp∗ = {x| x is relatively prime to p and 1 ≤ x < p}
+                      is both cyclic and of order p − 1 iff p is prime. You may use this fact without
+                      justifying it. The stronger statement PRIMES ∈ P is now known to be true, but it
+                      is more difficult to prove.)
+                 7.20 We generally believe that PATH is not NP-complete. Explain the reason behind
+                      this belief. Show that proving PATH is not NP-complete would prove P 6= NP.
+                 7.21 Let G represent an undirected graph. Also let
+
+                                                     SPATH = {hG, a, b, ki| G contains a simple path of
+                                                                                                   length at most k from a to b},
+
+                           and
+
+                                                     LPATH = {hG, a, b, ki| G contains a simple path of
+                                                                                                    length at least k from a to b}.
+
+                                a. Show that SPATH ∈ P.
+                                b. Show that LPATH is NP-complete.
+                 7.22 Let DOUBLE-SAT = {hφi| φ has at least two satisfying assignments}. Show that
+                      DOUBLE-SAT is NP-complete.
+             A
+                 7.23 Let HALF-CLIQUE = {hGi| G is an undirected graph having a complete sub-
+                      graph with at least m/2 nodes, where m is the number of nodes in G}. Show that
+                      HALF-CLIQUE is NP-complete.
+                 7.24 Let CNF k = {hφi| φ is a satisfiable cnf-formula where each variable appears in at
+                      most k places}.
+                                a. Show that CNF 2 ∈ P.
+                                b. Show that CNF 3 is NP-complete.
+                 7.25 Let CNF H = {hφi| φ is a satisfiable cnf-formula where each clause contains any
+                      number of literals, but at most one negated literal}. Show that CNF H ∈ P.
+                 7.26 Let φ be a 3cnf-formula. An 6=-assignment to the variables of φ is one where
+                      each clause contains two literals with unequal truth values. In other words, an
+                      6=-assignment satisfies φ without assigning three true literals in any clause.
+                                a. Show that the negation of any 6=-assignment to φ is also an 6=-assignment.
+                                b. Let 6=SAT be the collection of 3cnf-formulas that have an 6=-assignment.
+                                   Show that we obtain a polynomial time reduction from 3SAT to 6=SAT by
+                                   replacing each clause ci
+                                                                  (y1 ∨ y2 ∨ y3 )
+                                       with the two clauses
+
+                                                                            (y1 ∨ y2 ∨ zi )                and        (zi ∨ y3 ∨ b),
+
+                                   where zi is a new variable for each clause ci , and b is a single additional new
+                                   variable.
+                                c. Conclude that 6=SAT is NP-complete.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                                                          PROBLEMS                          325
+
+                7.27 A cut in an undirected graph is a separation of the vertices V into two disjoint
+                     subsets S and T . The size of a cut is the number of edges that have one endpoint
+                     in S and the other in T . Let
+
+                                                      MAX-CUT = {hG, ki| G has a cut of size k or more}.
+
+                            Show that MAX-CUT is NP-complete. You may assume the result of Prob-
+                            lem 7.26. (Hint: Show that 6=SAT ≤P MAX-CUT. The variable gadget for
+                            variable x is a collection of 3c nodes labeled with x and another 3c nodes labeled
+                            with x, where c is the number of clauses. All nodes labeled x are connected with
+                            all nodes labeled x. The clause gadget is a triangle of three edges connecting three
+                            nodes labeled with the literals appearing in the clause. Do not use the same node
+                            in more than one clause gadget. Prove that this reduction works.)
+                7.28 You are given a box and a collection of cards as indicated in the following figure.
+                     Because of the pegs in the box and the notches in the cards, each card will fit in the
+                     box in either of two ways. Each card contains two columns of holes, some of which
+                     may not be punched out. The puzzle is solved by placing all the cards in the box
+                     so as to completely cover the bottom of the box (i.e., every hole position is blocked
+                     by at least one card that has no hole there). Let PUZZLE = {hc1 , . . . , ck i| each ci
+                     represents a card and this collection of cards has a solution}. Show that PUZZLE
+                     is NP-complete.
+
+
+
+
+                7.29 A coloring of a graph is an assignment of colors to its nodes so that no two adjacent
+                     nodes are assigned the same color. Let
+
+                                                            3COLOR = {hGi| G is colorable with 3 colors}.
+
+                            Show that 3COLOR is NP-complete. (Hint: Use the following three subgraphs.)
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                 326              CHAPTER 7 / TIME COMPLEXITY
+
+
+                 7.30 Let SET-SPLITTING = {hS, Ci| S is a finite set and C = {C1 , . . . , Ck } is a
+                      collection of subsets of S, for some k > 0, such that elements of S can be colored
+                      red or blue so that no Ci has all its elements colored with the same color}. Show
+                      that SET-SPLITTING is NP-complete.
+                 7.31 Consider the following scheduling problem. You are given a list of final exams
+                      F1 , . . . , Fk to be scheduled, and a list of students S1 , . . . , Sl . Each student is taking
+                      some specified subset of these exams. You must schedule these exams into slots so
+                      that no student is required to take two exams in the same slot. The problem is to
+                      determine if such a schedule exists that uses only h slots. Formulate this problem
+                      as a language and show that this language is NP-complete.
+                 7.32 This problem is inspired by the single-player game Minesweeper, generalized to an
+                      arbitrary graph. Let G be an undirected graph, where each node either contains
+                      a single, hidden mine or is empty. The player chooses nodes, one by one. If the
+                      player chooses a node containing a mine, the player loses. If the player chooses an
+                      empty node, the player learns the number of neighboring nodes containing mines.
+                      (A neighboring node is one connected to the chosen node by an edge.) The player
+                      wins if and when all empty nodes have been so chosen.
+                      In the mine consistency problem, you are given a graph G along with numbers labeling
+                      some of G’s nodes. You must determine whether a placement of mines on the
+                      remaining nodes is possible, so that any node v that is labeled m has exactly m
+                      neighboring nodes containing mines. Formulate this problem as a language and
+                      show that it is NP-complete.
+             A
+                 7.33 In the following solitaire game, you are given an m × m board. On each of its
+                      m2 positions lies either a blue stone, a red stone, or nothing at all. You play by
+                      removing stones from the board until each column contains only stones of a sin-
+                      gle color and each row contains at least one stone. You win if you achieve this
+                      objective. Winning may or may not be possible, depending upon the initial con-
+                      figuration. Let SOLITAIRE = {hGi| G is a winnable game configuration}. Prove
+                      that SOLITAIRE is NP-complete.
+                 7.34 Recall, in our discussion of the Church–Turing thesis, that we introduced the lan-
+                      guage D = {hpi| p is a polynomial in several variables having an integral root}. We
+                      stated, but didn’t prove, that D is undecidable. In this problem, you are to prove a
+                      different property of D—namely, that D is NP-hard. A problem is NP-hard if all
+                      problems in NP are polynomial time reducible to it, even though it may not be in
+                      NP itself. So you must show that all problems in NP are polynomial time reducible
+                      to D.
+                 7.35 A subset of the nodes of a graph G is a dominating set if every other node of G is
+                      adjacent to some node in the subset. Let
+
+                                     DOMINATING-SET = {hG, ki| G has a dominating set with k nodes}.
+
+                           Show that it is NP-complete by giving a reduction from VERTEX-COVER.
+             ?
+                 7.36 Show that the following problem is NP-complete. You are given a set of states Q =
+                      {q0 , q1 , . . . , ql } and a collection of pairs {(s1 , r1 ), . . . , (sk , rk )} where the si are
+                      distinct strings over Σ = {0, 1}, and the ri are (not necessarily distinct) members
+                      of Q. Determine whether a DFA M = (Q, Σ, δ, q0 , F ) exists where δ(q0 , si ) = ri
+                      for each i. Here, δ(q, s) is the state that M enters after reading s, starting at state q.
+                      (Note that F is irrelevant here.)
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                                                          PROBLEMS                          327
+
+                  7.37 Let U = {hM, x, #t i| NTM M accepts x within t steps on at least one branch}.
+                       Note that M isn’t required to halt on all branches. Show that U is NP-complete.
+              ?
+                  7.38 Show that if P = NP, a polynomial time algorithm exists that produces a satisfying
+                       assignment when given a satisfiable Boolean formula. (Note: The algorithm you
+                       are asked to provide computes a function; but NP contains languages, not func-
+                       tions. The P = NP assumption implies that SAT is in P, so testing satisfiability is
+                       solvable in polynomial time. But the assumption doesn’t say how this test is done,
+                       and the test may not reveal satisfying assignments. You must show that you can find
+                       them anyway. Hint: Use the satisfiability tester repeatedly to find the assignment
+                       bit-by-bit.)
+              ?
+                  7.39 Show that if P = NP, you can factor integers in polynomial time. (See the note in
+                       Problem 7.38.)
+            A?
+                  7.40 Show that if P = NP, a polynomial time algorithm exists that takes an undirected
+                       graph as input and finds a largest clique contained in that graph. (See the note in
+                       Problem 7.38.)
+                  7.41 In the proof of the Cook–Levin theorem, a window is a 2 × 3 rectangle of cells.
+                       Show why the proof would have failed if we had used 2 × 2 windows instead.
+              ?
+                  7.42 Consider the algorithm MINIMIZE, which takes a DFA M as input and outputs
+                       DFA M 0 .
+                            MINIMIZE = “On input hM i, where M = (Q, Σ, δ, q0 , A) is a DFA:
+                                 1. Remove all states of M that are unreachable from the start state.
+                                 2. Construct the following undirected graph G whose nodes are
+                                    the states of M .
+                                 3. Place an edge in G connecting every accept state with every
+                                    nonaccept state. Add additional edges as follows.
+                                 4. Repeat until no new edges are added to G:
+                                 5.      For every pair of distinct states q and r of M and every a ∈ Σ:
+                                 6.        Add the edge (q, r) to G if (δ(q, a), δ(r, a)) is an edge of G.
+                                 7. For each state q, let [q] be the collection of states
+                                    [q] = {r ∈ Q| no edge joins q and r in G}.
+                                 8. Form a new DFA M 0 = (Q0 , Σ, δ 0 , q0 0 , A0 ) where
+                                    Q0 = {[q]| q ∈ Q} (if [q] = [r], only one of them is in Q0 ),
+                                    δ 0 ([q], a) = [δ(q, a)] for every q ∈ Q and a ∈ Σ,
+                                    q0 0 = [q0 ], and
+                                    A0 = {[q]| q ∈ A}.
+                                 9. Output hM 0 i.”
+
+                                 a. Show that M and M 0 are equivalent.
+                                 b. Show that M 0 is minimal—that is, no DFA with fewer states recognizes the
+                                    same language. You may use the result of Problem 1.52 without proof.
+                                 c. Show that MINIMIZE operates in polynomial time.
+                  7.43 For a cnf-formula φ with m variables and c clauses, show that you can construct
+                       in polynomial time an NFA with O(cm) states that accepts all nonsatisfying assign-
+                       ments, represented as Boolean strings of length m. Conclude that P 6= NP implies
+                       that NFAs cannot be minimized in polynomial time.
+              ?
+                  7.44 A 2cnf-formula is an AND of clauses, where each clause is an OR of at most two
+                       literals. Let 2SAT = {hφi| φ is a satisfiable 2cnf-formula}. Show that 2SAT ∈ P.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                 328              CHAPTER 7 / TIME COMPLEXITY
+
+
+                 7.45 Modify the algorithm for context-free language recognition in the proof of The-
+                      orem 7.16 to give a polynomial time algorithm that produces a parse tree for a
+                      string, given the string and a CFG, if that grammar generates the string.
+                 7.46 Say that two Boolean formulas are equivalent if they have the same set of variables
+                      and are true on the same set of assignments to those variables (i.e., they describe
+                      the same Boolean function). A Boolean formula is minimal if no shorter Boolean
+                      formula is equivalent to it. Let MIN-FORMULA be the collection of minimal
+                      Boolean formulas. Show that if P = NP, then MIN-FORMULA ∈ P.
+                 7.47 The difference hierarchy Di P is defined recursively as
+                                a. D1 P = NP and
+                                b. Di P = {A| A = B \ C for B in NP and C in Di−1 P}.
+                                   (Here B \ C = B ∩ C.)
+                           For example, a language in D2 P is the difference of two NP languages. Sometimes
+                           D2 P is called DP (and may be written DP ). Let
+                                 Z = {hG1 , k1 , G2 , k2 i| G1 has a k1 -clique and G2 doesn’t have a k2 -clique}.
+                           Show that Z is complete for DP. In other words, show that Z is in DP and every
+                           language in DP is polynomial time reducible to Z.
+             ?
+                 7.48 Let MAX-CLIQUE = {hG, ki| a largest clique in G is of size exactly k}. Use the
+                      result of Problem 7.47 to show that MAX-CLIQUE is DP-complete.
+             ?
+                 7.49 Let f : N −→N be any function where f (n) = o(n log n). Show that TIME(f (n))
+                      contains only the regular languages.
+             ?
+                 7.50 Call a regular expression star-free if it does not contain any star operations. Then,
+                      let EQSF−REX = {hR, Si| R and S are equivalent star-free regular expressions}.
+                      Show that EQSF−REX is in coNP. Why does your argument fail for general regular
+                      expressions?
+             ?
+                 7.51 This problem investigates resolution, a method for proving the unsatisfiability of
+                      cnf-formulas. Let φ = C1 ∧ C2 ∧ · · · ∧ Cm be a formula in cnf, where the Ci are its
+                      clauses. Let C = {Ci | Ci is a clause of φ}. In a resolution step, we take two clauses
+                      Ca and Cb in C, which both have some variable x occurring positively in one of
+                      the clauses and negatively in the other. Thus, Ca = (x ∨ y1 ∨ y2 ∨ · · · ∨ yk ) and
+                      Cb = (x ∨ z1 ∨ z2 ∨ · · · ∨ zl ), where the yi and zi are literals. We form the new
+                      clause (y1 ∨ y2 ∨ · · · ∨ yk ∨ z1 ∨ z2 ∨ · · · ∨ zl ) and remove repeated literals. Add
+                      this new clause to C. Repeat the resolution steps until no additional clauses can be
+                      obtained. If the empty clause ( ) is in C, then declare φ unsatisfiable.
+                      Say that resolution is sound if it never declares satisfiable formulas to be unsatisfi-
+                      able. Say that resolution is complete if all unsatisfiable formulas are declared to be
+                      unsatisfiable.
+                                a. Show that resolution is sound and complete.
+                                b. Use part (a) to show that 2SAT ∈ P.
+             ?
+                 7.52 Show that P is closed under homomorphism iff P = NP.
+             ?
+                 7.53 Let A ⊆ 1∗ be any unary language. Show that if A is NP-complete, then P = NP.
+                      (Hint: Consider a polynomial time reduction f from SAT to A. For a formula φ,
+                      let φ0100 be the reduced formula where variables x1 , x2 , x3 , and x4 in φ are set to
+                      the values 0, 1, 0, and 0, respectively. What happens when you apply f to all of
+                      these exponentially many reduced formulas?)
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                               SELECTED SOLUTIONS                                           329
+
+                7.54 In a directed graph, the indegree of a node is the number of incoming edges and
+                     the outdegree is the number of outgoing edges. Show that the following problem
+                     is NP-complete. Given an undirected graph G and a designated subset C of G’s
+                     nodes, is it possible to convert G to a directed graph by assigning directions to each
+                     of its edges so that every node in C has indegree 0 or outdegree 0, and every other
+                     node in G has indegree at least 1?
+
+
+
+
+                SELECTED SOLUTIONS
+                  7.1 (c) FALSE; (d) TRUE.
+                  7.2 (c) TRUE; (d) TRUE.
+               7.16 Let A ∈ NP. Construct NTM M to decide A∗ in nondeterministic polynomial time.
+                            M = “On input w:
+                                 1. Nondeterministically divide w into pieces w = x1 x2 · · · xk .
+                                 2. For each xi , nondeterministically guess the certificates that
+                                     show xi ∈ A.
+                                 3. Verify all certificates if possible, then accept .
+                                     Otherwise, if verification fails, reject .”
+               7.23 We give a polynomial time mapping reduction from CLIQUE to HALF-CLIQUE.
+                    The input to the reduction is a pair hG, ki and the reduction produces the graph
+                    hHi as output where H is as follows. If G has m nodes and k = m/2, then H = G.
+                    If k < m/2, then H is the graph obtained from G by adding j nodes, each con-
+                    nected to every one of the original nodes and to each other, where j = m − 2k.
+                    Thus, H has m + j = 2m − 2k nodes. Observe that G has a k-clique iff H has a
+                    clique of size k + j = m − k, and so hG, ki ∈ CLIQUE iff hHi ∈ HALF-CLIQUE.
+                    If k > m/2, then H is the graph obtained by adding j nodes to G without any
+                    additional edges, where j = 2k − m. Thus, H has m + j = 2k nodes, and so
+                    G has a k-clique iff H has a clique of size k. Therefore, hG, ki ∈ CLIQUE iff
+                    hHi ∈ HALF-CLIQUE. We also need to show HALF-CLIQUE ∈ NP. The certifi-
+                    cate is simply the clique.
+               7.33 First, SOLITAIRE ∈ NP because we can verify that a solution works, in polynomial
+                    time. Second, we show that 3SAT ≤P SOLITAIRE. Given φ with m variables
+                    x1 , . . . , xm and k clauses c1 , . . . , ck , construct the following k × m game G. We
+                    assume that φ has no clauses that contain both xi and xi because such clauses may
+                    be removed without affecting satisfiability.
+                    If xi is in clause cj , put a blue stone in row cj , column xi . If xi is in clause cj , put a
+                    red stone in row cj , column xi . We can make the board square by repeating a row
+                    or adding a blank column as necessary without affecting solvability. We show that
+                    φ is satisfiable iff G has a solution.
+                    (→) Take a satisfying assignment. If xi is true (false), remove the red (blue) stones
+                    from the corresponding column. So stones corresponding to true literals remain.
+                    Because every clause has a true literal, every row has a stone.
+                    (←) Take a game solution. If the red (blue) stones were removed from a column,
+                    set the corresponding variable true (false). Every row has a stone remaining, so
+                    every clause has a true literal. Therefore, φ is satisfied.
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+               330                CHAPTER 7 / TIME COMPLEXITY
+
+
+               7.40 If you assume that P = NP, then CLIQUE ∈ P, and you can test whether G con-
+                    tains a clique of size k in polynomial time, for any value of k. By testing whether G
+                    contains a clique of each size, from 1 to the number of nodes in G, you can deter-
+                    mine the size t of a maximum clique in G in polynomial time. Once you know t,
+                    you can find a clique with t nodes as follows. For each node x of G, remove x and
+                    calculate the resulting maximum clique size. If the resulting size decreases, replace
+                    x and continue with the next node. If the resulting size is still t, keep x perma-
+                    nently removed and continue with the next node. When you have considered all
+                    nodes in this way, the remaining nodes are a t-clique.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                          8
+
+                                        SPACE COMPLEXITY
+
+
+
+                In this chapter, we consider the complexity of computational problems in terms
+                of the amount of space, or memory, that they require. Time and space are two
+                of the most important considerations when we seek practical solutions to many
+                computational problems. Space complexity shares many of the features of time
+                complexity and serves as a further way of classifying problems according to their
+                computational difficulty.
+                   As we did with time complexity, we need to select a model for measuring the
+                space used by an algorithm. We continue with the Turing machine model for
+                the same reason that we used it to measure time. Turing machines are mathe-
+                matically simple and close enough to real computers to give meaningful results.
+
+
+                             DEFINITION 8.1
+                             Let M be a deterministic Turing machine that halts on all inputs.
+                             The space complexity of M is the function f : N −→N , where f (n)
+                             is the maximum number of tape cells that M scans on any input of
+                             length n. If the space complexity of M is f (n), we also say that M
+                             runs in space f (n).
+                                 If M is a nondeterministic Turing machine wherein all branches
+                             halt on all inputs, we define its space complexity f (n) to be the
+                             maximum number of tape cells that M scans on any branch of its
+                             computation for any input of length n.
+
+
+                                                                                              331
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+               332                CHAPTER 8 / SPACE COMPLEXITY
+
+
+                  We typically estimate the space complexity of Turing machines by using
+               asymptotic notation.
+
+
+                            DEFINITION 8.2
+                            Let f : N −→ R+ be a function. The space complexity classes,
+                            SPACE(f (n)) and NSPACE(f (n)), are defined as follows.
+
+
+                                SPACE(f (n)) = {L| L is a language decided by an O(f (n)) space
+                                                   deterministic Turing machine}.
+                            NSPACE(f (n)) = {L| L is a language decided by an O(f (n)) space
+                                                nondeterministic Turing machine}.
+
+
+
+
+               EXAMPLE                      8.3
+               In Chapter 7, we introduced the NP-complete problem SAT. Here, we show
+               that SAT can be solved with a linear space algorithm. We believe that SAT
+               cannot be solved with a polynomial time algorithm, much less with a linear time
+               algorithm, because SAT is NP-complete. Space appears to be more powerful
+               than time because space can be reused, whereas time cannot.
+               M1 = “On input hφi, where φ is a Boolean formula:
+                    1. For each truth assignment to the variables x1 , . . . , xm of φ:
+                    2.    Evaluate φ on that truth assignment.
+                    3. If φ ever evaluated to 1, accept ; if not, reject .”

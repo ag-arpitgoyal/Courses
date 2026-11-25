@@ -1,0 +1,20 @@
+error: invalid pointer
+error: invalid pointer
+error: double free (block 1:70080)
+error: double free (block 1:32)
+g==big 1
+region 0 65536
+  32 A 128 10
+  160 A 144 100
+  304 F 65232
+region 1 131072
+  32 A 70048 70000
+  70080 F 60992
+error: overflow detected (block 1:32)
+error: double free (block 1:32)
+region 0 65536
+  32 A 128 10
+  160 A 144 100
+  304 F 65232
+region 1 131072
+  32 F 131040

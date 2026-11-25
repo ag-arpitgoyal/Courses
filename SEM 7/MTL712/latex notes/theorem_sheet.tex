@@ -1,0 +1,617 @@
+\documentclass[10pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.6in,headheight=13pt]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.3em}
+\setlength{\abovedisplayskip}{4pt plus 1pt}
+\setlength{\belowdisplayskip}{4pt plus 1pt}
+\setlength{\abovedisplayshortskip}{2pt}
+\setlength{\belowdisplayshortskip}{3pt}
+\setlength{\jot}{3pt}
+\setlist{leftmargin=*,itemsep=1pt,topsep=2pt,parsep=0pt}
+
+\newtheoremstyle{tight}
+  {5pt}{5pt}{\normalfont}{}{\bfseries}{.}{0.5em}{}
+\theoremstyle{tight}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Theorem Sheet}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\newcommand{\pd}[2]{\frac{\partial #1}{\partial #2}}
+\newcommand{\pdd}[2]{\frac{\partial^2 #1}{\partial #2^2}}
+\newcommand{\hb}{\bar h}
+
+\title{\textbf{MTL712: Computational Methods for Differential Equations}\\[4pt]
+\large Theorem Sheet (definitions and statements)}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\vspace{-3em}
+\thispagestyle{plain}
+{\small\tableofcontents}
+
+%=====================================================================
+\section{IVPs, One-Step and Runge--Kutta Methods, Adams-Type Formulas (Note 1)}
+%=====================================================================
+
+\begin{theorem}[Linear IVP]
+If \(a(x),b(x)\) are continuous on an interval \(I\ni x_0\), then
+\(y'=a(x)y+b(x)\), \(y(x_0)=y_0\) has a unique solution on \(I\).
+\end{theorem}
+
+\begin{theorem}[Existence and uniqueness on a rectangle]
+If \(f\) and \(\partial f/\partial y\) are continuous on
+\(R=\{|x-x_0|\le a,\ |y-y_0|\le b\}\) and \(M\) bounds \(|f|\) on \(R\), the IVP
+\(y'=f(x,y)\), \(y(x_0)=y_0\) has a unique solution on
+\(|x-x_0|\le h=\min(a,b/M)\) (take \(h=a\) if \(f\equiv0\)).
+\end{theorem}
+
+\begin{definition}[Lipschitz condition]
+\(|f(x,y_1)-f(x,y_2)|\le L|y_1-y_2|\) for all \((x,y_1),(x,y_2)\in R\); \(L\) is the Lipschitz constant.
+\end{definition}
+
+\begin{theorem}[Picard iteration]
+Under the continuity and Lipschitz hypotheses, the iterates
+\(y_{n+1}(x)=y_0+\int_{x_0}^xf(s,y_n(s))\,ds\) converge uniformly to the unique solution.
+\end{theorem}
+
+\begin{theorem}[{Existence and uniqueness on \([a,b]\)}]
+A unique solution exists on \([a,b]\) if (i) \(f\) is continuous and bounded on
+\(a\le x\le b\), \(-\infty<y<\infty\), and (ii) \(|f(x,y)-f(x,y^*)|\le L|y-y^*|\) there.
+\end{theorem}
+
+\begin{definition}[Single-step and multistep methods]
+A single-step method uses only \(x_k\) to compute \(y_{k+1}\); a multistep method uses
+several preceding points \(x_n,x_{n-1},\dots\).
+\end{definition}
+
+\begin{definition}[Convergence]
+A method is convergent if \(\lim_{h\to0,\ x_0+nh=x}y_n^{(h)}=y(x)\) for every fixed \(x\in[x_0,b]\).
+\end{definition}
+
+\begin{theorem}[Global error of the Taylor method of order \(p\)]
+Let \(\Phi(x,u,h)=\sum_{j=1}^p\frac{h^{j-1}}{j!}F_j(x,u)\). If \(y\in C^{p+1}[a,b]\),
+\(|\Phi(x,u,h)-\Phi(x,v,h)|\le L|u-v|\), and \(|y^{(p+1)}|\le M_{p+1}\), then
+\[
+  |e_n|\le\frac{e^{L(x_n-a)}-1}{L}\cdot\frac{M_{p+1}h^p}{(p+1)!}=O(h^p),
+\]
+so the method is convergent.
+\end{theorem}
+
+\begin{lemma}
+If \(w_{k+1}\le(1+a)w_k+B\) with \(a,B>0\) and \(w_0=0\), then
+\(w_n\le\frac Ba(e^{na}-1)\).
+\end{lemma}
+
+\begin{theorem}[Mean value theorem]
+If \(f\in C[a,b]\) is differentiable on \((a,b)\), then \(f(b)-f(a)=(b-a)f'(\xi)\) for some \(\xi\in(a,b)\).
+Hence \(y(x_{n+1})=y(x_n)+hf(\xi,y(\xi))\); one-step methods approximate \(f(\xi,y(\xi))\).
+\end{theorem}
+
+\begin{theorem}[Mean value theorem for integrals]
+If \(f\) is integrable and does not change sign on \([a,b]\) and \(g\) is continuous, then
+\(\int_a^bfg\,dx=g(\xi)\int_a^bf\,dx\) for some \(\xi\in[a,b]\).
+\end{theorem}
+
+\begin{remark}[\(\theta\)-method]
+Explicit for \(\theta=0\), implicit for \(\theta\in(0,1]\). The implicit trapezoidal rule is
+different from the explicit Heun (improved Euler) method.
+\end{remark}
+
+\begin{theorem}[Second-order RK family]
+The two-stage method has order 2 iff \(w_1+w_2=1\), \(w_2\alpha_2=\frac12\),
+\(w_2\beta_{21}=\frac12\): a one-parameter family (\(\alpha_2\ne0\)).
+\(\alpha_2=1\): improved Euler; \(\alpha_2=\frac12\): modified Euler;
+\(\alpha_2=\frac23\): Ralston (minimises the third-order error-coefficient bound).
+\end{theorem}
+
+\begin{definition}[Explicit and implicit RK]
+A general \(\nu\)-stage RK method is implicit. It is explicit if \(\alpha_1=0\) and
+\(\beta_{ij}=0\) for \(i\le j\) (strictly lower triangular RK matrix), and
+semi-implicit (diagonally implicit) if \(\beta_{ij}=0\) for \(i<j\).
+\end{definition}
+
+\begin{definition}[Absolute and relative stability]
+For \(y'=\lambda y\), \(z=\lambda h\), \(y_{n+1}=E(z)y_n\). The method is absolutely stable if
+\(|E(z)|<1\) and relatively stable if \(|E(z)|<e^{\operatorname{Re}z}\). If it is absolutely
+stable for all \(\lambda h\in(a,b)\), then \((a,b)\) is the interval of absolute stability.
+\end{definition}
+
+\begin{theorem}[Stability of standard one-step methods]
+\leavevmode
+\begin{enumerate}
+  \item Euler and every RK2: interval \((-2,0)\); conditionally stable (\(h<2/|\lambda|\)).
+  \item Explicit RK3: \((-2.5127,0)\); classical RK4: \((-2.7853,0)\), \(h<2.7853/|\lambda|\).
+  \item Backward Euler: \(|1/(1-\lambda h)|<1\) for all \(\lambda h<0\); unconditionally stable, A-stable and L-stable.
+  \item Implicit trapezoidal: \(|(2+\lambda h)/(2-\lambda h)|<1\) for all \(\lambda h<0\); A-stable, not L-stable (\(E\to-1\)).
+\end{enumerate}
+\end{theorem}
+
+\begin{definition}[Stability, consistency, convergence of \(y_{n+1}=y_n+h\Phi(x_n,y_n;h)\)]
+\leavevmode
+\begin{itemize}
+  \item Stable: there are \(h_0,K_T\) with \(|y_n-\tilde y_n|\le K_T|y_0-\tilde y_0|\) for \(0<h\le h_0\), \(nh\le T\).
+  \item Consistent: \(\Phi(x,y;0)=f(x,y)\).
+  \item Convergent on \([0,b]\): \(y_{n(h)}^{(h)}\to y(x)\) as \(h\to0\) with \(x=n(h)h\), for every IVP in the class.
+\end{itemize}
+\end{definition}
+
+\begin{theorem}
+If \(\Phi\) is Lipschitz in \(y\), the one-step method is stable.
+\end{theorem}
+
+\begin{theorem}[Error recurrence for one-step methods]
+If \(|\Phi(x,y;h)-\Phi(x,z;h)|\le L|y-z|\) on \(R\) and the exact and numerical values stay in \(R\), then
+\(|e_{n+1}|\le(1+hL)|e_n|+h|T_n|\) and
+\[
+  |e_n|\le e^{L(x_n-x_0)}|e_0|+\frac{e^{L(x_n-x_0)}-1}{L}\,T,\qquad T=\max_n|T_n|.
+\]
+\end{theorem}
+
+\begin{theorem}[Convergence of consistent Lipschitz one-step methods]
+If \(\Phi\) is uniformly continuous on \(R\times[0,h_0]\), \(\Phi(x,y;0)=f(x,y)\), and \(\Phi\) is
+Lipschitz in \(y\), then \(|y(x_n)-y_n|\to0\) as \(h\to0\), \(x_n\to x\).
+\end{theorem}
+
+\begin{theorem}[Existence and uniqueness for systems]
+If \(f(x,Y)\) is continuous on \(B_0=\{x_0\le x\le x_0+a,\ \|Y-Y_0\|\le b\}\) and
+\(\|f(x,Y)-f(x,Z)\|\le L\|Y-Z\|\), then \(Y'=f(x,Y)\), \(Y(x_0)=\eta\) has a unique solution on
+\([x_0,x_0+\alpha]\), \(\alpha=\min(a,b/M)\), \(M=\max_{B_0}\|f\|\).
+\end{theorem}
+
+\begin{remark}[Multistep formulas]
+\(l=0\): Adams--Bashforth (explicit) and Adams--Moulton (implicit); \(l=1\): Nystr\"om (explicit) and
+Milne (implicit). Explicit \(k\)-step LTE is \(O(h^{k+1})\); implicit \(k\)-step LTE is \(O(h^{k+2})\).
+Since \(\beta_1^{(1)}=0\), Nystr\"om \(k=1,2\) coincide (leapfrog, order 2); since \(\gamma_3^{(1)}=0\),
+Milne \(k=2,3\) coincide (Simpson, order 4).
+\end{remark}
+
+%=====================================================================
+\section{Milne Predictor--Corrector Methods and Zero-Stability (Note 2)}
+%=====================================================================
+
+\begin{definition}[Predictor--corrector schemes]
+\textbf{PECE}: predict \(y^{(p)}_{n+1}\), evaluate \(f^{(p)}_{n+1}\), correct to \(y^{(c)}_{n+1}\),
+evaluate \(f^{(c)}_{n+1}\). \textbf{P(EC)\(^2\)E} performs two corrections; \textbf{PEC} and
+\textbf{PECEC} omit the final evaluation. If unspecified, use PECE; starting values come from a
+single-step (e.g.\ RK) method.
+\end{definition}
+
+\begin{theorem}[Milne pair]
+The Milne predictor \(y_{n+1}=y_{n-3}+\frac{4h}3(2f_n-f_{n-1}+2f_{n-2})\) and corrector
+\(y_{n+1}=y_{n-1}+\frac h3(f_{n+1}+4f_n+f_{n-1})\) both have order 4, with principal local defects
+\(\frac{14}{45}h^5y^{(5)}\) and \(-\frac1{90}h^5y^{(5)}\).
+\end{theorem}
+
+\begin{definition}[Linear multistep method]
+\(\sum_{j=0}^k\alpha_jy_{n+j}=h\sum_{j=0}^k\beta_jf_{n+j}\) with real constants,
+\(\alpha_k\ne0\), \(|\alpha_0|+|\beta_0|\ne0\). Explicit if \(\beta_k=0\), implicit if \(\beta_k\ne0\).
+\end{definition}
+
+\begin{definition}[Zero-stability]
+The LMM is zero-stable if there is \(K\), independent of \(h\) and \(n\), such that any two
+solutions with different starting values satisfy
+\(|y_n-\hat y_n|\le K\max_{0\le j\le k-1}|y_j-\hat y_j|\) for \(x_n\le X_M\) and all small \(h\).
+\end{definition}
+
+\begin{definition}[Characteristic polynomials]
+\(\rho(z)=\sum\alpha_jz^j\) (degree \(k\)) and \(\sigma(z)=\sum\beta_jz^j\).
+\end{definition}
+
+\begin{theorem}[Root condition]
+An LMM is zero-stable iff every root of \(\rho\) lies in \(|z|\le1\) and every root with
+\(|z|=1\) is simple. (Roots strictly inside the disk may be repeated.)
+\end{theorem}
+
+%=====================================================================
+\section{Stability, Difference Equations and Order Conditions (Note 3)}
+%=====================================================================
+
+\begin{theorem}[Root condition \(\iff\) zero-stability: idea]
+Applied to \(y'=0\), a root \(|z_s|>1\) gives growth \(|z_s|^n\) and a multiple root on
+\(|z|=1\) gives growth \(n^{m_s-1}\), so no \(h\)-independent \(K\) exists. Conversely the root
+condition bounds the powers of the companion matrix; a discrete Gronwall argument gives zero-stability.
+\end{theorem}
+
+\begin{definition}[Absolute and relative stability of an LMM]
+With \(\pi(z,\hb)=\rho(z)-\hb\sigma(z)\) and roots \(z_1,\dots,z_k\) (\(z_1\to1\) as \(\hb\to0\)):
+absolutely stable at \(\hb\) if \(|z_r|<1\) for all \(r\); relatively stable if \(|z_r|<|z_1|\), \(r\ge2\).
+\((a,b)\) is an interval of absolute stability if the method is absolutely stable for all \(\hb\in(a,b)\).
+\end{definition}
+
+\begin{definition}[Strong and weak stability]
+A zero-stable LMM is strongly stable if \(z=1\) is the only root of \(\rho\) on \(|z|=1\);
+weakly stable if \(\rho\) has other (simple) roots on the unit circle.
+\end{definition}
+
+\begin{definition}[Schur polynomial]
+\(\phi\) is a Schur polynomial if all its zeros satisfy \(|z_r|<1\).
+\end{definition}
+
+\begin{theorem}[Schur's criterion]
+\(\phi\) is Schur iff \(|\hat\phi(0)|>|\phi(0)|\) (i.e.\ \(|c_0|>|c_k|\)) and
+\(\phi_1(z)=\frac{\hat\phi(0)\phi(z)-\phi(0)\hat\phi(z)}z\) is Schur.
+\end{theorem}
+
+\begin{theorem}[Routh--Hurwitz criterion]
+\(w=\frac{z-1}{z+1}\) maps \(|z|<1\) onto \(\operatorname{Re}w<0\). With
+\(q(w)=a_0w^k+\cdots+a_k\), \(a_0>0\), all zeros of \(q\) lie in \(\operatorname{Re}w<0\) iff all
+leading principal minors of the Hurwitz matrix are positive. (\(k=2\): \(a_i>0\);
+\(k=3\): \(a_i>0\), \(a_1a_2-a_0a_3>0\); \(k=4\): \(a_i>0\), \(a_1a_2a_3-a_0a_3^2-a_1^2a_4>0\).)
+\end{theorem}
+
+\begin{definition}[Order, error constant, consistency]
+\(L\) has order \(p\) if \(c_0=\cdots=c_p=0\ne c_{p+1}\). Error constant \(C=c_{p+1}/\sigma(1)\)
+(when \(\sigma(1)\ne0\)). Consistent if order \(\ge1\): \(\rho(1)=0\), \(\rho'(1)=\sigma(1)\).
+Shifting the method by \(t\) does not change the order: \(L_t[y(x);h]=L[y(x+th);h]\).
+\end{definition}
+
+\begin{definition}[Consistency with the ODE; order of accuracy]
+The scheme is consistent with the ODE if for every \(\varepsilon>0\) there is \(h(\varepsilon)\) with
+\(|T_n|<\varepsilon\) for \(0<h<h(\varepsilon)\) on every smooth solution. It has order \(p\) if
+\(p\) is the largest integer with \(|T_n|\le Kh^p\); equivalently \(c_0=\cdots=c_p=0\ne c_{p+1}\).
+\end{definition}
+
+\begin{definition}[Difference equation]
+An equation in shifted values of \(y_n\); its order is the largest minus the smallest subscript.
+Linear with constant coefficients: \(a_0y_{n+k}+\cdots+a_ky_n=f(n)\); homogeneous if \(f\equiv0\).
+\end{definition}
+
+\begin{theorem}[Solution of linear difference equations]
+\leavevmode
+\begin{enumerate}
+  \item Distinct roots \(\xi_i\) of \(\phi(\xi)=0\): \(y_n=\sum c_i\xi_i^n\).
+  \item A root of multiplicity \(r\) contributes \((c_1+c_2n+\cdots+c_rn^{r-1})\xi_1^n\).
+  \item Conjugate roots \(\rho_0e^{\pm i\theta}\) contribute \(\rho_0^n(A\cos n\theta+B\sin n\theta)\).
+  \item The complete solution of \(\phi(E)y_n=f(n)\) is complementary plus any particular solution.
+\end{enumerate}
+\end{theorem}
+
+\begin{theorem}[Shift rule]
+\(\phi(E)[\beta^nv(n)]=\beta^n\phi(\beta E)v(n)\); hence
+\(\frac1{\phi(E)}[\beta^nv(n)]=\beta^n\frac1{\phi(\beta E)}v(n)\). Use it in the resonant case
+\(\phi(\beta)=0\).
+\end{theorem}
+
+\begin{theorem}[Order characterisation]
+The LMM has order \(p\) iff \(\Psi(z)=\frac{\rho(z)}{\log z}-\sigma(z)\) has a zero of
+multiplicity \(p\) at \(z=1\).
+\end{theorem}
+
+\begin{theorem}[Construction of \(\sigma\)]
+If \(\deg\rho=k\), \(\rho(1)=0\), \(\rho'(1)\ne0\), there is a unique \(\sigma\) of degree \(\le k\)
+giving order \(\ge k+1\); it is the degree-\(k\) Taylor polynomial of \(\rho(z)/\log z\) at \(z=1\),
+and \(\sigma(1)=\rho'(1)\).
+\end{theorem}
+
+%=====================================================================
+\section{LMM Theory, \(y''=f\), BVPs and Parabolic PDEs (Note 4)}
+%=====================================================================
+
+\begin{lemma}[Order via \(\varphi\)]
+The LMM has order \(p\) iff \(\varphi(\zeta)=\frac{\rho(\zeta)}{\log\zeta}-\sigma(\zeta)\) has a zero
+of exact multiplicity \(p\) at \(\zeta=1\); then \(\varphi(\zeta)=C_{p+1}(\zeta-1)^p+O((\zeta-1)^{p+1})\).
+\end{lemma}
+
+\begin{theorem}[Henrici]
+Let \(\deg\rho=k\), \(\rho(1)=0\), \(\rho'(1)\ne0\), \(0\le k'\le k\). There is a unique \(\sigma\) of
+degree \(\le k'\) such that the method has order \(\ge k'+1\). \(k'=k\): implicit, order \(\ge k+1\);
+\(k'=k-1\): explicit, order \(\ge k\).
+\end{theorem}
+
+\begin{theorem}[First Dahlquist barrier]
+No zero-stable linear \(k\)-step method has order exceeding \(k+1\) (\(k\) odd) or \(k+2\) (\(k\) even).
+\end{theorem}
+
+\begin{definition}[Optimal method]
+A zero-stable \(k\)-step method of order \(k+2\) (only possible for even \(k\); e.g.\ Milne--Simpson).
+\end{definition}
+
+\begin{definition}[Stability polynomial]
+\(\pi(z,\hb)=\sum(\alpha_j-\hb\beta_j)z^j\); absolutely stable at \(\hb\) if all roots \(|r_s(\hb)|<1\).
+\end{definition}
+
+\begin{theorem}
+Every consistent zero-stable LMM is absolutely unstable for small positive \(\hb\)
+(the principal root satisfies \(r_1(\hb)=e^{\hb}+O(\hb^{p+1})\)).
+\end{theorem}
+
+\begin{definition}[Convergence of an LMM]
+\(\lim_{h\to0,\,nh=x-x_0}y_n=y(x)\) for all \(x\in[x_0,x_M]\), every admissible IVP, and all
+solutions with consistent starting values \(\eta_s(h)\to y_0\).
+\end{definition}
+
+\begin{theorem}[Convergence of LMMs]
+(1) Zero-stability is necessary. (2) Consistency is necessary. (3) (Dahlquist) For Lipschitz \(f\)
+and consistent starting values: convergent \(\iff\) consistent and zero-stable.
+\end{theorem}
+
+\begin{definition}[Convergence for \(y''=f(x,y)\)]
+As above, with starting values satisfying \(\eta_\mu(h)\to\eta\) and
+\(\frac{\eta_\mu(h)-\eta_0(h)}{\mu h}\to\eta'\) (they must also approximate the initial slope).
+\end{definition}
+
+\begin{theorem}[Convergence for \(y''=f\)]
+(1) Necessary: roots of \(\rho\) satisfy \(|\zeta|\le1\), and roots on \(|\zeta|=1\) have multiplicity
+\(\le2\). (2) Consistency (order \(\ge1\)): \(\rho(1)=\rho'(1)=0\), \(\rho''(1)=2\sigma(1)\).
+(3) Convergent \(\iff\) zero-stable and consistent.
+\end{theorem}
+
+\begin{theorem}[Maximal order for \(y''=f\)]
+Order \(p\) iff \(\varphi=\rho/(\log\zeta)^2-\sigma\) has a zero of order \(p\) at \(1\). If
+\(\rho(1)=\rho'(1)=0\ne\rho''(1)\), for each \(0\le k'\le k\) a unique \(\sigma\) of degree \(\le k'\)
+gives order \(\ge k'+1\).
+\end{theorem}
+
+\begin{theorem}[St\"ormer and Numerov]
+Among two-step methods for \(y''=f\): the explicit order-2 method is St\"ormer's
+\(y_{n+1}-2y_n+y_{n-1}=h^2f_n\) (LTE \(\frac1{12}h^4y^{(4)}\)); the maximal-order method is Numerov's
+\(y_{n+1}-2y_n+y_{n-1}=\frac{h^2}{12}(f_{n+1}+10f_n+f_{n-1})\), order 4 (LTE \(-\frac1{240}h^6y^{(6)}\)).
+\end{theorem}
+
+\begin{definition}[Boundary conditions for \(y''=f(x,y,y')\)]
+First kind (Dirichlet) \(y(a),y(b)\) given; second kind \(y'(a),y'(b)\) given; third kind (mixed)
+\(\alpha_0y(a)+\alpha_1y'(a)=\gamma_1\), \(\beta_0y(b)+\beta_1y'(b)=\gamma_2\).
+\end{definition}
+
+\begin{remark}[Making the FD matrix tridiagonal]
+(1) If \(R_0=P_N=0\) (Dirichlet) it already is. (2) If \(R_0\ne0\), \(B_1=0\): swap the first two rows.
+(3) If \(R_0\ne0\), \(B_1\ne0\): row \(0\) minus \(\frac{R_0}{B_1}\) row \(1\) (similarly at the end).
+\end{remark}
+
+\begin{theorem}[Thomas algorithm]
+If no division by zero occurs, the tridiagonal system is solved by the forward recurrences for
+\(\alpha_i,\beta_i\) and back substitution \(y_i=\alpha_{i+1}y_{i+1}+\beta_{i+1}\), in \(O(N)\)
+operations (it is an \(LU\) factorisation with bidiagonal factors).
+\end{theorem}
+
+\begin{theorem}
+A strictly diagonally dominant matrix is non-singular. Hence the scheme for
+\(y''-q(x)y=f\), \(q>0\), Dirichlet, has a unique solution.
+\end{theorem}
+
+\begin{remark}[Non-linear BVP]
+The Newton Jacobian \(J=M-\partial F/\partial Y\) has the same (tridiagonal) structure as \(M\), so each
+Newton step is solved by the Thomas algorithm; the inverse is never formed.
+\end{remark}
+
+\begin{theorem}[Collocation set-up]
+If \((a_0b_1-a_1b_0)+a_0a_1(b-a)\ne0\), there is a unique \(d(x)=\alpha x+\beta\) satisfying the BCs,
+so the problem reduces to homogeneous BCs. With compactly supported \(\psi_i\) (B-splines) the
+collocation matrix is banded (\(O(N)\) solve); spectral collocation gives a full matrix handled by FFT
+in \(O(N\log N)\).
+\end{theorem}
+
+\begin{definition}[Characteristics and classification]
+Characteristics are curves along which second derivatives are not determined by the data. The PDE
+\(Au_{xx}+2Bu_{xy}+Cu_{yy}+\cdots=G\) is hyperbolic (\(B^2-AC>0\), real distinct), parabolic
+(\(=0\), real coincident) or elliptic (\(<0\), none real). Only \(A,B,C\) decide the type; with
+variable coefficients the type is checked point by point.
+\end{definition}
+
+\begin{definition}[Boundary conditions for PDEs]
+Dirichlet: \(u\) prescribed; Neumann: \(\partial u/\partial n\) prescribed; Robin: a combination.
+Hyperbolic needs \(u(x,0)\), \(u_t(x,0)\) + BCs; parabolic \(u(x,0)\) + BCs; elliptic BCs on the whole
+closed boundary only.
+\end{definition}
+
+\begin{definition}[Explicit, implicit, two-level schemes]
+Explicit: one grid point at \(t_{n+1}\). Implicit: more than one (a linear system each step).
+Two-level: only \(t_n\) and \(t_{n+1}\) appear.
+\end{definition}
+
+\begin{definition}[LTE and consistency for PDE schemes]
+The LTE \(T_m^n\) is the residual when the exact PDE solution is substituted into the scheme.
+The scheme is consistent if \(T_m^n/k\to0\) as \(h,k\to0\).
+\end{definition}
+
+\begin{definition}[Convergence for PDE schemes]
+\(u(X,T)-U(X,T)\to0\) at every fixed \((X,T)=(mh,nk)\) as \(h,k\to0\).
+\end{definition}
+
+\begin{theorem}[Convergence of the explicit scheme]
+For \(u_t=u_{xx}\) on \([0,1]\) with Dirichlet BCs, the explicit scheme converges for
+\(0<r\le\frac12\), with \(\max_m|u_m^n-U_m^n|\le TA(k+h^2)\). (For \(r>\frac12\) the coefficients sum
+in absolute value to \(4r-1>1\) and the scheme actually blows up.)
+\end{theorem}
+
+\begin{theorem}[Lax equivalence theorem]
+For a properly posed linear IVP and a consistent finite difference approximation,
+stability is necessary and sufficient for convergence.
+\end{theorem}
+
+\begin{definition}[Stability]
+The difference \(z_m^n=U_m^n-\widetilde U_m^n\) between exact and perturbed solutions of the difference
+equation stays bounded as \(n\to\infty\), uniformly as \(h,k\to0\), \(nk\le T\). Methods: von Neumann,
+matrix, energy.
+\end{definition}
+
+\begin{definition}[Von Neumann condition]
+For \(z_m^n=\xi^ne^{i\beta mh}\), \(\xi=e^{\alpha k}\) is the amplification factor; require
+\(|\xi|\le1\) for all \(\beta\).
+\end{definition}
+
+\begin{theorem}[Von Neumann results for \(u_t=u_{xx}\)]
+Explicit: \(\xi=1-4r\sin^2\frac{\beta h}2\), stable iff \(0<r\le\frac12\).
+Fully implicit: \(\xi=\frac1{1+4r\sin^2(\beta h/2)}\), unconditionally stable.
+Crank--Nicolson: \(\xi=\frac{1-2r\sin^2(\beta h/2)}{1+2r\sin^2(\beta h/2)}\), unconditionally stable.
+\end{theorem}
+
+\begin{definition}[Lax--Richtmyer stability]
+For \(\mathbf U_{j+1}=A\mathbf U_j+\mathbf f_j\): stable if \(\|A^j\|\le M\) for \(jk\le T\), with
+\(M\) independent of \(j,h,k\).
+\end{definition}
+
+\begin{theorem}[Matrix method]
+(a) \(\mathbf e_j=A^j\mathbf e_0\), so \(\|\mathbf e_j\|\le\|A^j\|\|\mathbf e_0\|\).
+(b) \(\|A\|\le1\Rightarrow\) stable (\(M=1\)); sufficient but not necessary.
+(c) For real symmetric \(A\), \(\|A^j\|_2=\rho(A)^j\), so \(\rho(A)\le1\) gives stability.
+In general \(\rho(A)\le\|A\|\) and \(\rho(A)\le1\) does not imply \(\|A\|\le1\).
+\end{theorem}
+
+\begin{theorem}[Eigenvalues of a tridiagonal matrix]
+For \(N\times N\) \(\operatorname{tridiag}(c,a,b)\), \(bc\ne0\):
+\(\lambda_s=a+2b\sqrt{c/b}\cos\frac{s\pi}{N+1}\), \(s=1,\dots,N\), with
+\((\mathbf v_s)_j=(c/b)^{j/2}\sin\frac{js\pi}{N+1}\). (Proof: solve the difference equation
+\(cv_{j-1}+(a-\lambda)v_j+bv_{j+1}=0\), \(v_0=v_{N+1}=0\).)
+\end{theorem}
+
+\begin{theorem}[Matrix stability]
+Explicit scheme with Dirichlet BCs: \(\lambda_s=1-4r\sin^2\frac{s\pi}{2N}\), stable iff \(0<r\le\frac12\).
+Crank--Nicolson: \(|\lambda_s(A^{-1}B)|<1\) and \(A^{-1}B\) symmetric, so unconditionally stable and convergent.
+\end{theorem}
+
+\begin{theorem}[Crank--Nicolson with derivative BCs]
+For \(u_x-pu=f_0\) at \(x=0\), \(u_x+qu=f_1\) at \(x=1\), \(p,q\ge0\), the CN scheme with fictitious
+points is unconditionally stable. (Symmetrise with \(D=\operatorname{diag}(\sqrt2,1,\dots,1,\sqrt2)\);
+all eigenvalues of \(Q\) are \(\le0\).)
+\end{theorem}
+
+\begin{theorem}[2D explicit scheme]
+The five-point explicit scheme for \(u_t=u_{x_1x_1}+u_{x_2x_2}\) is stable iff \(0<r\le\frac14\)
+(in \(d\) dimensions \(r\le\frac1{2d}\)); the nine-point scheme is stable for \(0<r\le\frac12\).
+\end{theorem}
+
+%=====================================================================
+\section{ADI Methods and Three-Level Schemes (Note 5)}
+%=====================================================================
+
+\begin{theorem}[2D Crank--Nicolson]
+Splitting \(\exp(kL)\) symmetrically and keeping two terms of each exponential gives
+\((1-\frac12r\delta_{x_1}^2)(1-\frac12r\delta_{x_2}^2)U^{n+1}=(1+\frac12r\delta_{x_1}^2)(1+\frac12r\delta_{x_2}^2)U^n\).
+\end{theorem}
+
+\begin{theorem}[Splitting]
+The two one-directionally implicit steps with intermediate \(U^{n+1*}\) reproduce the combined
+formula when \(\delta_{x_1}^2\) and \(\delta_{x_2}^2\) commute.
+\end{theorem}
+
+\begin{definition}[Peaceman--Rachford ADI]
+Taking \(U^{n+1*}=U^{n+1/2}\): first step implicit in \(x_1\), explicit in \(x_2\) (to \(t_{n+1/2}\));
+second step explicit in \(x_1\), implicit in \(x_2\) (to \(t_{n+1}\)).
+\end{definition}
+
+\begin{definition}[Three-level scheme]
+A scheme involving \(t_{n-1},t_n,t_{n+1}\); reduce it to a two-level system with \(V^n=U^{n-1}\).
+\end{definition}
+
+\begin{definition}[Von Neumann condition for a two-level system]
+Necessary condition: \(\max_i|\lambda_i|\le1\), \(\lambda_i\) the eigenvalues of the amplification matrix.
+\end{definition}
+
+\begin{theorem}[Richardson's scheme]
+\(U_m^{n+1}=2r\delta_x^2U_m^n+U_m^{n-1}\) is unconditionally unstable:
+\(|\lambda_2|=4r\sin^2\frac{\beta h}2+\bigl(1+16r^2\sin^4\frac{\beta h}2\bigr)^{1/2}>1\) for all \(r>0\).
+\end{theorem}
+
+\begin{theorem}[Du Fort--Frankel]
+Replacing \(U_m^n\) by \(\frac12(U_m^{n+1}+U_m^{n-1})\) in Richardson's scheme gives an
+unconditionally stable scheme.
+\end{theorem}
+
+%=====================================================================
+\section{Matrix Stability, Elliptic Equations, ADI Iterations, Hyperbolic Equations (Note 6)}
+%=====================================================================
+
+\begin{theorem}[Eigenvalues of block matrices]
+If all \(n\times n\) blocks \(A_{ij}\) of \(A=(A_{ij})_{m\times m}\) share \(n\) linearly independent
+eigenvectors \(v_k\), then the eigenvalues of \(A\) are those of the \(m\times m\) matrices
+\(\Lambda^{(k)}=(\lambda_{ij}^{(k)})\), \(k=1,\dots,n\), where \(A_{ij}v_k=\lambda_{ij}^{(k)}v_k\)
+(all \(mn\) eigenvalues).
+\end{theorem}
+
+\begin{theorem}[Du Fort--Frankel by the matrix method]
+With \(W=[U,V]^T\), \(B=\begin{bmatrix}\frac{2r}{1+2r}A&\frac{1-2r}{1+2r}I\\I&0\end{bmatrix}\), every
+eigenvalue of \(B\) has modulus \(<1\): for fixed mesh size the scheme is unconditionally stable for \(r>0\).
+\end{theorem}
+
+\begin{definition}[Elliptic equation and its BVPs]
+\(au_{x_1x_1}+2bu_{x_1x_2}+cu_{x_2x_2}=d\) is elliptic if \(b^2-ac<0\). First BVP (Dirichlet):
+\(u\) given on \(\partial R\); second (Neumann): \(\partial u/\partial n=f\) (outward normal); third
+(Robin): \(\alpha u+\beta\,\partial u/\partial n=\gamma\), \(\alpha,\beta>0\).
+Laplace: \(\nabla^2u=0\); Poisson: \(\nabla^2u=f\).
+\end{definition}
+
+\begin{definition}[Five-point formula]
+\(U_{l-1,m}+U_{l+1,m}-4U_{l,m}+U_{l,m+1}+U_{l,m-1}=0\): a second-order approximation, LTE \(O(h^2)\).
+\end{definition}
+
+\begin{theorem}[Non-singularity of the five-point system]
+The \((N-1)^2\) matrix \(A=\operatorname{tridiag}(I,B,I)\) has eigenvalues
+\(-4(\sin^2\frac{i\pi}{2N}+\sin^2\frac{j\pi}{2N})<0\), so \(|A|\ne0\) and \(AU=b\) has a unique solution.
+\end{theorem}
+
+\begin{theorem}[PR ADI as an iteration]
+If the Peaceman--Rachford scheme with time-independent BCs converges, its limit satisfies
+\((\delta_{x_1}^2+\delta_{x_2}^2)U=0\), i.e.\ \((H+V)U=K\). So PR ADI is an iterative solver for the
+Dirichlet problem, and \(\lambda\) is an iteration parameter (it may vary with \(n\)).
+\end{theorem}
+
+\begin{theorem}[Convergence of PR ADI iteration (Dirichlet)]
+Since \(H,V\) commute, the iteration matrix has eigenvalues \(\frac{(1-a)(1-b)}{(1+a)(1+b)}\in(-1,1)\)
+for \(a,b>0\). Hence for every choice \(\lambda_{n+1}>0\) the iteration converges to the solution of
+\((H+V)U=K\). The same holds for the variant with \(1/\lambda_{n+1}\) in place of \(2/\lambda_{n+1}\).
+\end{theorem}
+
+\begin{theorem}[Douglas--Rachford]
+The limit of \((1-\lambda\delta_{x_1}^2)(1-\lambda\delta_{x_2}^2)U^{n+1}=(1+\lambda^2\delta_{x_1}^2\delta_{x_2}^2)U^n\)
+again satisfies the five-point Laplace equation; the split form reproduces the combined formula.
+\end{theorem}
+
+\begin{theorem}[Neumann problem]
+The system \(AU=2hG\) on all \((N+1)^2\) points has \(A\mathbf1=0\): \(A\) is singular, the solution is
+determined up to a constant, and existence needs the compatibility condition \(\oint_{\partial R}g\,ds=0\).
+The PR iteration converges (eigenvalue moduli \(<1\) except the eigenvalue 1 on the constant vector);
+the constant is inherited from the initial guess.
+\end{theorem}
+
+\begin{theorem}[Robin problem]
+With \(p_i,q_i>0\), \(WE\) is symmetric positive definite, so the eigenvalues \(\mu_p,\nu_q\) are
+positive; \(A=H_1+V_1\) is non-singular (unique discrete solution) and the PR iteration converges for
+every \(\lambda_{n+1}>0\).
+\end{theorem}
+
+\begin{definition}[Consistency for hyperbolic schemes]
+The scheme is consistent if \(\text{truncation error}/k^2\to0\) as \(h,k\to0\).
+\end{definition}
+
+\begin{theorem}[Explicit scheme for the wave equation]
+The explicit three-level scheme (three levels is the minimum, since the PDE is second order in \(t\))
+has LTE \(O(k^2+h^2)\), with leading term vanishing at \(r=1\), and is stable iff \(r=k/h\le1\):
+the \textbf{CFL (Courant--Friedrichs--Lewy) condition}.
+\end{theorem}
+
+\begin{theorem}[Implicit \(\theta\)-schemes for the wave equation]
+The scheme \(\delta_t^2U=r^2\delta_x^2[\theta U^{n+1}+(1-2\theta)U^n+\theta U^{n-1}]\) is \(O(k^2+h^2)\);
+unconditionally stable for \(\theta\ge\frac14\), and for \(0\le\theta<\frac14\) stable iff
+\(r^2\le\frac1{1-4\theta}\). In 2D: explicit stable iff \(r\le\frac1{\sqrt2}\); implicit unconditional for
+\(\theta\ge\frac14\), else \(r^2\le\frac1{2(1-4\theta)}\).
+\end{theorem}
+
+\begin{theorem}[Heat-equation schemes compared]
+Explicit (Schmidt): \(O(k+h^2)\), \(r\le\frac12\). Crank--Nicolson: \(O(k^2+h^2)\), unconditional.
+Du Fort--Frankel: \(O(k^2+h^2+k^2/h^2)\), unconditional, consistent only if \(k/h\to0\).
+Douglas: \(O(k^2+h^4)\), unconditional. Each two-level 2D scheme has an ADI split recovered by
+eliminating \(U^{n+1*}\) (operators commute).
+\end{theorem}
+
+\end{document}

@@ -1,0 +1,108 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.4cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{automata,positioning,arrows.meta,calc}
+\usepackage{microtype}
+\usepackage{setspace}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\onehalfspacing
+\setlength{\parskip}{0.35em}
+\setlength{\parindent}{0pt}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{algorithm}[theorem]{Algorithm}
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\newcommand{\emptystring}{\varepsilon}
+\newcommand{\powerset}[1]{\mathcal{P}(#1)}
+\newcommand{\lang}[1]{L(#1)}
+\newcommand{\concat}{\mathbin{\cdot}}
+\newcommand{\transition}{\delta}
+\newcommand{\set}[1]{\{#1\}}
+\newcommand{\cfl}{\mathrm{CFL}}
+\newcommand{\eps}{\varepsilon}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+
+\tikzset{
+  automaton/.style={
+    >={Stealth[scale=0.85]},
+    thick,
+    auto,
+    initial text=,
+    node distance=27mm,
+    every state/.style={minimum size=8.8mm, inner sep=1pt, font=\small},
+    every loop/.style={looseness=7, min distance=7mm},
+    every edge/.style={draw,->,thick}
+  },
+  box/.style={
+    draw,
+    rounded corners,
+    align=center,
+    minimum height=11mm,
+    minimum width=22mm,
+    font=\small
+  },
+  arrow/.style={-{Stealth},thick}
+}
+
+\pagestyle{fancy}
+\fancyhf{}
+\setlength{\headheight}{14pt}
+\lhead{MTL783}
+\rhead{Theory of Computation}
+\cfoot{\thepage}
+
+\title{\textbf{MTL783}\\[0.4em]
+Theory of Computation}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section*{Course information}
+\addcontentsline{toc}{section}{Course information}
+\textbf{Course.} MTL783, Theory of Computation.
+
+\textbf{Assessment.}
+\begin{center}
+\begin{tabular}{@{}lc@{}}
+\toprule
+Component & Weight\\
+\midrule
+Quiz & $20\%$\\
+Minor & $35\%$\\
+Major & $40\%$\\
+Attendance & $5\%$\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\input{chapters/01-foundations}
+\input{chapters/02-dfa}
+\input{chapters/03-regular-ops}
+\input{chapters/04-nfa}
+\input{chapters/05-regex}
+\input{chapters/06-pumping}
+\input{chapters/07-minimization}
+\input{chapters/08-cfg}
+\input{chapters/09-pda}
+
+\end{document}

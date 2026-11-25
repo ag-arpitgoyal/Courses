@@ -1,0 +1,8 @@
+a[0] = 0xDE, b[9] = 0xDE
+region 0 65536
+  32 D 128 10
+  160 D 128 10
+  288 A 128 10
+  416 F 65120
+error: double free (block 0:32)
+error: invalid pointer

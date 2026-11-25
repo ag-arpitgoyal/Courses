@@ -1,0 +1,10 @@
+error: overflow detected (block 0:32)
+error: overflow detected (block 0:160)
+error: overflow detected (block 0:288)
+error: overflow detected (block 0:416)
+error: overflow detected (block 0:544)
+error: overflow detected (block 0:672)
+error: overflow detected (block 0:800)
+error: overflow detected (block 0:928)
+region 0 65536
+  32 F 65504

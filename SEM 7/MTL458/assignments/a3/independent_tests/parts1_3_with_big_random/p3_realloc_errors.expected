@@ -1,0 +1,15 @@
+error: invalid pointer
+error: double free (block 0:32)
+error: double free (block 0:32)
+realloc slot 2 300: moved
+error: invalid pointer
+error: invalid pointer
+error: double free (block 0:896)
+error: double free (block 0:896)
+error: invalid pointer
+error: invalid pointer
+region 0 65536
+  32 F 384
+  416 A 128 10
+  544 A 352 300
+  896 F 64640

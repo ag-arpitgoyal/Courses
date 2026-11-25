@@ -1,0 +1,7 @@
+run 0 first fit delay 0: checksum 7210444570449622418 corrupt 0
+run 1 next fit delay 0: checksum 7210444570449622418 corrupt 0
+run 2 best fit delay 5: checksum 7210444570449622418 corrupt 0
+run 3 worst fit delay 64: checksum 7210444570449622418 corrupt 0
+run 4 next fit delay 1: checksum 7210444570449622418 corrupt 0
+run 5 best fit delay 0: checksum 7210444570449622418 corrupt 0
+leak summary: 0 blocks, 0 bytes

@@ -1,0 +1,51 @@
+calloc 0 -> NULL
+calloc 1 -> NULL
+calloc 2 -> NULL
+calloc 3 -> NULL
+calloc 4 -> NULL
+calloc 5 -> NULL
+calloc 6 -> NULL
+calloc 7 -> NULL
+calloc 8 -> NULL
+calloc 9 -> NULL
+calloc 10 -> NULL
+calloc 11 -> NULL
+calloc 12 -> NULL
+calloc 13 -> NULL
+calloc 14 -> NULL
+calloc 15 -> NULL
+calloc 16 -> NULL
+calloc 17 -> NULL
+--
+p 1 zero 1
+calloc 0 -> NULL
+calloc 1 -> NULL
+calloc 2 -> NULL
+calloc 3 -> NULL
+calloc 4 -> NULL
+calloc 5 -> NULL
+calloc 6 -> NULL
+calloc 7 -> NULL
+calloc 8 -> NULL
+calloc 9 -> NULL
+calloc 10 -> NULL
+calloc 11 -> NULL
+calloc 12 -> NULL
+calloc 13 -> NULL
+calloc 14 -> NULL
+calloc 15 -> NULL
+calloc 16 -> NULL
+calloc 17 -> NULL
+region 0 65536
+  32 A 128 1
+  160 F 65376
+q 1 zero 1
+region 0 65536
+  32 A 128 1
+  160 F 65376
+region 1 1048576
+  32 A 1000048 1000000
+  1000080 F 48496
+leak: block 0:32 (1 bytes)
+leak: block 1:32 (1000000 bytes)
+leak summary: 2 blocks, 1000001 bytes

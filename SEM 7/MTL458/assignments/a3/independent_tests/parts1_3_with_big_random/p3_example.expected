@@ -1,0 +1,12 @@
+realloc slot 0 250: same
+region 0 65536
+  32 A 384 250
+  416 A 128 10
+  544 F 64992
+realloc slot 0 20: same
+region 0 65536
+  32 A 128 20
+  160 F 256
+  416 A 128 10
+  544 F 64992
+bytes slot 0: a7 29 9e

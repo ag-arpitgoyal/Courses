@@ -1,0 +1,36 @@
+1
+1
+1
+a intact 1
+error: overflow detected (block 0:32)
+1
+1
+a intact 1
+region 0 65536
+  32 A 144 100
+  176 A 128 10
+  304 F 65232
+region 0 65536
+  32 F 144
+  176 A 128 10
+  304 F 65232
+1
+region 0 65536
+  32 F 144
+  176 A 128 10
+  304 F 65232
+c 1 data 1
+region 0 65536
+  32 F 65504
+region 1 1073807360
+  32 A 1073741872 1073741824
+  1073741904 F 65456
+error: overflow detected (block 1:32)
+d same 1 data 1
+region 0 65536
+  32 F 65504
+region 1 1073807360
+  32 A 128 5
+  160 F 1073807200
+leak: block 1:32 (5 bytes)
+leak summary: 1 blocks, 5 bytes

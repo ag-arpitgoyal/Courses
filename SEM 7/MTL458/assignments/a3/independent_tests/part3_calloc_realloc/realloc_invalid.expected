@@ -1,0 +1,49 @@
+error: double free (block 0:32)
+realloc 0 -> NULL
+error: invalid pointer
+realloc 1 -> NULL
+error: invalid pointer
+realloc 2 -> NULL
+error: double free (block 0:32)
+realloc 3 -> NULL
+error: double free (block 0:32)
+realloc 4 -> NULL
+error: invalid pointer
+realloc 5 -> NULL
+error: invalid pointer
+realloc 6 -> NULL
+error: invalid pointer
+realloc 7 -> NULL
+error: invalid pointer
+realloc 8 -> NULL
+error: invalid pointer
+realloc 9 -> NULL
+error: invalid pointer
+realloc 10 -> NULL
+error: double free (block 0:928)
+realloc 11 -> NULL
+error: double free (block 0:432)
+realloc 12 -> NULL
+error: double free (block 0:432)
+realloc 13 -> NULL
+region 0 65536
+  32 F 256
+  288 A 144 100
+  432 D 128 10
+  560 A 240 200
+  800 A 128 10
+  928 F 64608
+data 1 1 1
+error: double free (block 0:432)
+realloc 14 -> NULL
+region 0 65536
+  32 F 256
+  288 A 144 100
+  432 F 128
+  560 A 240 200
+  800 A 128 10
+  928 F 64608
+leak: block 0:288 (100 bytes)
+leak: block 0:560 (200 bytes)
+leak: block 0:800 (10 bytes)
+leak summary: 3 blocks, 310 bytes

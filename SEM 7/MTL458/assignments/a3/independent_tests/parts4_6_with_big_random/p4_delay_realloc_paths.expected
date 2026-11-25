@@ -1,0 +1,26 @@
+r=NULL
+check b ok
+region 0 65536
+  32 D 128 10
+  160 A 128 10
+  288 D 128 10
+  416 A 128 10
+  544 A 544 500
+  1088 F 64448
+error: double free (block 0:32)
+error: double free (block 0:288)
+error: double free (block 0:288)
+error: write after free (block 0:288)
+region 0 65536
+  32 F 128
+  160 D 128 10
+  288 F 128
+  416 D 128 10
+  544 A 544 500
+  1088 F 64448
+region 0 65536
+  32 F 512
+  544 A 544 500
+  1088 F 64448
+leak: block 0:544 (500 bytes)
+leak summary: 1 blocks, 500 bytes

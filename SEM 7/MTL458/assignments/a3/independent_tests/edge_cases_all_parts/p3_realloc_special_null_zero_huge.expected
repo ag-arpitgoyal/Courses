@@ -1,0 +1,13 @@
+r1_null=1
+error: overflow detected (block 0:32)
+r2_null=1
+region 0 65536
+  32 A 128 10
+  160 A 128 20
+  288 F 65248
+error: overflow detected (block 0:160)
+r3_null=1
+region 0 65536
+  32 A 128 10
+  160 D 128 20
+  288 F 65248

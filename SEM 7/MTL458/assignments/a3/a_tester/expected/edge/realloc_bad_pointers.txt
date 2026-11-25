@@ -1,0 +1,10 @@
+error: double free (block 0:32)
+my_realloc(a, 50) -> NULL
+error: invalid pointer
+my_realloc(b + 8, 50) -> NULL
+error: invalid pointer
+my_realloc(&local, 50) -> NULL
+region 0 65536
+  32 F 128
+  160 A 128 10
+  288 F 65248

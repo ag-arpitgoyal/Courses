@@ -1,0 +1,1077 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage[shortlabels]{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage[skins,breakable]{tcolorbox}
+
+\usetikzlibrary{positioning,arrows.meta,calc,fit,shapes.geometric,matrix,decorations.pathreplacing}
+
+\definecolor{ink}{HTML}{222222}
+\definecolor{rulegray}{HTML}{444444}
+\definecolor{boxline}{HTML}{666666}
+\definecolor{boxfill}{HTML}{F4F4F4}
+\definecolor{boxtitle}{HTML}{E8E8E8}
+\definecolor{g1}{HTML}{D0D0D0}
+\definecolor{g2}{HTML}{9A9A9A}
+\definecolor{g3}{HTML}{5A5A5A}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  pdftitle={MTL 458 Lecture 18: Condition Variables},
+  pdfauthor={Minati De, IIT Delhi}
+}
+
+\setstretch{1.12}
+\raggedbottom
+\setlist[itemize]{leftmargin=1.3em,itemsep=0.28em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.35em,topsep=0.4em}
+
+\titleformat{\section}
+  {\Large\bfseries\color{ink}}{\thesection.}{0.6em}{}
+  [{\color{rulegray}\titlerule[0.5pt]}]
+\titleformat{\subsection}
+  {\large\bfseries\color{ink}}{\thesubsection}{0.55em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{ink}}{\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{1.35em}{0.7em}
+\titlespacing*{\subsection}{0pt}{1.05em}{0.45em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\fancyhead[L]{\small\color{ink}MTL 458 \textbullet\ Operating Systems}
+\fancyhead[R]{\small\color{ink}Lecture 18: Condition Variables}
+\fancyfoot[C]{\small\thepage}
+\setlength{\headheight}{14pt}
+
+% ---------------------------------------------------------------------------
+% Boxes
+% ---------------------------------------------------------------------------
+\tcbset{
+  commonbox/.style={
+    colback=boxfill, colframe=boxline, boxrule=0.5pt,
+    left=6pt, right=6pt, top=5pt, bottom=5pt,
+    fonttitle=\bfseries, coltitle=black, colbacktitle=boxtitle,
+    enhanced, sharp corners=south, breakable
+  }
+}
+\newtcolorbox{keybox}[1][]{commonbox, title={#1}}
+\newtcolorbox{quizbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{solbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{warnbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{defbox}[1][]{commonbox, title={#1}}
+
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{g3},
+  numbers=left, numberstyle=\scriptsize\color{g2}, numbersep=6pt,
+  frame=single, rulecolor=\color{boxline},
+  backgroundcolor=\color{boxfill},
+  xleftmargin=1.6em, framexleftmargin=1.4em,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, breaklines=true,
+  aboveskip=0.6em, belowskip=0.6em,
+  morekeywords={cond_t,mutex_t,pthread_t,pthread_cond_t,pthread_mutex_t}
+}
+\lstdefinestyle{term}{language={}, numbers=none, basicstyle=\ttfamily\footnotesize,
+  xleftmargin=0.4em, framexleftmargin=0.2em}
+
+% Start a new page unless at least #1 of vertical space remains
+\makeatletter
+\newcommand{\keepspace}[1]{\par\penalty-100\begingroup
+  \setlength{\dimen@}{#1}\dimen@ii\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+\makeatother
+
+\newcommand{\Tc}[1]{\(T_{c#1}\)}
+\newcommand{\Tp}{\(T_p\)}
+
+% Schedule rows: \sched{parent events}{child events}, each a list of position/label
+\newcommand{\sched}[2]{%
+\begin{tikzpicture}[x=0.85cm, y=0.6cm, every node/.style={font=\small}]
+  \node[anchor=east] at (-0.2,1) {\textbf{Parent:}};
+  \node[anchor=east] at (-0.2,0) {\textbf{Child:}};
+  \draw[g2] (0,1) -- (11,1); \draw[g2] (0,0) -- (11,0);
+  \foreach \x/\l in {#1} { \node[fill=white, inner sep=1.5pt, font=\ttfamily\small] at (\x,1) {\l}; }
+  \foreach \x/\l in {#2} { \node[fill=white, inner sep=1.5pt, font=\ttfamily\small] at (\x,0) {\l}; }
+  \draw[-{Latex}, g3] (0,-0.7) -- (11,-0.7) node[right, font=\scriptsize] {time};
+\end{tikzpicture}}
+
+% Pipe buffer: \pipebuf{filled segments a/b}{start}{end}
+\newcommand{\pipebuf}[3]{%
+\begin{tikzpicture}[x=3.85cm, y=0.42cm, baseline=(base)]
+  \useasboundingbox (-0.06,-1.75) rectangle (1.06,2.55);
+  \coordinate (base) at (0,0.3);
+  \foreach \a/\b in {#1} { \fill[black!50] (\a,0) rectangle (\b,1); }
+  \draw[thick] (0,0) rectangle (1,1);
+  \draw[-{Latex[length=1.3mm]}] (#2,1.75) node[above, font=\tiny, inner sep=1pt] {start} -- (#2,1.05);
+  \draw[-{Latex[length=1.3mm]}] (#3,-0.75) node[below, font=\tiny, inner sep=1pt] {end} -- (#3,-0.05);
+\end{tikzpicture}}
+
+\begin{document}
+
+% ===========================================================================
+% Title
+% ===========================================================================
+\begin{center}
+{\color{rulegray}\rule{\textwidth}{1.1pt}}\\[0.45em]
+{\LARGE\bfseries Operating Systems}\\[0.25em]
+{\Large\bfseries MTL 458 \textperiodcentered\ Lecture 18}\\[0.35em]
+{\LARGE\bfseries Condition Variables}\\[0.35em]
+{\large Minati De}\\[0.15em]
+{\normalsize Department of Mathematics, Indian Institute of Technology Delhi}\\[0.35em]
+{\color{rulegray}\rule{\textwidth}{1.1pt}}
+\end{center}
+
+\vspace{0.4em}
+\begin{keybox}[Questions answered in this lecture]
+\begin{itemize}
+  \item How can threads enforce \textbf{ordering} across operations?
+  \item How can \textbf{\texttt{thread\_join()}} be implemented?
+  \item How can \textbf{condition variables} be used to support
+        \textbf{producer/consumer} apps?
+\end{itemize}
+\end{keybox}
+
+\tableofcontents
+\vspace{0.6em}
+\noindent{\color{rulegray}\rule{\textwidth}{0.4pt}}
+
+% ===========================================================================
+\section{Concurrency objectives}
+% ===========================================================================
+
+\begin{center}
+\renewcommand{\arraystretch}{1.25}
+\begin{tabularx}{\textwidth}{@{}lXl@{}}
+  \toprule
+  \textbf{Objective} & \textbf{Example} & \textbf{Solved with} \\
+  \midrule
+  \textbf{Mutual exclusion} & A and B don't run at the same time & \emph{locks} \\
+  \textbf{Ordering} & B runs after A does something & \emph{condition variables} and \emph{semaphores} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+The previous lecture solved mutual exclusion. This lecture is about
+\textbf{ordering}.
+
+% ===========================================================================
+\section{Condition variables}
+% ===========================================================================
+
+There are many cases where a thread wishes to \textbf{check} whether a
+\textbf{condition} is true before continuing its execution.
+
+\textbf{Example:} a parent thread might wish to check whether a child
+thread has \emph{completed}. This is often called a \texttt{join()}.
+
+\subsection{A parent waiting for its child}
+
+\begin{lstlisting}
+void *child(void *arg) {
+    printf("child\n");
+    // XXX how to indicate we are done?
+    return NULL;
+}
+
+int main(int argc, char *argv[]) {
+    printf("parent: begin\n");
+    pthread_t c;
+    Pthread_create(&c, NULL, child, NULL); // create child
+    // XXX how to wait for child?
+    printf("parent: end\n");
+    return 0;
+}
+\end{lstlisting}
+
+What we would like to see here is:
+\begin{lstlisting}[style=term]
+parent: begin
+child
+parent: end
+\end{lstlisting}
+
+Without waiting, \texttt{parent: end} could be printed before
+\texttt{child}.
+
+\keepspace{22\baselineskip}
+\subsection{Spin-based approach}
+
+\begin{lstlisting}
+int done = 0;
+
+void *child(void *arg) {
+    printf("child\n");
+    done = 1;
+    return NULL;
+}
+
+int main(int argc, char *argv[]) {
+    printf("parent: begin\n");
+    pthread_t c;
+    Pthread_create(&c, NULL, child, NULL); // create child
+    while (done == 0)
+        ; // spin
+    printf("parent: end\n");
+    return 0;
+}
+\end{lstlisting}
+
+The child sets a shared flag \texttt{done}; the parent loops until it sees
+it. This prints the right output, but:
+
+\begin{warnbox}[Spinning]
+This is hugely \textbf{inefficient}: the parent spins and \textbf{wastes CPU
+time} (the same problem as spinlocks in the last lecture).
+\end{warnbox}
+
+\subsection{How to wait for a condition}
+
+\begin{defbox}[Condition variable]
+\begin{itemize}
+  \item \textbf{Waiting} on the condition: a condition variable is an
+        \textbf{explicit queue} that threads can put themselves on when
+        some state of execution is not as desired.
+  \item \textbf{Signaling} on the condition: some other thread, \emph{when
+        it changes said state}, can wake one of those waiting threads and
+        allow them to continue.
+\end{itemize}
+\end{defbox}
+
+\keepspace{20\baselineskip}
+\subsection{Definition and routines}
+
+Declare a condition variable (proper initialization is required):
+\begin{lstlisting}[numbers=none]
+pthread_cond_t c;
+\end{lstlisting}
+
+The POSIX calls:
+\begin{lstlisting}[numbers=none]
+pthread_cond_wait(pthread_cond_t *c, pthread_mutex_t *m); // wait()
+pthread_cond_signal(pthread_cond_t *c);                   // signal()
+\end{lstlisting}
+
+\begin{keybox}[What \texttt{wait()} does with the mutex]
+\begin{itemize}
+  \item The \texttt{wait()} call takes a \textbf{mutex} as a parameter (the
+        caller must hold it).
+  \item \texttt{wait()} \textbf{releases the lock} and puts the calling
+        thread to sleep, as one atomic step. This is what prevents a race
+        while a thread is putting itself to sleep: no other thread can
+        change the state and signal between the caller's check and its
+        sleep (Section~3 shows what goes wrong without this).
+  \item When the thread wakes up, it must \textbf{re-acquire the lock}
+        before \texttt{wait()} returns.
+\end{itemize}
+\texttt{signal()} wakes one thread waiting on \texttt{c}; if nobody is
+waiting, it does nothing.
+\end{keybox}
+
+% ===========================================================================
+\section{Implementing join with a condition variable}
+% ===========================================================================
+
+In the slides \texttt{Mutex\_lock}, \texttt{Cond\_wait}, etc.\ are wrappers
+for the \texttt{pthread\_} calls. Letters in comments label each line so we
+can write schedules.
+
+\subsection{Attempt 1}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Parent:}
+\begin{lstlisting}[numbers=none]
+void thread_join() {
+  Mutex_lock(&m);     // x
+  Cond_wait(&c, &m);  // y
+  Mutex_unlock(&m);   // z
+}
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Child:}
+\begin{lstlisting}[numbers=none]
+void thread_exit() {
+  Mutex_lock(&m);     // a
+  Cond_signal(&c);    // b
+  Mutex_unlock(&m);   // c
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+\textbf{Example schedule:}
+\begin{center}
+\sched{1/x, 2.5/y, 9.5/z}{5/a, 6.5/b, 8/c}
+\end{center}
+\textbf{Works!} The parent waits at \texttt{y} (releasing \texttt{m}); the
+child signals at \texttt{b}; the parent wakes, re-acquires \texttt{m}, and
+finishes at \texttt{z}.
+
+\keepspace{11\baselineskip}
+\begin{quizbox}[Can you construct an ordering that does not work?]
+\textbf{Example broken schedule:}
+\begin{center}
+\sched{7/x, 8.5/y}{1/a, 2.5/b, 4/c}
+\end{center}
+The child runs first and signals at \texttt{b} while \emph{nobody is
+waiting}, so the signal is lost. The parent then calls \texttt{wait()} at
+\texttt{y} and \textbf{waits forever!}
+\end{quizbox}
+
+\subsection{Rule of thumb 1}
+
+\begin{keybox}[Keep state in addition to CVs!]
+\begin{itemize}
+  \item CVs are used to \textbf{signal} threads when state \textbf{changes}.
+  \item If the state is already as needed, the thread \textbf{doesn't wait}
+        for a signal!
+\end{itemize}
+\end{keybox}
+
+\keepspace{20\baselineskip}
+\subsection{Attempt 2: add a \texttt{done} variable}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Parent:}
+\begin{lstlisting}[numbers=none]
+void thread_join() {
+  Mutex_lock(&m);       // w
+  if (done == 0)        // x
+    Cond_wait(&c, &m);  // y
+  Mutex_unlock(&m);     // z
+}
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Child:}
+\begin{lstlisting}[numbers=none]
+void thread_exit() {
+  done = 1;             // a
+  Cond_signal(&c);      // b
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+\textbf{Fixes the previous broken ordering:}
+\begin{center}
+\sched{5/w, 6.5/x, 8/y, 9.5/z}{1/a, 2.5/b}
+\end{center}
+The child sets \texttt{done = 1} first. When the parent tests at
+\texttt{x} it sees \texttt{done == 1}, so it does not wait at \texttt{y}
+and goes straight to \texttt{z}.
+
+\begin{quizbox}[Can you construct an ordering that does not work?]
+\begin{center}
+\sched{1/w, 2.5/x, 8/y}{4.5/a, 6/b}
+\end{center}
+\begin{enumerate}
+  \item Parent: \texttt{w}, then \texttt{x} sees \texttt{done == 0}, so it
+        is about to wait.
+  \item Before it reaches \texttt{y}, the child runs: \texttt{a} sets
+        \texttt{done = 1}, \texttt{b} signals --- but nobody is waiting yet.
+  \item Parent executes \texttt{y}: \ldots\ \textbf{sleeps forever}\ldots
+\end{enumerate}
+The child does not take the mutex, so it can change \texttt{done} and
+signal in the gap between the parent's \emph{check} and its \emph{wait}.
+\end{quizbox}
+
+\keepspace{24\baselineskip}
+\subsection{Correct join}
+
+\begin{center}
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Parent:}
+\begin{lstlisting}[numbers=none]
+void thread_join() {
+  Mutex_lock(&m);       // w
+  if (done == 0)        // x
+    Cond_wait(&c, &m);  // y
+  Mutex_unlock(&m);     // z
+}
+\end{lstlisting}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\textwidth}
+\textbf{Child:}
+\begin{lstlisting}[numbers=none]
+void thread_exit() {
+  Mutex_lock(&m);       // a
+  done = 1;             // b
+  Cond_signal(&c);      // c
+  Mutex_unlock(&m);     // d
+}
+\end{lstlisting}
+\end{minipage}
+\end{center}
+
+\begin{center}
+\sched{1/w, 2.5/x, 4/y, 10/z}{5.5/a, 7/b, 8.5/c}
+\end{center}
+
+\begin{keybox}[Use the mutex to ensure no race between interacting with state and wait/signal]
+The child can only change \texttt{done} and signal while holding
+\texttt{m}. The parent holds \texttt{m} from its check at \texttt{x} until
+\texttt{wait()} releases it at \texttt{y}. So the child's \texttt{a--c}
+cannot fall into the gap: either the child runs first (parent sees
+\texttt{done == 1} and never waits), or the parent is already asleep when the
+child signals (and is woken).
+\end{keybox}
+
+The slides use \texttt{if (done == 0)}. For this program, with one parent
+and one child, \texttt{if} happens to be enough. The book still writes
+\texttt{while (done == 0)} here: a \texttt{while} is \emph{always} correct,
+an \texttt{if} only sometimes (Section~5 shows why).
+
+% ===========================================================================
+\section{The producer/consumer problem}
+% ===========================================================================
+
+\begin{itemize}
+  \item \textbf{Producers} generate data (like pipe writers).
+  \item \textbf{Consumers} grab data and process it (like pipe readers).
+  \item Producer/consumer problems are frequent in systems, e.g.\ web
+        servers.
+\end{itemize}
+
+\begin{keybox}[General strategy: use condition variables to]
+\begin{itemize}
+  \item make \textbf{producers wait} when buffers are \textbf{full};
+  \item make \textbf{consumers wait} when there is \textbf{nothing to
+        consume}.
+\end{itemize}
+\end{keybox}
+
+\subsection{Bounded buffer}
+
+A \textbf{bounded buffer} is used when you pipe the output of one program
+into another.
+\begin{itemize}
+  \item Example: \texttt{grep foo file.txt | wc -l}
+    \begin{itemize}
+      \item the \texttt{grep} process is the \textbf{producer};
+      \item the \texttt{wc} process is the \textbf{consumer};
+      \item between them is an in-kernel \textbf{bounded buffer}.
+    \end{itemize}
+  \item The bounded buffer is a \textbf{shared resource} \(\Rightarrow\)
+        \textbf{synchronized access} is required.
+\end{itemize}
+
+\keepspace{30\baselineskip}
+\subsection{Example: UNIX pipes}
+
+The slides animate a pipe's buffer. Shaded = data written but not yet read.
+Data is read at \textbf{start} and written at \textbf{end}; both move to
+the right and \textbf{wrap around} (the buffer is circular). Each panel is
+the state after the action.
+
+\begin{center}
+\renewcommand{\arraystretch}{1.0}
+\begin{tabular}{@{}r@{\hspace{0.6em}}l@{\hspace{1.5em}}r@{\hspace{0.6em}}l@{}}
+  \textbf{0.} initial (empty) & \pipebuf{0/0}{0}{0} &
+  \textbf{7.} read! (now empty) & \pipebuf{0/0}{0.93}{0.93} \\
+  \textbf{1.} write! & \pipebuf{0/0.23}{0}{0.23} &
+  \textbf{8.} read! & \pipebuf{0/0}{0.93}{0.93} \\
+  \textbf{2.} write! & \pipebuf{0/0.6}{0}{0.6} &
+  \textbf{9.} write! (wraps) & \pipebuf{0.93/1, 0/0.13}{0.93}{0.13} \\
+  \textbf{3.} read! & \pipebuf{0.18/0.6}{0.18}{0.6} &
+  \textbf{10.} write! & \pipebuf{0.93/1, 0/0.52}{0.93}{0.52} \\
+  \textbf{4.} write! & \pipebuf{0.18/0.93}{0.18}{0.93} &
+  \textbf{11.} write! (now full) & \pipebuf{0.93/1, 0/0.93}{0.93}{0.93} \\
+  \textbf{5.} read! & \pipebuf{0.42/0.93}{0.42}{0.93} &
+  \textbf{12.} write! & \pipebuf{0.93/1, 0/0.93}{0.93}{0.93} \\
+  \textbf{6.} read! & \pipebuf{0.67/0.93}{0.67}{0.93} &
+  \textbf{13.} read! & \pipebuf{0.07/0.93}{0.07}{0.93} \\
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+  \item \textbf{Step 8} (buffer empty, \texttt{start = end}): a reader
+        cannot proceed. \textbf{Note: readers must wait.}
+  \item \textbf{Step 12} (buffer full, \texttt{end} has caught up with
+        \texttt{start} from behind): a writer cannot proceed.
+        \textbf{Note: writers must wait.}
+  \item Step 13: a read frees space from \texttt{start} (which wraps past
+        the right end), so writers can continue.
+\end{itemize}
+
+\subsection{Implementation requirements}
+
+\begin{itemize}
+  \item reads/writes to the buffer require \textbf{locking};
+  \item when buffers are \textbf{full}, writers must \textbf{wait};
+  \item when buffers are \textbf{empty}, readers must \textbf{wait}.
+\end{itemize}
+
+Start with the easy case:
+\begin{itemize}
+  \item 1 producer thread,
+  \item 1 consumer thread,
+  \item 1 shared buffer to fill/consume (max = 1).
+\end{itemize}
+\texttt{numfill} = number of buffers currently filled (\texttt{count} in the
+code). We examine slightly broken code to begin\ldots
+
+% ===========================================================================
+\section{Single buffer: building the solution}
+% ===========================================================================
+
+\subsection{The put and get routines (version 1)}
+
+\begin{lstlisting}
+int buffer;
+int count = 0; // initially, empty
+
+void put(int value) {
+     assert(count == 0);
+     count = 1;
+     buffer = value;
+}
+
+int get() {
+     assert(count == 1);
+     count = 0;
+     return buffer;
+}
+\end{lstlisting}
+
+\begin{itemize}
+  \item Only put data into the buffer when \texttt{count} is zero, i.e.\
+        when the buffer is \emph{empty}.
+  \item Only get data from the buffer when \texttt{count} is one, i.e.\
+        when the buffer is \emph{full}.
+\end{itemize}
+
+\keepspace{20\baselineskip}
+\subsection{Producer/consumer threads (version 1)}
+
+\begin{lstlisting}
+void *producer(void *arg) {
+     int i;
+     int loops = (int) arg;
+     for (i = 0; i < loops; i++) {
+          put(i);
+     }
+}
+
+void *consumer(void *arg) {
+     int i;
+     while (1) {
+          int tmp = get();
+          printf("%d\n", tmp);
+     }
+}
+\end{lstlisting}
+
+\begin{itemize}
+  \item The producer puts an integer into the shared buffer \texttt{loops}
+        number of times.
+  \item The consumer gets the data out of that shared buffer.
+\end{itemize}
+There is no synchronization yet: the \texttt{assert}s fire as soon as the
+producer calls \texttt{put()} on a full buffer or the consumer calls
+\texttt{get()} on an empty one.
+
+\keepspace{34\baselineskip}
+\subsection{Single CV and \texttt{if} statement}
+
+A single condition variable \texttt{cond} and associated lock
+\texttt{mutex}.
+
+\begin{lstlisting}
+cond_t cond;
+mutex_t mutex;
+
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);           // p1
+        if (count == 1)                       // p2
+            Pthread_cond_wait(&cond, &mutex); // p3
+        put(i);                               // p4
+        Pthread_cond_signal(&cond);           // p5
+        Pthread_mutex_unlock(&mutex);         // p6
+    }
+}
+
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);           // c1
+        if (count == 0)                       // c2
+            Pthread_cond_wait(&cond, &mutex); // c3
+        int tmp = get();                      // c4
+        Pthread_cond_signal(&cond);           // c5
+        Pthread_mutex_unlock(&mutex);         // c6
+        printf("%d\n", tmp);
+    }
+}
+\end{lstlisting}
+
+\begin{itemize}
+  \item \texttt{p1--p3}: a producer waits for the buffer to be empty.
+  \item \texttt{c1--c3}: a consumer waits for the buffer to be full.
+  \item With just \emph{a single producer} and \emph{a single consumer},
+        the code works.
+\end{itemize}
+
+\begin{quizbox}[If we have more than one of producer and consumer? What about 2 consumers?]
+Can you find a problematic timeline with 2 consumers (still 1 producer)?
+\end{quizbox}
+
+\keepspace{26\baselineskip}
+\subsection{Thread trace: broken solution (version 1)}
+
+Consumers \Tc1, \Tc2 and producer \Tp; each row is one step, ``Count'' is
+the buffer count after it.
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}clclclcl@{}}
+  \toprule
+  \Tc1 & \textbf{State} & \Tc2 & \textbf{State} & \Tp & \textbf{State} & \textbf{Count} & \textbf{Comment} \\
+  \midrule
+  c1 & Running &    & Ready   &    & Ready   & 0 & \\
+  c2 & Running &    & Ready   &    & Ready   & 0 & \\
+  c3 & Sleep   &    & Ready   &    & Ready   & 0 & Nothing to get \\
+     & Sleep   &    & Ready   & p1 & Running & 0 & \\
+     & Sleep   &    & Ready   & p2 & Running & 0 & \\
+     & Sleep   &    & Ready   & p4 & Running & 1 & Buffer now full \\
+     & Ready   &    & Ready   & p5 & Running & 1 & \Tc1 awoken \\
+     & Ready   &    & Ready   & p6 & Running & 1 & \\
+     & Ready   &    & Ready   & p1 & Running & 1 & \\
+     & Ready   &    & Ready   & p2 & Running & 1 & \\
+     & Ready   &    & Ready   & p3 & Sleep   & 1 & Buffer full; sleep \\
+     & Ready   & c1 & Running &    & Sleep   & 1 & \Tc2 sneaks in \ldots \\
+     & Ready   & c2 & Running &    & Sleep   & 1 & \\
+     & Ready   & c4 & Running &    & Sleep   & 0 & \ldots\ and grabs data \\
+     & Ready   & c5 & Running &    & Ready   & 0 & \Tp awoken \\
+     & Ready   & c6 & Running &    & Ready   & 0 & \\
+  c4 & Running &    & Ready   &    & Ready   & 0 & \textbf{Oh oh! No data} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}[Why it breaks]
+\begin{itemize}
+  \item After the producer woke \Tc1, but \textbf{before \Tc1 ever ran}, the
+        state of the bounded buffer was \textbf{changed by \Tc2}.
+  \item There is \textbf{no guarantee} that when the woken thread runs, the
+        state will still be as desired.
+\end{itemize}
+\Tc1 does not re-check \texttt{count} after waking (it used \texttt{if}), so
+it calls \texttt{get()} on an empty buffer.
+\end{warnbox}
+
+\keepspace{30\baselineskip}
+\subsection{Single CV and \texttt{while}}
+
+Consumer \Tc1 wakes up and \textbf{re-checks} the state of the shared
+variable. If the buffer is empty, the consumer simply goes back to sleep.
+The only change is \texttt{if} \(\to\) \texttt{while} at \texttt{p2} and
+\texttt{c2}:
+
+\begin{lstlisting}
+cond_t cond;
+mutex_t mutex;
+
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);           // p1
+        while (count == 1)                    // p2
+            Pthread_cond_wait(&cond, &mutex); // p3
+        put(i);                               // p4
+        Pthread_cond_signal(&cond);           // p5
+        Pthread_mutex_unlock(&mutex);         // p6
+    }
+}
+
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);           // c1
+        while (count == 0)                    // c2
+            Pthread_cond_wait(&cond, &mutex); // c3
+        int tmp = get();                      // c4
+        Pthread_cond_signal(&cond);           // c5
+        Pthread_mutex_unlock(&mutex);         // c6
+        printf("%d\n", tmp);
+    }
+}
+\end{lstlisting}
+
+A simple rule to remember with condition variables is to \textbf{always use
+while loops}.
+
+\begin{keybox}[Why \texttt{while}: Mesa semantics]
+Signaling a thread only \emph{wakes it up}. It is a \textbf{hint} that the
+state has changed, but there is no guarantee that when the woken thread
+actually runs, the state will still be as desired. This meaning of signal is
+called \textbf{Mesa semantics}. The alternative, \textbf{Hoare semantics},
+runs the woken thread immediately, which would make \texttt{if} safe, but it
+is harder to build. Virtually every real system uses Mesa semantics, hence
+\texttt{while}.
+\end{keybox}
+
+\subsection{Good rule of thumb 2}
+
+\begin{keybox}[Whenever a lock is acquired, recheck assumptions about state!]
+\begin{itemize}
+  \item It is possible for another thread to grab the lock in between the
+        signal and the wakeup from wait.
+  \item Note that some libraries also have \textbf{``spurious wakeups''}
+        (may wake multiple waiting threads at signal or at any time). Due
+        to races inside the library's signal/wakeup code, two threads can
+        wake up even though only one signal was sent. The \texttt{while}
+        loop handles this too: the extra thread re-checks and sleeps again.
+\end{itemize}
+\end{keybox}
+
+\begin{quizbox}[What about 2 consumers now?]
+Can you find a problematic timeline with 2 consumers (still 1 producer)?
+\end{quizbox}
+
+\keepspace{36\baselineskip}
+\subsection{Thread trace: single CV with \texttt{while} is still broken}
+
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.05}
+\setlength{\tabcolsep}{4.5pt}
+\begin{tabular}{@{}clclclcl@{}}
+  \toprule
+  \Tc1 & \textbf{State} & \Tc2 & \textbf{State} & \Tp & \textbf{State} & \textbf{Count} & \textbf{Comment} \\
+  \midrule
+  c1 & Running &    & Ready   &    & Ready   & 0 & \\
+  c2 & Running &    & Ready   &    & Ready   & 0 & \\
+  c3 & Sleep   &    & Ready   &    & Ready   & 0 & Nothing to get \\
+     & Sleep   & c1 & Running &    & Ready   & 0 & \\
+     & Sleep   & c2 & Running &    & Ready   & 0 & \\
+     & Sleep   & c3 & Sleep   &    & Ready   & 0 & Nothing to get \\
+     & Sleep   &    & Sleep   & p1 & Running & 0 & \\
+     & Sleep   &    & Sleep   & p2 & Running & 0 & \\
+     & Sleep   &    & Sleep   & p4 & Running & 1 & Buffer now full \\
+     & Ready   &    & Sleep   & p5 & Running & 1 & \Tc1 awoken \\
+     & Ready   &    & Sleep   & p6 & Running & 1 & \\
+     & Ready   &    & Sleep   & p1 & Running & 1 & \\
+     & Ready   &    & Sleep   & p2 & Running & 1 & \\
+     & Ready   &    & Sleep   & p3 & Sleep   & 1 & Must sleep (full) \\
+  c2 & Running &    & Sleep   &    & Sleep   & 1 & Recheck condition \\
+  c4 & Running &    & Sleep   &    & Sleep   & 0 & \Tc1 grabs data \\
+  c5 & Running &    & Ready   &    & Sleep   & 0 & \textbf{Oops! Woke \Tc2} \\
+  \midrule
+  c6 & Running &    & Ready   &    & Sleep   & 0 & \textit{(cont.)} \\
+  c1 & Running &    & Ready   &    & Sleep   & 0 & \\
+  c2 & Running &    & Ready   &    & Sleep   & 0 & \\
+  c3 & Sleep   &    & Ready   &    & Sleep   & 0 & Nothing to get \\
+     & Sleep   & c2 & Running &    & Sleep   & 0 & \\
+     & Sleep   & c3 & Sleep   &    & Sleep   & 0 & \textbf{Everyone asleep \ldots} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\begin{warnbox}[The problem: one CV for two kinds of waiters]
+At \texttt{c5}, \Tc1 signals the single CV, which has both \Tc2 (a
+consumer) and \Tp (a producer) waiting on it. It happens to wake \Tc2.
+\Tc2 re-checks (thanks to \texttt{while}), sees an empty buffer and sleeps
+again, and now nobody is left to wake the producer.
+
+\textbf{A consumer should not wake other consumers, only producers, and
+vice versa.}
+\end{warnbox}
+
+% ===========================================================================
+\keepspace{24\baselineskip}
+\section{The single-buffer producer/consumer solution}
+% ===========================================================================
+
+Use \textbf{two} condition variables and \texttt{while}:
+\begin{itemize}
+  \item \textbf{Producer} threads wait on the condition \texttt{empty}, and
+        signal \texttt{fill}.
+  \item \textbf{Consumer} threads wait on \texttt{fill} and signal
+        \texttt{empty}.
+\end{itemize}
+
+\begin{lstlisting}
+cond_t empty, fill;
+mutex_t mutex;
+
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);
+        while (count == 1)
+            Pthread_cond_wait(&empty, &mutex);
+        put(i);
+        Pthread_cond_signal(&fill);
+        Pthread_mutex_unlock(&mutex);
+    }
+}
+\end{lstlisting}
+
+\keepspace{14\baselineskip}
+\begin{lstlisting}[firstnumber=16]
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);
+        while (count == 0)
+            Pthread_cond_wait(&fill, &mutex);
+        int tmp = get();
+        Pthread_cond_signal(&empty);
+        Pthread_mutex_unlock(&mutex);
+        printf("%d\n", tmp);
+    }
+}
+\end{lstlisting}
+
+\begin{solbox}[Is this correct? Can you find a bad schedule?]
+\textbf{Correct!}
+\begin{itemize}
+  \item no concurrent access to shared state (everything is under
+        \texttt{mutex});
+  \item every time the lock is acquired, assumptions are reevaluated
+        (\texttt{while});
+  \item a consumer will get to run after every \texttt{put()} (the producer
+        signals \texttt{fill}, on which only consumers wait);
+  \item a producer will get to run after every \texttt{get()} (the consumer
+        signals \texttt{empty}, on which only producers wait).
+\end{itemize}
+\end{solbox}
+
+\keepspace{10\baselineskip}
+% ===========================================================================
+\section{The final producer/consumer solution}
+% ===========================================================================
+
+More \textbf{concurrency} and \textbf{efficiency} \(\Rightarrow\) add more
+buffer slots:
+\begin{itemize}
+  \item allow concurrent production or consuming to take place;
+  \item reduce context switches.
+\end{itemize}
+Several values can now be produced before the producer has to sleep, and
+several consumed before the consumer has to sleep. With just one producer
+and one consumer, the gain is \textbf{fewer context switches}. With multiple
+producers or consumers, they can also produce or consume
+\textbf{concurrently}.
+
+\keepspace{22\baselineskip}
+\subsection{The final put and get routines}
+
+\begin{lstlisting}
+int buffer[MAX];
+int fill = 0;
+int use = 0;
+int count = 0;
+
+void put(int value) {
+    buffer[fill] = value;
+    fill = (fill + 1) % MAX;
+    count++;
+}
+
+int get() {
+    int tmp = buffer[use];
+    use = (use + 1) % MAX;
+    count--;
+    return tmp;
+}
+\end{lstlisting}
+
+This is the circular buffer of the UNIX-pipe example: \texttt{fill} plays
+the role of \textbf{end} (where the next write goes), \texttt{use} the role
+of \textbf{start} (where the next read comes from), both wrapping with
+\texttt{\% MAX}. (The integer \texttt{fill} here is the buffer index; the
+condition variable named \texttt{fill} below is a different variable.)
+
+\keepspace{18\baselineskip}
+\subsection{The final producer/consumer threads}
+
+\begin{lstlisting}
+cond_t empty, fill;
+mutex_t mutex;
+
+void *producer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);
+        while (count == MAX)
+            Pthread_cond_wait(&empty, &mutex);
+        put(i);
+        Pthread_cond_signal(&fill);
+        Pthread_mutex_unlock(&mutex);
+    }
+}
+\end{lstlisting}
+
+\keepspace{14\baselineskip}
+\begin{lstlisting}[firstnumber=16]
+void *consumer(void *arg) {
+    int i;
+    for (i = 0; i < loops; i++) {
+        Pthread_mutex_lock(&mutex);
+        while (count == 0)
+            Pthread_cond_wait(&fill, &mutex);
+        int tmp = get();
+        Pthread_cond_signal(&empty);
+        Pthread_mutex_unlock(&mutex);
+        printf("%d\n", tmp);
+    }
+}
+\end{lstlisting}
+
+The only change from the single-buffer solution: the producer now waits
+only when all \texttt{MAX} slots are full (\texttt{count == MAX}), so several
+items can be produced before a consumer must run.
+
+% ===========================================================================
+\keepspace{32\baselineskip}
+\section{Covering conditions}
+% ===========================================================================
+
+A memory allocator: threads ask for memory and wait until enough is free.
+
+\begin{lstlisting}
+// how many bytes of the heap are free?
+int bytesLeft = MAX_HEAP_SIZE;
+
+// need lock and condition too
+cond_t c;
+mutex_t m;
+
+void *
+allocate(int size) {
+    Pthread_mutex_lock(&m);
+    while (bytesLeft < size)
+        Pthread_cond_wait(&c, &m);
+    void *ptr = ...;          // get mem from heap
+    bytesLeft -= size;
+    Pthread_mutex_unlock(&m);
+    return ptr;
+}
+
+void free(void *ptr, int size) {
+    Pthread_mutex_lock(&m);
+    bytesLeft += size;
+    Pthread_cond_signal(&c); // whom to signal??
+    Pthread_mutex_unlock(&m);
+}
+\end{lstlisting}
+
+\keepspace{10\baselineskip}
+\begin{quizbox}[Which waiting thread should be woken up?]
+Assume there are zero bytes free.
+\begin{itemize}
+  \item Thread \(T_a\) calls \texttt{allocate(100)}.
+  \item Thread \(T_b\) calls \texttt{allocate(10)}.
+  \item Both \(T_a\) and \(T_b\) wait on the condition and go to sleep.
+  \item Thread \(T_c\) calls \texttt{free(50)}.
+\end{itemize}
+\end{quizbox}
+
+\begin{solbox}[Answer]
+\(T_b\) should be woken: 50 free bytes satisfy its request for 10, but not
+\(T_a\)'s request for 100. But \texttt{signal()} wakes \emph{some} waiting
+thread, and the freeing thread cannot say which. If it wakes \(T_a\),
+\(T_a\) re-checks, sees \(50 < 100\), and goes back to sleep, while
+\(T_b\), who could have run, is never woken.
+\end{solbox}
+
+\keepspace{18\baselineskip}
+\subsection{How to wake the right thread? Wake all the threads!}
+
+\begin{keybox}[Solution (suggested by Lampson and Redell)]
+\begin{itemize}
+  \item Replace \texttt{pthread\_cond\_signal()} with
+        \textbf{\texttt{pthread\_cond\_broadcast()}}.
+  \item \texttt{pthread\_cond\_broadcast()}
+    \begin{itemize}
+      \item wakes up \textbf{all waiting threads};
+      \item \textbf{cost}: too many threads might be woken;
+      \item threads that shouldn't be awake will simply wake up, re-check
+            the condition, and then go back to sleep.
+    \end{itemize}
+\end{itemize}
+A condition variable used this way is called a \textbf{covering
+condition}: the broadcast covers every case in which some thread needs to
+wake up. Because every waiter re-checks its condition in a \texttt{while}
+loop, waking extra threads is safe.
+\end{keybox}
+
+\begin{warnbox}[Broadcast vs.\ two CVs]
+Broadcast would also have rescued the single-CV producer/consumer (the
+woken consumer could no longer be the only one woken). There a better fix
+existed: two CVs, so each side wakes only the other. As a rule, if your
+program only works after changing signals to broadcasts (and you don't
+think it should need to), you probably have a bug. In cases like the
+allocator, where the signaler cannot know which waiter can proceed,
+broadcast is the straightforward solution.
+\end{warnbox}
+
+% ===========================================================================
+\section{Summary: rules of thumb for CVs}
+% ===========================================================================
+
+\begin{keybox}[Rules of thumb]
+\begin{enumerate}
+  \item \textbf{Keep state in addition to CVs.} CVs only signal changes; the
+        state says whether there is anything to wait for (join's
+        \texttt{done}, the buffer's \texttt{count}).
+  \item \textbf{Always do wait/signal with the lock held.} Otherwise the
+        state can change between the check and the wait (join attempt 2).
+        For \texttt{wait} this is mandatory: \texttt{wait} assumes the lock
+        is held, releases it while sleeping, and re-acquires it before
+        returning. For \texttt{signal} it is not strictly needed in every
+        program, but it is simplest and safest to always do it.
+  \item \textbf{Whenever a thread wakes from waiting, recheck state}
+        (\texttt{while}, not \texttt{if}): another thread may have run
+        first, and there may be spurious wakeups.
+\end{enumerate}
+\end{keybox}
+
+\begin{center}
+\renewcommand{\arraystretch}{1.18}
+\small
+\begin{tabularx}{\textwidth}{@{}lX@{}}
+  \toprule
+  \textbf{Version} & \textbf{Problem / result} \\
+  \midrule
+  Join attempt 1 (no state) & Signal before wait is lost: parent waits forever. \\
+  Join attempt 2 (state, child without lock) & Child can set \texttt{done} and signal between parent's check and wait. \\
+  Join (correct) & State + lock held around check/wait and update/signal. \\
+  P/C: single CV + \texttt{if} & Woken consumer finds buffer emptied by another consumer. \\
+  P/C: single CV + \texttt{while} & Consumer can wake a consumer: everyone asleep. \\
+  P/C: two CVs + \texttt{while} & Correct (single buffer). \\
+  P/C: two CVs + \texttt{while}, \texttt{MAX} slots & Correct, more concurrency, fewer context switches. \\
+  Allocator & Signal may wake the wrong waiter \(\Rightarrow\) use \texttt{broadcast} (covering condition). \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\end{document}

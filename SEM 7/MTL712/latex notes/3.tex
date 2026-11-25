@@ -1,0 +1,1069 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[
+  left=1.05in,
+  right=1.05in,
+  top=1in,
+  bottom=1in,
+  headheight=14pt
+]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{bm}
+\usepackage{enumitem}
+\usepackage{booktabs,array}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+
+\linespread{1.10}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.48em plus 0.12em minus 0.08em}
+\setlength{\abovedisplayskip}{0.8em plus 0.2em minus 0.15em}
+\setlength{\belowdisplayskip}{0.8em plus 0.2em minus 0.15em}
+\setlength{\abovedisplayshortskip}{0.55em plus 0.15em}
+\setlength{\belowdisplayshortskip}{0.65em plus 0.15em}
+\setlength{\jot}{5pt}
+\setlength{\emergencystretch}{2em}
+\raggedbottom
+
+\numberwithin{equation}{section}
+
+\newtheoremstyle{spacedplain}
+  {8pt}{8pt}{\itshape}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spaceddefinition}
+  {8pt}{8pt}{\normalfont}{}{\bfseries}{.}{0.5em}{}
+\newtheoremstyle{spacedremark}
+  {8pt}{8pt}{\normalfont}{}{\itshape}{.}{0.5em}{}
+
+\theoremstyle{spacedplain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{spaceddefinition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{problem}[theorem]{Problem}
+
+\theoremstyle{spacedremark}
+\newtheorem{remark}[theorem]{Remark}
+
+\setlist[itemize]{leftmargin=*,itemsep=4pt,topsep=6pt,parsep=2pt}
+\setlist[enumerate]{leftmargin=*,itemsep=4pt,topsep=6pt,parsep=2pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{MTL712}
+\fancyhead[R]{Stability and Difference Equations}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\title{\textcolor{blue!50!black}{\textbf{MTL712: Computational Methods for Differential\\Equations}}\\[6pt]
+\large Stability, Difference Equations, and Order Conditions}
+\author{\normalsize Cleaned transcription of handwritten notes}
+\date{}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{plain}
+\tableofcontents
+\clearpage
+
+\section{Root Condition and Zero-Stability}
+
+Consider the \(k\)-step linear multistep method
+\[
+  \sum_{j=0}^{k}\alpha_j y_{n+j}
+  =h\sum_{j=0}^{k}\beta_j f_{n+j},
+  \qquad
+  \alpha_k\neq 0,
+\]
+with first characteristic polynomial
+\[
+  \rho(z)=\sum_{j=0}^{k}\alpha_jz^j.
+\]
+
+\begin{proof}[Proof of the root condition]
+Apply the method to \(y'=0\).  The
+resulting recurrence is
+\[
+  \alpha_k y_{n+k}+\alpha_{k-1}y_{n+k-1}
+  +\cdots+\alpha_1y_{n+1}+\alpha_0y_n=0.
+\]
+If \(z_s\) is a zero of \(\rho\) of multiplicity \(m_s\), the
+corresponding terms in the general solution have the form
+\[
+  p_s(n)z_s^n,
+  \qquad \deg p_s\leq m_s-1.
+\]
+If \(\lvert z_s\rvert>1\), some solutions therefore grow like
+\(\lvert z_s\rvert^n\).  If \(\lvert z_s\rvert=1\) and \(m_s>1\), some
+solutions grow like \(n^{m_s-1}\).  In either case they are unbounded as
+\(n\to\infty\), even though \(nh=b-a\) is held fixed while \(h\to0\).
+
+Choose initial values \(y_0,\ldots,y_{k-1}\) that generate such an
+unbounded solution, and compare them with
+\(\widehat y_0=\cdots=\widehat y_{k-1}=0\), whose corresponding solution
+is \(\widehat y_n=0\).  No constant \(K\), independent of \(h\), can
+satisfy
+\[
+  \lvert y_n-\widehat y_n\rvert
+  \leq K\max_{0\leq j\leq k-1}
+  \lvert y_j-\widehat y_j\rvert .
+\]
+Thus violation of the root condition implies failure of zero-stability.
+For the converse, the root condition implies that the powers of the
+companion matrix of the homogeneous recurrence are uniformly bounded:
+roots strictly inside the unit disk decay, while simple roots on the
+unit circle remain bounded.  Applying the variation-of-constants
+formula to the difference of two numerical solutions, followed by the
+Lipschitz condition and a discrete Gronwall inequality, gives the
+required bound with a constant independent of \(h\).  Hence the method
+is zero-stable.
+\end{proof}
+
+\begin{example}[Euler's method]
+For
+\[
+  y_{n+1}=y_n+h f(x_n,y_n),
+\]
+the first characteristic polynomial is \(\rho(z)=z-1\).  Its only zero,
+\(z=1\), is simple, so Euler's method is zero-stable.
+\end{example}
+
+\begin{example}[A non-zero-stable three-step method]
+Consider the sixth-order formula
+\[
+  11y_{n+3}+27y_{n+2}-27y_{n+1}-11y_n
+  =3h\bigl(f_{n+3}+9f_{n+2}+9f_{n+1}+f_n\bigr).
+\]
+Its first characteristic polynomial is
+\[
+  \rho(z)=11z^3+27z^2-27z-11
+  =(z-1)(11z^2+38z+11).
+\]
+The roots are
+\[
+  z_1=1,\qquad
+  z_{2,3}=\frac{-19\pm2\sqrt{60}}{11}
+  \approx-0.3189,\,-3.1357.
+\]
+Since one root has modulus greater than \(1\), the method is not
+zero-stable.
+\end{example}
+
+\section{Stability of Linear Multistep Methods}
+
+Let \(E\) denote the shift operator, \(E y_n=y_{n+1}\), and let
+\[
+  \sigma(z)=\sum_{j=0}^{k}\beta_jz^j
+\]
+be the second characteristic polynomial.  The multistep method can be
+written as
+\[
+  \rho(E)y_n=h\sigma(E)f_n,
+  \qquad\text{or}\qquad
+  \rho(E)y_n-h\sigma(E)f_n=0.
+\]
+Apply it to the test equation
+\[
+  y'=\lambda y,\qquad \lambda<0.
+\]
+Then
+\[
+  \bigl[\rho(E)-\bar h\,\sigma(E)\bigr]y_n=0,
+  \qquad \bar h=h\lambda,
+\]
+whose stability polynomial is
+\[
+  \pi(z,\bar h)=\rho(z)-\bar h\,\sigma(z).
+\]
+Let \(z_1,\ldots,z_k\) be its zeros, numbered so that \(z_1\to1\) as
+\(\bar h\to0\) for a consistent zero-stable method.
+
+\begin{definition}[Absolute and relative stability]
+At a given value of \(\bar h\), the method is \emph{absolutely stable}
+if
+\[
+  |z_r|<1,\qquad r=1,\ldots,k.
+\]
+It is \emph{relatively stable} if
+\[
+  |z_r|<|z_1|,\qquad r=2,\ldots,k.
+\]
+\end{definition}
+
+\begin{definition}[Interval of absolute stability]
+An interval \((a,b)\) on the real axis is an interval of absolute
+stability if the method is absolutely stable for every
+\(\bar h\in(a,b)\).
+\end{definition}
+
+\begin{definition}[Strong and weak stability]
+A zero-stable multistep method is \emph{strongly stable} if \(z=1\) is
+the only zero of \(\rho\) on the unit circle.  It is \emph{weakly
+stable} if \(\rho\) has additional (necessarily simple) zeros on the
+unit circle.
+\end{definition}
+
+Two standard tools for locating an interval of absolute stability are
+Schur's criterion and the Routh--Hurwitz criterion.
+
+\subsection{Schur's Criterion}
+
+Let
+\[
+  \phi(z)=c_0z^k+c_1z^{k-1}+\cdots+c_{k-1}z+c_k,
+  \qquad c_0c_k\neq0,
+\]
+have complex coefficients, and define its conjugate-reciprocal
+polynomial by
+\[
+  \widehat\phi(z)
+  =\overline{c_k}z^k+\overline{c_{k-1}}z^{k-1}
+   +\cdots+\overline{c_1}z+\overline{c_0}.
+\]
+
+\begin{definition}
+\(\phi\) is a \emph{Schur polynomial} if each of its zeros \(z_r\)
+satisfies \(|z_r|<1\).
+\end{definition}
+
+Define the polynomial of degree \(k-1\)
+\[
+  \phi_1(z)
+  =\frac{\widehat\phi(0)\phi(z)-\phi(0)\widehat\phi(z)}{z}.
+\]
+
+\begin{theorem}[Schur's criterion]
+The polynomial \(\phi\) is a Schur polynomial if and only if
+\[
+  |\widehat\phi(0)|>|\phi(0)|
+  \quad\text{and}\quad
+  \phi_1\ \text{is a Schur polynomial}.
+\]
+Equivalently, the first inequality is \(|c_0|>|c_k|\).
+\end{theorem}
+
+\subsection{Routh--Hurwitz Criterion}
+
+The Cayley transformation
+\[
+  w=\frac{z-1}{z+1},
+  \qquad
+  z=\frac{1+w}{1-w},
+\]
+maps the open unit disk in the \(z\)-plane onto the open left
+half-plane \(\operatorname{Re}w<0\).  Under this transformation the
+stability polynomial \(\pi(z,\bar h)\) becomes, after multiplication by
+\((1-w)^k\), a polynomial
+\[
+  q(w)=a_0w^k+a_1w^{k-1}+\cdots+a_k.
+\]
+Thus the zeros of \(\pi\) lie in \(|z|<1\) if and only if the zeros of
+\(q\) lie in \(\operatorname{Re}w<0\).
+
+\begin{theorem}[Routh--Hurwitz criterion]
+Assume \(a_0>0\) and put \(a_j=0\) for \(j>k\).  All zeros of \(q\) lie
+in the open left half-plane if and only if all leading principal minors
+of the Hurwitz matrix
+\[
+  H=
+  \begin{pmatrix}
+    a_1&a_3&a_5&\cdots&a_{2k-1}\\
+    a_0&a_2&a_4&\cdots&a_{2k-2}\\
+    0&a_1&a_3&\cdots&a_{2k-3}\\
+    0&a_0&a_2&\cdots&a_{2k-4}\\
+    \vdots&\vdots&\vdots&\ddots&\vdots
+  \end{pmatrix}_{k\times k}
+\]
+are positive.
+\end{theorem}
+
+In particular:
+\begin{itemize}
+  \item for \(k=2\): \(a_0,a_1,a_2>0\);
+  \item for \(k=3\): \(a_0,a_1,a_2,a_3>0\) and
+    \(a_1a_2-a_0a_3>0\);
+  \item for \(k=4\): \(a_0,a_1,a_2,a_3,a_4>0\) and
+    \[
+      a_1a_2a_3-a_0a_3^2-a_1^2a_4>0.
+    \]
+\end{itemize}
+
+\section{Difference Operators, Consistency, and Order}
+
+Associated with the \(k\)-step method is the linear difference operator
+\[
+\begin{split}
+  L[y(x);h]
+  ={}&\sum_{j=0}^{k}\alpha_jy(x+jh)
+  -h\sum_{j=0}^{k}\beta_jy'(x+jh).
+\end{split}
+\]
+For a sufficiently differentiable function \(y\), Taylor expansion
+gives
+\[
+  L[y(x);h]
+  =c_0y(x)+c_1hy'(x)+c_2h^2y''(x)+\cdots,
+\]
+where
+\[
+  c_0=\sum_{j=0}^{k}\alpha_j,
+  \qquad
+  c_1=\sum_{j=0}^{k}j\alpha_j-\sum_{j=0}^{k}\beta_j,
+\]
+and, for \(q\geq2\),
+\[
+  c_q
+  =\frac{1}{q!}\sum_{j=0}^{k}j^q\alpha_j
+   -\frac{1}{(q-1)!}\sum_{j=0}^{k}j^{q-1}\beta_j.
+\]
+In terms of the characteristic polynomials,
+\[
+  c_0=\rho(1),
+  \qquad
+  c_1=\rho'(1)-\sigma(1).
+\]
+
+\begin{definition}[Order of a difference operator]
+The difference operator \(L\) has order \(p\) if
+\[
+  c_0=c_1=\cdots=c_p=0,
+  \qquad c_{p+1}\neq0.
+\]
+\end{definition}
+
+The same method may be written with any fixed integer shift \(t\):
+\[
+  \sum_{j=0}^{k}\alpha_jy_{n+j+t}
+  =h\sum_{j=0}^{k}\beta_jf_{n+j+t}.
+\]
+Its associated shifted operator is
+\[
+  L_t[y(x);h]
+  =\sum_{j=0}^{k}\alpha_jy\bigl(x+(j+t)h\bigr)
+  -h\sum_{j=0}^{k}\beta_jy'\bigl(x+(j+t)h\bigr).
+\]
+Since \(L_t[y(x);h]=L[y(x+th);h]\), if \(L\) has order \(p\), then
+\[
+\begin{split}
+  L_t[y(x);h]
+  &=c_{p+1}h^{p+1}y^{(p+1)}(x+th)+O(h^{p+2})\\
+  &=c_{p+1}h^{p+1}y^{(p+1)}(x)+O(h^{p+2}).
+\end{split}
+\]
+
+\begin{definition}[Error constant]
+Provided \(\sigma(1)=\sum_{j=0}^{k}\beta_j\neq0\), the error constant of
+an order-\(p\) method is
+\[
+  C=\frac{c_{p+1}}{\sigma(1)}.
+\]
+\end{definition}
+
+\begin{definition}[Consistency]
+A linear multistep method is consistent if it has order at least one.
+Equivalently,
+\[
+  c_0=c_1=0,
+  \qquad\text{or}\qquad
+  \rho(1)=0,\quad \rho'(1)=\sigma(1).
+\]
+\end{definition}
+
+\subsection{Local Truncation Error}
+
+Suppose \(y\) is an exact solution of
+\[
+  y'=f(x,y).
+\]
+The normalized local truncation error of the multistep method is
+\[
+  T_n
+  =\frac{
+    \displaystyle\sum_{j=0}^{k}
+    \left[\alpha_jy(x_{n+j})-h\beta_jy'(x_{n+j})\right]
+  }{
+    \displaystyle h\sum_{j=0}^{k}\beta_j
+  }.
+\]
+Taylor expansion about \(x_n\) yields
+\[
+  T_n
+  =\frac{1}{\sigma(1)}
+   \left[
+     \frac{c_0}{h}y(x_n)+c_1y'(x_n)
+     +c_2hy''(x_n)+\cdots
+   \right].
+\]
+Thus consistency is equivalent to \(c_0=c_1=0\), and then
+\(T_n\to0\) as \(h\to0\) along every sufficiently smooth solution
+curve.
+
+\begin{definition}[Consistency with the differential equation]
+The numerical scheme is consistent with the differential equation if,
+for every \(\varepsilon>0\), there exists \(h(\varepsilon)>0\) such that
+\[
+  |T_n|<\varepsilon
+  \qquad\text{whenever}\qquad 0<h<h(\varepsilon),
+\]
+for any \(k+1\) consecutive points on a sufficiently smooth solution
+curve of the initial-value problem.
+\end{definition}
+
+\begin{definition}[Order of accuracy]
+The method has order \(p\) if \(p\) is the largest integer for which,
+on every sufficiently smooth solution curve,
+\[
+  |T_n|\leq Kh^p
+\]
+for all sufficiently small \(h\), with \(K\) independent of \(h\).
+\end{definition}
+
+Consequently, the method has order \(p\) precisely when
+\[
+  c_0=c_1=\cdots=c_p=0,
+  \qquad c_{p+1}\neq0.
+\]
+In that case,
+\[
+  T_n
+  =\frac{c_{p+1}}{\sigma(1)}
+   h^p y^{(p+1)}(x_n)+O(h^{p+1}),
+\]
+and \(c_{p+1}/\sigma(1)\) is the error constant.
+
+\section{Difference Equations}
+
+\begin{definition}
+A difference equation is an equation involving differences, or shifted
+values, of a sequence \(y_n\).  Its order is the difference between the
+largest and smallest subscripts of \(y\) occurring in the equation.
+\end{definition}
+
+\begin{example}
+The equation
+\[
+  \Delta^2y_n-2\Delta y_n+3y_n=n^2+n
+\]
+is equivalent to
+\[
+  (y_{n+2}-2y_{n+1}+y_n)
+  -2(y_{n+1}-y_n)+3y_n=n^2+n,
+\]
+and hence to the second-order constant-coefficient equation
+\[
+  y_{n+2}-4y_{n+1}+6y_n=n^2+n.
+\]
+\end{example}
+
+A linear difference equation of order \(k\) with constant coefficients
+has the form
+\[
+  a_0y_{n+k}+a_1y_{n+k-1}+\cdots+a_{k-1}y_{n+1}+a_ky_n=f(n),
+\]
+where the coefficients \(a_0,\ldots,a_k\) are independent of \(n\).
+It is homogeneous when \(f(n)=0\).
+
+\subsection{Shift-Operator Form}
+
+With \(Ey_n=y_{n+1}\), one has \(E^ry_n=y_{n+r}\), and the difference
+equation can be written
+\[
+  (a_0E^k+a_1E^{k-1}+\cdots+a_k)y_n=f(n).
+\]
+Defining
+\[
+  \phi(E)=a_0E^k+a_1E^{k-1}+\cdots+a_k,
+\]
+its simplest form is
+\[
+  \phi(E)y_n=f(n).
+\]
+
+For the homogeneous equation \(\phi(E)y_n=0\), try a solution
+\(y_n=\xi^n\).  Substitution gives
+\[
+  \xi^n\bigl(a_0\xi^k+a_1\xi^{k-1}+\cdots+a_k\bigr)=0,
+\]
+so \(\xi\) must satisfy the auxiliary, or characteristic, equation
+\[
+  \phi(\xi)
+  =a_0\xi^k+a_1\xi^{k-1}+\cdots+a_k=0.
+\]
+
+\section{Linear Difference Equations}
+
+\subsection{Homogeneous equations with constant coefficients}
+
+Consider the homogeneous linear difference equation
+\[
+  a_0y_{n+k}+a_1y_{n+k-1}+\cdots+a_ky_n=0,
+  \qquad a_0\ne 0.
+\]
+With the shift operator \(E\), defined by \(Ey_n=y_{n+1}\), this may be
+written as
+\[
+  \phi(E)y_n=0,
+  \qquad
+  \phi(\xi)=a_0\xi^k+a_1\xi^{k-1}+\cdots+a_k.
+\]
+The equation \(\phi(\xi)=0\) is called the auxiliary, or characteristic,
+equation.
+
+If the roots \(\xi_1,\ldots,\xi_k\) are distinct, then
+\[
+  y_n=c_1\xi_1^n+c_2\xi_2^n+\cdots+c_k\xi_k^n,
+\]
+where \(c_1,\ldots,c_k\) are arbitrary constants.
+
+\subsubsection{Repeated roots}
+
+Suppose first that \(\xi_1\) is a double root.  Then
+\[
+  (E-\xi_1)^2y_n=0.
+\]
+Put \(y_n=\xi_1^n z_n\).  Since
+\[
+  y_{n+1}=\xi_1^{n+1}z_{n+1},
+  \qquad
+  y_{n+2}=\xi_1^{n+2}z_{n+2},
+\]
+we obtain
+\[
+  \xi_1^{n+2}(z_{n+2}-2z_{n+1}+z_n)=0.
+\]
+Thus
+\[
+  \Delta^2z_n=0,
+  \qquad \Delta=E-1,
+\]
+and hence \(z_n=c_1+c_2n\).  The contribution associated with the
+double root is therefore
+\[
+  y_n=(c_1+c_2n)\xi_1^n.
+\]
+
+More generally, if \(\xi_1\) has multiplicity \(r\), then its contribution
+to the complementary solution is
+\[
+  \bigl(c_1+c_2n+\cdots+c_rn^{r-1}\bigr)\xi_1^n.
+\]
+The complete solution is obtained by adding the corresponding terms for
+all the other roots.
+
+\subsubsection{Complex-conjugate roots}
+
+Suppose a real-coefficient equation has the conjugate roots
+\[
+  \xi_{1,2}=a\pm ib
+  =r(\cos\theta\pm i\sin\theta),
+  \qquad
+  r=\sqrt{a^2+b^2},
+\]
+where \(\cos\theta=a/r\) and \(\sin\theta=b/r\).  Since
+\[
+  \xi_{1,2}^n=r^n\bigl(\cos(n\theta)\pm i\sin(n\theta)\bigr),
+\]
+the associated real-valued part of the complementary solution is
+\[
+  y_n=r^n\bigl(A\cos(n\theta)+B\sin(n\theta)\bigr),
+\]
+where \(A\) and \(B\) are arbitrary real constants.
+
+\begin{example}
+Solve
+\[
+  y_{n+2}+3y_{n+1}+2y_n=0,
+  \qquad y_0=2,\quad y_1=1.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The operator equation is
+\[
+  (E^2+3E+2)y_n=(E+1)(E+2)y_n=0.
+\]
+The roots are \(-1\) and \(-2\), so
+\[
+  y_n=c_1(-1)^n+c_2(-2)^n.
+\]
+The initial conditions give
+\[
+  c_1+c_2=2,
+  \qquad
+  -c_1-2c_2=1.
+\]
+Therefore \(c_2=-3\), \(c_1=5\), and
+\[
+  \boxed{y_n=5(-1)^n-3(-2)^n.}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  u_{n+2}-2u_{n+1}+4u_n=0.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The characteristic equation
+\[
+  \xi^2-2\xi+4=0
+\]
+has roots
+\[
+  \xi=1\pm i\sqrt{3}
+  =2\left(\cos\frac{\pi}{3}\pm i\sin\frac{\pi}{3}\right).
+\]
+Consequently,
+\[
+  \boxed{
+  u_n=2^n\left(
+    A\cos\frac{n\pi}{3}+B\sin\frac{n\pi}{3}
+  \right).}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  u_{n+1}-2u_n+2u_{n-1}=0.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The characteristic roots are \(1\pm i\), whose modulus is \(\sqrt{2}\)
+and whose arguments are \(\pm\pi/4\).  Hence
+\[
+  \boxed{
+  u_n=(\sqrt{2})^n\left(
+    A\cos\frac{n\pi}{4}+B\sin\frac{n\pi}{4}
+  \right).}
+\]
+\end{proof}
+
+\subsection{Nonhomogeneous equations}
+
+Consider
+\[
+  \phi(E)y_n=f(n).
+\]
+If \(u_n\) is the complementary solution satisfying
+\(\phi(E)u_n=0\), and \(v_n\) is any particular solution satisfying
+\(\phi(E)v_n=f(n)\), then the complete solution is
+\[
+  y_n=u_n+v_n.
+\]
+Formally, a particular solution is denoted by
+\[
+  v_n=\frac{1}{\phi(E)}f(n).
+\]
+
+\subsubsection{Exponential forcing}
+
+For \(f(n)=\beta^n\),
+\[
+  \phi(E)\beta^n=\phi(\beta)\beta^n.
+\]
+Thus, provided \(\phi(\beta)\ne0\),
+\[
+  \boxed{
+  \frac{1}{\phi(E)}\beta^n
+  =\frac{\beta^n}{\phi(\beta)}.}
+\]
+When \(\phi(\beta)=0\), this direct rule fails and the resonant case must
+be treated by the shifted-operator formula developed below.
+
+\subsection{Factorial polynomials and operator inversion}
+
+\begin{definition}
+The factorial polynomial of degree \(p\) is
+\[
+  n^{(p)}=n(n-1)\cdots(n-p+1),
+\]
+with \(n^{(0)}=1\) and \(n^{(1)}=n\).
+\end{definition}
+
+The forward-difference operator satisfies
+\[
+  \Delta n^{(p)}=p\,n^{(p-1)}
+\]
+and, more generally,
+\[
+  \Delta^m n^{(p)}
+  =p^{(m)}n^{(p-m)}
+  =p(p-1)\cdots(p-m+1)n^{(p-m)}
+  \qquad (m\le p).
+\]
+In particular,
+\[
+  \Delta^p n^{(p)}=p!,
+  \qquad
+  \Delta^m n^{(p)}=0\quad(m>p).
+\]
+Formal inverse differences give, for example,
+\[
+  \frac{1}{\Delta}1=n^{(1)},\qquad
+  \frac{1}{\Delta^2}1=\frac{n^{(2)}}{2!},\qquad
+  \frac{1}{\Delta^3}1=\frac{n^{(3)}}{3!},
+\]
+up to terms belonging to the complementary solution.
+
+If \(f(n)\) is a polynomial of degree at most \(m\), express it in the
+factorial basis:
+\[
+  f(n)=A_0n^{(m)}+A_1n^{(m-1)}+\cdots+A_mn^{(0)}.
+\]
+Since \(E=1+\Delta\), a particular solution of
+\(\phi(E)y_n=f(n)\) is
+\[
+  v_n=
+  \frac{1}{\phi(1+\Delta)}
+  \left(
+    A_0n^{(m)}+A_1n^{(m-1)}+\cdots+A_mn^{(0)}
+  \right).
+\]
+One expands \(1/\phi(1+\Delta)\) in ascending powers of \(\Delta\);
+the resulting series terminates when it acts on a factorial polynomial.
+
+\subsubsection{The shift rule}
+
+For any polynomial \(\phi\) and sequence \(v(n)\),
+\[
+  \boxed{
+  \phi(E)\bigl[\beta^n v(n)\bigr]
+  =\beta^n\phi(\beta E)v(n).}
+\]
+Indeed, for every nonnegative integer \(j\),
+\[
+  E^j\bigl[\beta^n v(n)\bigr]
+  =\beta^{n+j}v(n+j)
+  =\beta^n(\beta E)^jv(n),
+\]
+and linearity gives the stated identity.  Consequently,
+\[
+  \boxed{
+  \frac{1}{\phi(E)}\bigl[\beta^n v(n)\bigr]
+  =\beta^n\frac{1}{\phi(\beta E)}v(n).}
+\]
+This rule is particularly useful in the resonant case
+\(\phi(\beta)=0\): set \(E=1+\Delta\), expand
+\(1/\phi(\beta(1+\Delta))\) in powers of \(\Delta\), and apply it to
+\(v(n)\).
+
+\subsection{Worked nonhomogeneous equations}
+
+\begin{example}
+Solve
+\[
+  2u_{n+2}+5u_{n+1}+2u_n=4.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The complementary equation factors as
+\[
+  2E^2+5E+2=(E+2)(2E+1),
+\]
+so
+\[
+  u_n^{(c)}=c_1(-2)^n+c_2\left(-\frac12\right)^n.
+\]
+For the constant forcing,
+\[
+  u_n^{(p)}
+  =\frac{1}{2E^2+5E+2}\,4
+  =\frac{4}{2+5+2}
+  =\frac49.
+\]
+Hence
+\[
+  \boxed{
+  u_n=c_1(-2)^n+c_2\left(-\frac12\right)^n+\frac49.}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  y_{n+3}-2y_{n+2}-4y_{n+1}+8y_n=3^n.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+Here
+\[
+  E^3-2E^2-4E+8=(E-2)^2(E+2),
+\]
+so the complementary solution is
+\[
+  y_n^{(c)}=(c_1+c_2n)2^n+c_3(-2)^n.
+\]
+Since
+\[
+  \phi(3)=27-18-12+8=5,
+\]
+the particular solution is \(y_n^{(p)}=3^n/5\).  Therefore
+\[
+  \boxed{
+  y_n=(c_1+c_2n)2^n+c_3(-2)^n+\frac{3^n}{5}.}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  (E^2-6E+8)y_n=3n+2.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The forcing may be written in factorial-polynomial form as
+\[
+  3n+2=3n^{(1)}+2n^{(0)}.
+\]
+The complementary solution is
+\[
+  y_n^{(c)}=c_1\,2^n+c_2\,4^n.
+\]
+A linear trial \(y_n^{(p)}=an+b\) gives
+\[
+  (E^2-6E+8)(an+b)=3an-4a+3b.
+\]
+Thus \(a=1\), \(b=2\), and
+\[
+  \boxed{y_n=c_1\,2^n+c_2\,4^n+n+2.}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  y_{n+3}-3y_{n+2}+3y_{n+1}-y_n=1.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+The equation is
+\[
+  (E-1)^3y_n=\Delta^3y_n=1.
+\]
+Its complementary solution is
+\[
+  y_n^{(c)}=c_1+c_2n+c_3n^2.
+\]
+Since \(\Delta^3n^{(3)}=3!\), a particular solution is
+\[
+  y_n^{(p)}=\frac{n^{(3)}}{3!}
+  =\frac{n(n-1)(n-2)}{6}.
+\]
+Hence
+\[
+  \boxed{
+  y_n=c_1+c_2n+c_3n^2+\frac{n(n-1)(n-2)}{6}.}
+\]
+\end{proof}
+
+\begin{example}
+Solve
+\[
+  y_{n+2}-2y_{n+1}+y_n=3n+5.
+\]
+\end{example}
+
+\begin{proof}[Solution]
+Since the operator is \((E-1)^2=\Delta^2\), the complementary solution
+is \(c_1+c_2n\).  Also,
+\[
+  3n+5=3n^{(1)}+5n^{(0)},
+\]
+and therefore
+\[
+  y_n^{(p)}
+  =\frac{1}{\Delta^2}
+    \bigl(3n^{(1)}+5n^{(0)}\bigr)
+  =\frac{3}{3!}n^{(3)}+\frac{5}{2!}n^{(2)}.
+\]
+Thus
+\[
+  \boxed{
+  y_n=c_1+c_2n
+  +\frac12n(n-1)(n-2)
+  +\frac52n(n-1).}
+\]
+\end{proof}
+
+\section{Order of a Linear Multistep Method}
+
+Consider the \(k\)-step linear multistep method
+\[
+  \sum_{j=0}^k\alpha_jy_{n+j}
+  =h\sum_{j=0}^k\beta_jf_{n+j},
+\]
+with characteristic polynomials
+\[
+  \rho(z)=\sum_{j=0}^k\alpha_jz^j,
+  \qquad
+  \sigma(z)=\sum_{j=0}^k\beta_jz^j.
+\]
+For an exact solution \(y\), and assuming \(\sigma(1)\ne0\), define the
+normalised local truncation error by
+\[
+  T_n=
+  \frac{
+    \displaystyle
+    \sum_{j=0}^k
+    \left[
+      \alpha_jy(x_{n+j})-h\beta_jy'(x_{n+j})
+    \right]
+  }{
+    \displaystyle h\sum_{j=0}^k\beta_j
+  }
+  =
+  \frac{
+    \displaystyle
+    \sum_{j=0}^k
+    \left[
+      \alpha_jy(x_{n+j})-h\beta_jy'(x_{n+j})
+    \right]
+  }{h\sigma(1)}.
+\]
+
+Choose a branch of \(\log z\) in a neighbourhood of \(z=1\), and define
+\[
+  \Psi(z)=\frac{\rho(z)}{\log z}-\sigma(z)
+  =\frac{\rho(z)-\sigma(z)\log z}{\log z}.
+\]
+The apparent singularity at \(z=1\) is removable whenever
+\(\rho(1)=0\).
+
+\begin{theorem}[Order characterisation]
+Let \(p\) be a positive integer.  The linear multistep method has order
+\(p\) if and only if \(\Psi\) has a zero of multiplicity \(p\) at
+\(z=1\).
+\end{theorem}
+
+\begin{proof}
+Suppose first that the method has order \(p\).  Its local truncation
+error has the form
+\[
+  T_n=
+  \frac{c_{p+1}}{\sigma(1)}
+  h^p y^{(p+1)}(x_n)+O(h^{p+1}),
+  \qquad c_{p+1}\ne0.
+\]
+Apply the method to the test problem
+\[
+  y'=y,\qquad y(0)=1,
+\]
+whose solution is \(y(x)=e^x\).  Since \(x_n=nh\),
+\[
+  \sum_{j=0}^k\alpha_jy(x_{n+j})
+  =e^{nh}\rho(e^h),
+\]
+and
+\[
+  \sum_{j=0}^k\beta_jy'(x_{n+j})
+  =e^{nh}\sigma(e^h).
+\]
+Consequently,
+\[
+  T_n
+  =\frac{e^{nh}}{h\sigma(1)}
+    \left[\rho(e^h)-h\sigma(e^h)\right]
+  =e^{nh}\left(
+    \frac{c_{p+1}}{\sigma(1)}h^p+O(h^{p+1})
+  \right).
+\]
+Thus the analytic function
+\[
+  F(h)=\frac{\rho(e^h)-h\sigma(e^h)}{h}
+      =\Psi(e^h)
+\]
+has a zero of multiplicity \(p\) at \(h=0\).  Since \(z=e^h\) is
+biholomorphic between neighbourhoods of \(h=0\) and \(z=1\),
+\(\Psi(z)\) has a zero of multiplicity \(p\) at \(z=1\).
+
+Conversely, suppose that \(\Psi(z)\) has a zero of multiplicity \(p\)
+at \(z=1\).  Then
+\[
+  F(h)=\Psi(e^h)
+  =\frac{\rho(e^h)-h\sigma(e^h)}{h}
+\]
+has a zero of multiplicity \(p\) at \(h=0\).  Equivalently,
+\[
+  g(h):=\rho(e^h)-h\sigma(e^h)
+  =\sum_{j=0}^k(\alpha_j-h\beta_j)e^{jh}
+\]
+has a zero of multiplicity \(p+1\) at \(h=0\).  Therefore
+\[
+  g^{(q)}(0)=0\quad(0\le q\le p),
+  \qquad
+  g^{(p+1)}(0)\ne0.
+\]
+Direct differentiation gives
+\[
+  g^{(q)}(0)
+  =\sum_{j=0}^k
+    \left(j^q\alpha_j-qj^{q-1}\beta_j\right)
+  =q!c_q,
+\]
+where
+\[
+  c_0=\sum_{j=0}^k\alpha_j
+\]
+and, for \(q\ge1\),
+\[
+  c_q=
+  \frac{1}{q!}\sum_{j=0}^k j^q\alpha_j
+  -\frac{1}{(q-1)!}\sum_{j=0}^k j^{q-1}\beta_j.
+\]
+It follows that
+\[
+  c_0=c_1=\cdots=c_p=0,
+  \qquad c_{p+1}\ne0,
+\]
+which are precisely the order-\(p\) conditions for a linear multistep
+method.
+\end{proof}
+
+\begin{theorem}[Construction of the second characteristic polynomial]
+Let \(\rho\) be a polynomial of degree \(k\) such that
+\[
+  \rho(1)=0,\qquad \rho'(1)\ne0.
+\]
+There is a unique polynomial \(\sigma\) of degree at most \(k\) for
+which the linear multistep method associated with \(\rho\) and
+\(\sigma\) has order at least \(k+1\).  In particular, consistency gives
+\[
+  \sigma(1)=\rho'(1)\ne0.
+\]
+\end{theorem}
+
+\begin{proof}
+Because \(\rho(1)=0\), the function
+\[
+  R(z)=\frac{\rho(z)}{\log z}
+\]
+has a removable singularity at \(z=1\), with \(R(1)=\rho'(1)\).
+There is a unique polynomial of degree at most \(k\) whose
+Taylor expansion about \(z=1\) agrees with that of \(R\) through degree
+\(k\), namely
+\[
+  \sigma(z)=
+  \sum_{m=0}^{k}
+  \frac{R^{(m)}(1)}{m!}(z-1)^m.
+\]
+Hence \(R(z)-\sigma(z)\) has a zero of multiplicity at least
+\(k+1\) at \(z=1\).  The order characterisation then proves
+the result.
+\end{proof}
+\end{document}

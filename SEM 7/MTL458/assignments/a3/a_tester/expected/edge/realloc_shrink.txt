@@ -1,0 +1,8 @@
+same pointer: yes
+shrink: data ok
+same pointer: yes
+region 0 65536
+  32 A 544 450
+  576 F 496
+  1072 A 128 10
+  1200 F 64336

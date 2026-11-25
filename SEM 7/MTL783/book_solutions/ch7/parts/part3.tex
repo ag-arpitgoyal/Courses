@@ -1,0 +1,516 @@
+\providecommand{\SAT}{\mathrm{SAT}}
+\providecommand{\threesat}{\mathrm{3SAT}}
+\providecommand{\CLIQUE}{\mathrm{CLIQUE}}
+\providecommand{\PATHL}{\mathrm{PATH}}
+\providecommand{\TIME}{\mathrm{TIME}}
+\providecommand{\DP}{\mathrm{DP}}
+
+\begin{question}{Problem 7.37}
+Let $U=\{\enc{M,x,\#^t}\mid$ NTM $M$ accepts $x$ within $t$ steps on at least one branch$\}$.
+Note that $M$ isn't required to halt on all branches. Show that $U$ is NP-complete.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $U$ is a universal NP language: a short certificate is one accepting branch of length $t$, and $t$ is written in unary, so simulating $t$ steps is polynomial in the input size. Every language in $\NP$ reduces to $U$ by hard-wiring its NTM and padding the time bound with hashes.
+
+\textbf{Membership in $\NP$.}
+A certificate for $\enc{M,x,\#^t}$ is a string $c$ of length at most $t$ encoding the nondeterministic choices of $M$ on $x$. The verifier $V$ simulates $M$ on $x$ for at most $t$ steps, using the next symbol of $c$ whenever $M$ has a choice, and accepts iff this branch accepts within $t$ steps. The input already contains $t$ hashes, so the simulation runs in time polynomial in $\lvert\enc{M,x,\#^t}\rvert$. Branches that loop are simply cut off after $t$ steps.
+
+\textbf{NP-hardness.}
+Let $A\in\NP$. By Theorem~7.20, some NTM $N$ decides $A$ in time $n^k$ for a constant $k$. Define
+\[
+f(w)\;=\;\enc{N,\,w,\,\#^{\lvert w\rvert^k}}.
+\]
+Writing $\lvert w\rvert^k$ hashes takes polynomial time, so $f$ is polynomial-time computable. By construction $N$ accepts $w$ within $\lvert w\rvert^k$ steps on some branch if and only if $w\in A$, hence $w\in A$ iff $f(w)\in U$. Thus $A\redp U$.
+
+Every language in $\NP$ therefore reduces to $U$ in polynomial time. Combined with $U\in\NP$, Definition~7.34 says that $U$ is NP-complete.
+
+(Equivalently, one may reduce $\threesat$ to $U$ by taking any polynomial-time NTM for $\threesat$ and applying the same padding; Theorem~7.36 then yields NP-completeness.)
+\end{soln}
+
+\begin{question}{Problem 7.38 $\bigstar$}
+Show that if $\cP=\NP$, a polynomial time algorithm exists that produces a satisfying assignment when given a satisfiable Boolean formula. (Note: The algorithm you are asked to provide computes a function; but $\NP$ contains languages, not functions. The $\cP=\NP$ assumption implies that $\SAT$ is in $\cP$, so testing satisfiability is solvable in polynomial time. But the assumption doesn't say how this test is done, and the test may not reveal satisfying assignments. You must show that you can find them anyway. Hint: Use the satisfiability tester repeatedly to find the assignment bit-by-bit.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} $\SAT$ is self-reducible: a satisfying assignment can be recovered from a decision oracle by trying each variable's two possible values in turn. If $\cP=\NP$ then that oracle runs in polynomial time.
+
+Assume $\cP=\NP$. Then $\SAT\in\cP$, so some TM $D$ decides $\SAT$ in polynomial time. The following algorithm $F$ computes a satisfying assignment of a satisfiable formula, and reports that the input is unsatisfiable otherwise.
+
+$F=$ ``On input $\phi$ with variables $x_1,\ldots,x_m$:
+\begin{enumerate}
+\item Run $D$ on $\phi$. If $D$ rejects, output \emph{unsatisfiable} and halt.
+\item For $i=1$ to $m$:
+\item \quad Let $\phi_1$ be $\phi$ with $x_i$ replaced by $1$. Run $D$ on $\phi_1$.
+\item \quad If $D$ accepts, permanently substitute $x_i=1$ in $\phi$; otherwise permanently substitute $x_i=0$.
+\item Output the assignment $x_1,\ldots,x_m$ obtained.''
+\end{enumerate}
+
+\textbf{Correctness.}
+If $\phi$ is unsatisfiable, stage~1 stops. If $\phi$ is satisfiable, then at every $i$ at least one of the two substitutions for $x_i$ leaves a satisfiable formula (any satisfying assignment of the current $\phi$ uses one of the two bits). Stage~3 tests the bit $1$ first; if that fails, the bit $0$ must work. After $m$ substitutions the formula contains no variables and is true, so the recorded bits satisfy the original $\phi$.
+
+\textbf{Running time.}
+$F$ calls $D$ at most $m+1$ times, each time on a formula no longer than $\phi$. Since $m\le\lvert\phi\rvert$ and $D$ is polynomial-time, $F$ is polynomial-time.
+\end{soln}
+
+\begin{question}{Problem 7.39 $\bigstar$}
+Show that if $\cP=\NP$, you can factor integers in polynomial time. (See the note in Problem~7.38.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} Factoring is the search version of an NP decision problem: ``does $a$ have a factor in the interval $[b,c]$?'' If $\cP=\NP$, binary search on that interval finds a factor, and repeating yields the complete factorization. All integers are binary, so the number of probes is logarithmic in $a$, i.e.\ linear in the input length.
+
+Let
+\[
+F=\{\enc{a,b,c}\mid a,b,c\text{ are binary integers and $a$ has a divisor $p$ with }b\le p\le c\}.
+\]
+A certificate is the divisor $p$. The verifier checks $b\le p\le c$ and $p\mid a$ by integer division, in time polynomial in the bit-lengths. Thus $F\in\NP$. If $\cP=\NP$, some TM $D$ decides $F$ in polynomial time.
+
+To factor a binary integer $a>1$:
+\begin{enumerate}
+\item If $\enc{a,2,a-1}\notin F$ (one call to $D$), then $a$ is prime; output $a$ and halt.
+\item Binary-search the interval $[2,a-1]$ for a factor: while $b<c$, let $m=\lfloor(b+c)/2\rfloor$ and test $\enc{a,b,m}\in F$. If yes, set $c\leftarrow m$; else set $b\leftarrow m+1$. The final $b$ is a factor $p$ of $a$.
+\item Recursively factor $p$ and $a/p$, and output the combined list of prime factors.
+\end{enumerate}
+
+\textbf{Time.}
+Each binary search makes $O(\log a)=O(n)$ calls to $D$, where $n$ is the bit-length of $a$. Each call is polynomial in $n$. An integer of bit-length $n$ has at most $n$ prime factors counting multiplicity, so there are $O(n)$ searches. Division of $n$-bit integers is polynomial. The whole procedure is therefore polynomial in $n$.
+\end{soln}
+
+\begin{question}{Problem 7.40 $\bigstar$}
+Show that if $\cP=\NP$, a polynomial time algorithm exists that takes an undirected graph as input and finds a largest clique contained in that graph. (See the note in Problem~7.38.)
+\end{question}
+\begin{soln}
+\textbf{Idea.} If $\cP=\NP$ then the decision problem $\CLIQUE$ is in $\cP$. First learn the size $t$ of a maximum clique by trying $k=1,2,\ldots,n$; then delete vertices that are not needed to keep a $t$-clique.
+
+Assume $\cP=\NP$. Corollary~7.43 says $\CLIQUE$ is NP-complete, so $\CLIQUE\in\cP$: we can test in polynomial time whether a graph contains a clique of any given size $k$.
+
+$F=$ ``On input $\enc{G}$, where $G$ has $n$ nodes:
+\begin{enumerate}
+\item For $k=n,n-1,\ldots,1$, test whether $\enc{G,k}\in\CLIQUE$. Let $t$ be the largest such $k$ (or $t=0$ if $G$ has no nodes).
+\item Set $H\leftarrow G$.
+\item For each node $x$ of $G$, in any order:
+\item \quad Let $H'$ be $H$ with $x$ (and its incident edges) removed.
+\item \quad Test whether $\enc{H',t}\in\CLIQUE$. If yes, set $H\leftarrow H'$ (drop $x$ permanently); if no, leave $x$ in $H$.
+\item Output the node set of $H$.''
+\end{enumerate}
+
+\textbf{Correctness.}
+Stage~1 returns $t=\omega(G)$, the clique number. The invariant of the loop is ``$H$ still has a $t$-clique''. If removing $x$ drops the clique number below $t$, then every $t$-clique of the current $H$ uses $x$, so $x$ is kept. When every node has been considered, every remaining node is indispensable for a $t$-clique, and the invariant says a $t$-clique still exists, so the remaining nodes form a $t$-clique.
+
+\textbf{Time.}
+At most $n$ tests in stage~1 and $n$ tests in the loop, each a polynomial-time $\CLIQUE$ query on a graph no larger than $G$. Thus $F$ is polynomial-time.
+
+(This is the algorithm in the book's Selected Solutions.)
+\end{soln}
+
+\begin{question}{Problem 7.41}
+In the proof of the Cook--Levin theorem, a window is a $2\times 3$ rectangle of cells. Show why the proof would have failed if we had used $2\times 2$ windows instead.
+\end{question}
+\begin{soln}
+\textbf{Idea.} A $2\times 3$ window can place the state symbol in its upper centre, so it sees both neighbouring tape cells and can enforce a single legal transition. A $2\times 2$ window cannot; two overlapping $2\times 2$ windows may each look legal for a different head move, and together they let the head ``split''.
+
+Recall Claim~7.41 in the proof of Theorem~7.37: if the top row of the tableau is the start configuration and every $2\times 3$ window is legal, then each row legally follows the preceding one. The argument uses that the unique window whose upper centre cell holds the state symbol covers three consecutive cells---the cell to the left of the head, the state, and the scanned symbol---and therefore updates those three positions according to a single transition.
+
+With $2\times 2$ windows there is no centre cell. The following two-row fragment can have every $2\times 2$ window legal while failing to be a legal successor configuration:
+\begin{center}
+\begin{tikzpicture}[scale=0.85]
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (t0) at (0,1.3) {$a$};
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (t1) at (1.2,1.3) {$q$};
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (t2) at (2.4,1.3) {$b$};
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (b0) at (0,0) {$q_L$};
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (b1) at (1.2,0) {$a$};
+  \node[draw,minimum size=8.2mm,inner sep=1pt] (b2) at (2.4,0) {$q_R$};
+  \draw[thick,blue!60!black] ($(t0.north west)+(-0.12,0.12)$) rectangle ($(b1.south east)+(0.12,-0.12)$);
+  \draw[thick,red!70!black,dashed] ($(t1.north west)+(-0.12,0.12)$) rectangle ($(b2.south east)+(0.12,-0.12)$);
+  \node[lab,blue!60!black,left] at ($(t0.west)+(-0.25, -0.65)$) {left\\$2\times 2$};
+  \node[lab,red!70!black,right] at ($(t2.east)+(0.25,-0.65)$) {right\\$2\times 2$};
+\end{tikzpicture}
+\end{center}
+The left window is legal for a left-moving transition on $q$ reading $a$; the right window is legal for a right-moving transition on $q$ reading $b$. (Nondeterminism of $N$ may make both transitions available.) The bottom row then contains two state symbols---a head split---which is not a configuration at all. The $2\times 3$ window whose upper centre is $q$ would see both bottom states and be illegal (as in Figure~7.40(c) of the book). So legality of all $2\times 2$ windows does not imply that the tableau is a valid computation, and $\phi_{\mathrm{move}}$ would accept illegal tableaux.
+\end{soln}
+
+\begin{question}{Problem 7.42 $\bigstar$}
+Consider the algorithm $\mathit{MINIMIZE}$, which takes a DFA $M$ as input and outputs DFA $M'$.
+\[
+\begin{array}{@{}l@{}}
+\mathit{MINIMIZE}=\text{``On input $\enc{M}$, where $M=(Q,\Sigma,\delta,q_0,A)$ is a DFA:''}
+\end{array}
+\]
+\begin{enumerate}
+\item Remove all states of $M$ that are unreachable from the start state.
+\item Construct the following undirected graph $G$ whose nodes are the states of $M$.
+\item Place an edge in $G$ connecting every accept state with every nonaccept state. Add additional edges as follows.
+\item Repeat until no new edges are added to $G$:
+\item \quad For every pair of distinct states $q$ and $r$ of $M$ and every $a\in\Sigma$:
+\item \quad\quad Add the edge $(q,r)$ to $G$ if $(\delta(q,a),\delta(r,a))$ is an edge of $G$.
+\item For each state $q$, let $[q]$ be the collection of states $[q]=\{r\in Q\mid$ no edge joins $q$ and $r$ in $G\}$.
+\item Form a new DFA $M'=(Q',\Sigma,\delta',q_0',A')$ where
+$Q'=\{[q]\mid q\in Q\}$ (if $[q]=[r]$, only one of them is in $Q'$),
+$\delta'([q],a)=[\delta(q,a)]$ for every $q\in Q$ and $a\in\Sigma$,
+$q_0'=[q_0]$, and
+$A'=\{[q]\mid q\in A\}$.
+\item Output $\enc{M'}$.
+\end{enumerate}
+\begin{enumerate}[label=\alph*.]
+\item Show that $M$ and $M'$ are equivalent.
+\item Show that $M'$ is minimal---that is, no DFA with fewer states recognizes the same language. You may use the result of Problem~1.52 without proof.
+\item Show that $\mathit{MINIMIZE}$ operates in polynomial time.
+\end{enumerate}
+\end{question}
+\begin{soln}
+Let $n=\lvert Q\rvert$ after stage~1. The graph $G$ records distinguishable pairs: an edge means the two states disagree on some string.
+
+\textbf{(a) Equivalence.}
+\textbf{Idea.} Edges of $G$ are exactly the distinguishable pairs, so each block $[q]$ is a class of indistinguishable states, and merging them preserves the language.
+
+We claim: $(q,r)$ is an edge of $G$ iff there is a string $z$ such that exactly one of $\delta(q,z)$ and $\delta(r,z)$ is accepting. ($\delta$ is extended to strings in the usual way.)
+
+($\Rightarrow$) By induction on when the edge was added. Initial edges (stage~3) are distinguished by $\eps$. If $(q,r)$ is added because $(\delta(q,a),\delta(r,a))$ is already an edge, the inductive string $y$ for that pair yields the distinguisher $ay$.
+
+($\Leftarrow$) By induction on $\lvert z\rvert$. If $z=\eps$, stage~3 put the edge. If $z=ay$, the states $\delta(q,a)$ and $\delta(r,a)$ are distinguished by $y$, so they are joined by an edge, and stage~6 joins $q$ and $r$.
+
+Consequently there is no edge inside a block $[q]$: all states in $[q]$ are indistinguishable. In particular $\delta'$ is well-defined: if $[q]=[r]$ then for every $a$ there is no edge between $\delta(q,a)$ and $\delta(r,a)$, hence $[\delta(q,a)]=[\delta(r,a)]$. Also $A'$ is well-defined: a block cannot mix accept and nonaccept states.
+
+On any input $w$, $M$ occupies a state $q$ iff $M'$ occupies $[q]$ (induction on $\lvert w\rvert$). Thus $M$ accepts $w$ iff $M'$ does, so $L(M)=L(M')$.
+
+\textbf{(b) Minimality.}
+By Problem~1.52 the index of $L=L(M)$ equals the number of states of a smallest DFA for $L$. The reachable states of $M'$ (all of $Q'$, by stage~1) are pairwise distinguishable: if $[q]\ne[r]$ then $G$ has an edge, so some $z$ distinguishes $q$ from $r$, and the same $z$ distinguishes $[q]$ from $[r]$ in $M'$. Taking, for each class $[q]$, a string that leads $M$ (hence $M'$) to that class, we obtain a set of $\lvert Q'\rvert$ strings that is pairwise distinguishable by $L$. So the index of $L$ is at least $\lvert Q'\rvert$. Combined with part~(a) of Problem~1.52, the index equals $\lvert Q'\rvert$, and $M'$ is a smallest DFA for $L$.
+
+\textbf{(c) Polynomial time.}
+Stage~1 is a graph search from $q_0$, $O(n^2\lvert\Sigma\rvert)$ time. The graph $G$ has $n$ nodes and at most $\binom{n}{2}$ edges. The loop of stages~4--6 adds at least one edge per successful iteration, so it runs $O(n^2)$ times. Each iteration inspects $O(n^2\lvert\Sigma\rvert)$ triples $(q,r,a)$. Stages~7--8 scan $G$ once. All of this is polynomial in $\enc{M}$.
+\end{soln}
+
+\begin{question}{Problem 7.43}
+For a cnf-formula $\phi$ with $m$ variables and $c$ clauses, show that you can construct in polynomial time an NFA with $O(cm)$ states that accepts all nonsatisfying assignments, represented as Boolean strings of length $m$. Conclude that $\cP\neq\NP$ implies that NFAs cannot be minimized in polynomial time.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Guess which clause fails, then read the $m$-bit assignment and accept iff every literal of that clause is false. If this NFA could be minimized in polynomial time we could decide $\SAT$ by checking whether the result is the unique $(m+1)$-state chain for $\{0,1\}^m$.
+
+Index the variables $x_1,\ldots,x_m$ and the clauses $C_1,\ldots,C_c$. Build an NFA $N$ over $\{0,1\}$ with a start state $q_0$ and, for each clause $C_i$, a chain $q_{i,1},\ldots,q_{i,m}$. The accept states are $\{q_{i,m}\mid 1\le i\le c\}$. For each clause $C_i$ and each position $j=1,\ldots,m$, put a $b$-transition along the $i$-th chain for those bits $b\in\{0,1\}$ consistent with falsifying $C_i$:
+\begin{itemize}
+\item if $x_j$ occurs positively in $C_i$, only $b=0$ (need $x_j$ false);
+\item if $\overline{x_j}$ occurs in $C_i$, only $b=1$;
+\item if $x_j$ does not occur in $C_i$, both $b=0$ and $b=1$.
+\end{itemize}
+The first-bit transitions leave $q_0$ and enter $q_{i,1}$; later bits run $q_{i,j-1}\to q_{i,j}$. No other transitions. Then $N$ has $1+cm=O(cm)$ states and is constructible in polynomial time. A string $w\in\{0,1\}^m$ is accepted iff some clause-path is followed to the end iff $w$ falsifies that clause. Strings of length other than $m$ are rejected. So $L(N)$ is exactly the set of nonsatisfying assignments of $\phi$.
+
+\textbf{Minimization.}
+$\phi$ is unsatisfiable iff $L(N)=\{0,1\}^m$. The unique $m+1$-state NFA for $\{0,1\}^m$ (no shorter string accepted, every $m$-bit string accepted) is the chain $p_0,p_1,\ldots,p_m$ with both labels $0,1$ from $p_j$ to $p_{j+1}$, start $p_0$, and only $p_m$ accepting. If a polynomial-time NFA-minimizer existed, we would compute a smallest NFA $N'$ equivalent to $N$ and check, in polynomial time, whether $N'$ is isomorphic to that chain (order the states by distance from the start and test the transitions). That decides unsatisfiability of $\phi$, hence $\SAT\in\cP$, hence $\cP=\NP$ by Theorem~7.27. Therefore $\cP\neq\NP$ implies that NFAs cannot be minimized in polynomial time.
+\end{soln}
+
+\begin{question}{Problem 7.44 $\bigstar$}
+A \emph{2cnf-formula} is an AND of clauses, where each clause is an OR of at most two literals. Let $\mathrm{2SAT}=\{\enc{\phi}\mid\phi$ is a satisfiable 2cnf-formula$\}$. Show that $\mathrm{2SAT}\in\cP$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Rewrite each binary clause as two implications and build the implication graph. The formula is satisfiable iff no variable is forced to be equivalent to its negation, which is a collection of $\PATHL$ queries (Theorem~7.14).
+
+Let $\phi$ have variables $x_1,\ldots,x_m$. Construct a directed graph $G$ with $2m$ nodes, one for each literal $x_i$ and $\overline{x_i}$. For every clause, add the two implication edges:
+\begin{itemize}
+\item $(x\lor y)$ gives $\overline{x}\to y$ and $\overline{y}\to x$;
+\item $(x)$ gives $\overline{x}\to x$;
+\item $(\overline{x})$ gives $x\to\overline{x}$.
+\end{itemize}
+The graph has $O(m)$ nodes and $O(\lvert\phi\rvert)$ edges and is built in polynomial time.
+
+\begin{center}
+\begin{tikzpicture}[tm, node distance=2.1cm]
+  \node[state] (nx) {$\overline{x}$};
+  \node[state, right=of nx] (y) {$y$};
+  \node[state, below=1.15cm of nx] (ny) {$\overline{y}$};
+  \node[state, right=of ny] (x) {$x$};
+  \draw[->] (nx) -- (y);
+  \draw[->] (ny) -- (x);
+  \node[lab, above=0.05cm of y] {clause $(x\lor y)$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{Claim.} $\phi$ is satisfiable iff $G$ contains no path from $x_i$ to $\overline{x_i}$ together with a path from $\overline{x_i}$ to $x_i$, for any $i$.
+
+If both paths exist, the implications yield $x_i\leftrightarrow\overline{x_i}$, which is contradictory, so $\phi$ is unsatisfiable.
+
+Conversely, suppose no such pair of paths exists. Build an assignment as follows. While some variable is unassigned, pick a literal $\ell$ among the remaining ones such that there is no path $\ell\to\overline{\ell}$ (at least one of $\ell,\overline{\ell}$ has this property). Assign TRUE to $\ell$ and to every literal reachable from $\ell$, and FALSE to their complements. This never assigns both a literal and its complement TRUE: a path $\ell\to a$ and $\ell\to\overline{a}$ would give a path $\ell\to\overline{\ell}$ (using the observation that $G$ always contains $u\to v$ iff it contains $\overline{v}\to\overline{u}$). Repeat until every variable is set. Every implication edge is respected, so every clause is satisfied.
+
+\textbf{Time.}
+For each of the $m$ variables, run the polynomial-time algorithm of Theorem~7.14 twice, on $\enc{G,x_i,\overline{x_i}}$ and $\enc{G,\overline{x_i},x_i}$. Accept iff no pair both return yes. This decides $\mathrm{2SAT}$ in polynomial time.
+\end{soln}
+
+\begin{question}{Problem 7.45}
+Modify the algorithm for context-free language recognition in the proof of Theorem~7.16 to give a polynomial time algorithm that produces a parse tree for a string, given the string and a CFG, if that grammar generates the string.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Keep CYK's $O(n^3)$ table, but store a witness (split point and rule) whenever a variable is added, then reconstruct the tree from the witnesses.
+
+Assume $G$ is in Chomsky normal form (the conversion is polynomial). On input $w=w_1\cdots w_n$, run the algorithm $D$ of Theorem~7.16, with one extra record: whenever stage~11 places $A$ in $\mathrm{table}(i,j)$ because $B\in\mathrm{table}(i,k)$, $C\in\mathrm{table}(k+1,j)$, and $A\to BC$ is a rule, store the witness $(k,B,C)$ for that pair $(A,i,j)$ (keep the first witness if several exist). For length-$1$ cells, store the rule $A\to w_i$.
+
+If $S\notin\mathrm{table}(1,n)$, output that $G$ does not generate $w$. Otherwise call $\mathrm{Build}(S,1,n)$, where
+\begin{enumerate}
+\item $\mathrm{Build}(A,i,i)$ returns a one-node tree with rule $A\to w_i$;
+\item $\mathrm{Build}(A,i,j)$ for $i<j$ looks up a witness $(k,B,C)$ and returns a root labelled $A$ whose two subtrees are $\mathrm{Build}(B,i,k)$ and $\mathrm{Build}(C,k+1,j)$.
+\end{enumerate}
+A CNF derivation of a length-$n$ string has $2n-1$ nodes, so reconstruction is $O(n)$. Filling the table is still $O(n^3)$ stages, as in Theorem~7.16. The output tree is a valid parse tree of $w$ from $G$.
+\end{soln}
+
+\begin{question}{Problem 7.46}
+Say that two Boolean formulas are \emph{equivalent} if they have the same set of variables and are true on the same set of assignments to those variables (i.e., they describe the same Boolean function). A Boolean formula is \emph{minimal} if no shorter Boolean formula is equivalent to it. Let $\mathrm{MIN\text{-}FORMULA}$ be the collection of minimal Boolean formulas. Show that if $\cP=\NP$, then $\mathrm{MIN\text{-}FORMULA}\in\cP$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Non-minimality has a short witness---a strictly smaller equivalent formula---once formula-equivalence is in $\cP$. If $\cP=\NP$ then $\NP=\coNP=\cP$, so equivalence is in $\cP$ and we can guess-and-check a smaller formula in $\cP$.
+
+Assume $\cP=\NP$. Then $\NP=\coNP=\cP$. The language
+\[
+\mathrm{NEQ}=\{\enc{\phi,\psi}\mid\phi\text{ and }\psi\text{ are inequivalent Boolean formulas}\}
+\]
+is in $\NP$: guess an assignment to the common variables and evaluate both formulas. Hence $\mathrm{NEQ}\in\cP$, and its complement $\mathrm{EQ}$ (equivalence of well-formed formulas) is in $\cP$ as well.
+
+Let
+\[
+\mathrm{NOT\text{-}MIN}=\{\enc{\phi}\mid\text{some well-formed $\psi$ with $\lvert\psi\rvert<\lvert\phi\rvert$ is equivalent to $\phi$}\}.
+\]
+A certificate is such a $\psi$. The verifier checks that $\psi$ is a well-formed formula, that $\lvert\psi\rvert<\lvert\phi\rvert$, and that $\enc{\phi,\psi}\in\mathrm{EQ}$. All three checks are polynomial, so $\mathrm{NOT\text{-}MIN}\in\NP=\cP$.
+
+Well-formedness of Boolean formulas is in $\cP$, and
+\[
+\mathrm{MIN\text{-}FORMULA}
+=\{\enc{\phi}\mid\phi\text{ is well-formed}\}\setminus\mathrm{NOT\text{-}MIN}.
+\]
+The class $\cP$ is closed under complement and intersection (Exercise~7.6), so $\mathrm{MIN\text{-}FORMULA}\in\cP$.
+\end{soln}
+
+\begin{question}{Problem 7.47}
+The \emph{difference hierarchy} $\mathrm{D}_i\mathrm{P}$ is defined recursively as
+\begin{enumerate}[label=\alph*.]
+\item $\mathrm{D}_1\mathrm{P}=\NP$ and
+\item $\mathrm{D}_i\mathrm{P}=\{A\mid A=B\setminus C$ for $B$ in $\NP$ and $C$ in $\mathrm{D}_{i-1}\mathrm{P}\}$.
+\end{enumerate}
+(Here $B\setminus C=B\cap\comp{C}$.)
+For example, a language in $\mathrm{D}_2\mathrm{P}$ is the difference of two $\NP$ languages. Sometimes $\mathrm{D}_2\mathrm{P}$ is called $\DP$ (and may be written $\mathrm{D}^{\mathrm{P}}$). Let
+\[
+Z=\{\enc{G_1,k_1,G_2,k_2}\mid G_1\text{ has a $k_1$-clique and $G_2$ doesn't have a $k_2$-clique}\}.
+\]
+Show that $Z$ is complete for $\DP$. In other words, show that $Z$ is in $\DP$ and every language in $\DP$ is polynomial time reducible to $Z$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} $Z$ is ``yes-clique on $G_1$ and no-clique on $G_2$'', the difference of two NP languages. For hardness, reduce each of the two NP parts of an arbitrary $\DP$ language to $\CLIQUE$ separately and pair the answers.
+
+\textbf{$Z\in\DP$.}
+Let
+\begin{align*}
+B&=\{\enc{G_1,k_1,G_2,k_2}\mid G_1\text{ has a $k_1$-clique}\},\\
+C&=\{\enc{G_1,k_1,G_2,k_2}\mid G_2\text{ has a $k_2$-clique}\}.
+\end{align*}
+Both are in $\NP$ (the clique is the certificate; the unused graph is ignored). Then $Z=B\setminus C$, so $Z\in\mathrm{D}_2\mathrm{P}=\DP$.
+
+\textbf{Every language in $\DP$ reduces to $Z$.}
+Let $A\in\DP$, so $A=A_1\setminus A_2$ with $A_1,A_2\in\NP$. Corollary~7.43: $\CLIQUE$ is NP-complete, so there are polynomial-time reductions $f_1,f_2$ with
+\[
+w\in A_1\iff f_1(w)=\enc{G_1,k_1}\in\CLIQUE,
+\quad
+w\in A_2\iff f_2(w)=\enc{G_2,k_2}\in\CLIQUE.
+\]
+Define $f(w)=\enc{G_1,k_1,G_2,k_2}$. Then $f$ is polynomial-time computable, and
+\begin{align*}
+w\in A
+&\iff w\in A_1\text{ and }w\notin A_2\\
+&\iff G_1\text{ has a $k_1$-clique and }G_2\text{ has no $k_2$-clique}\\
+&\iff f(w)\in Z.
+\end{align*}
+Thus $A\redp Z$. Therefore $Z$ is $\DP$-complete.
+\end{soln}
+
+\begin{question}{Problem 7.48 $\bigstar$}
+Let $\mathrm{MAX\text{-}CLIQUE}=\{\enc{G,k}\mid$ a largest clique in $G$ is of size exactly $k\}$. Use the result of Problem~7.47 to show that $\mathrm{MAX\text{-}CLIQUE}$ is $\DP$-complete.
+\end{question}
+\begin{soln}
+\textbf{Idea.} ``Maximum clique size is exactly $k$'' means ``has a $k$-clique and has no $(k+1)$-clique'', so the language is in $\DP$. For hardness, pad $G_1$ and $G_2$ so that the two clique/non-clique conditions of $Z$ become a single exact clique number.
+
+\textbf{Membership.}
+Let $B=\{\enc{G,k}\mid G$ has a $k$-clique$\}\in\NP$ and $C=\{\enc{G,k}\mid G$ has a $(k+1)$-clique$\}\in\NP$. Then $\mathrm{MAX\text{-}CLIQUE}=B\setminus C$, so it is in $\DP$.
+
+\textbf{Hardness.}
+Reduce $Z$ to $\mathrm{MAX\text{-}CLIQUE}$. Three polynomial-time graph operations:
+\begin{itemize}
+\item $G+\ell$: add a clique of $\ell$ new nodes, each joined to every node of $G$ and to each other. Then $\omega(G+\ell)=\omega(G)+\ell$.
+\item $2\times G$: replace each node by two adjacent copies, and each edge $uv$ by the four edges among the copies. Then $\omega(2\times G)=2\,\omega(G)$.
+\item $G*b$: replace each node $x$ by $b$ independent copies $x_1,\ldots,x_b$; for each edge $xy$ of $G$, put edges $(x_i,y_j)$ for all $i\neq j$. The copies with a fixed index form an independent set, so the graph is $b$-partite and $\omega(G*b)\le b$. A $k$-clique of $G$ with $k\le b$ lifts by giving its vertices distinct indices, so $\omega(G*b)=\min\bigl(b,\omega(G)\bigr)$.
+\end{itemize}
+
+On input $\enc{G_1,k_1,G_2,k_2}$, write $n_i=\lvert V(G_i)\rvert$. Integers $k_i$ are binary, so first dispose of trivial size comparisons in $O(1)$ arithmetic:
+\begin{itemize}
+\item if $k_1>n_1$, then $G_1$ has no $k_1$-clique: output a fixed no-instance, e.g.\ $\enc{K_1,0}$;
+\item if $k_2=0$, every graph has a $0$-clique: same no-instance;
+\item if $k_2>n_2$, then $G_2$ has no $k_2$-clique, so the instance is in $Z$ iff $G_1$ has a $k_1$-clique: output $\enc{G_1*k_1,\,k_1}$ (using $k_1\le n_1$).
+\end{itemize}
+Now $0\le k_1\le n_1$ and $1\le k_2\le n_2$ (for $k_1=0$, $G_1*0$ is the empty graph with $\omega=0$), and the following graphs have size polynomial in the input. Set
+\begin{enumerate}
+\item $H_1=G_1*k_1$, so $\omega(H_1)=k_1$ if $G_1$ has a $k_1$-clique, and $\omega(H_1)\le k_1-1$ otherwise;
+\item $H_2=G_2*k_2$, so $\omega(H_2)=k_2$ if $G_2$ has a $k_2$-clique, and $\omega(H_2)\le k_2-1$ otherwise;
+\item $J_1=H_1+2k_2$, so $\omega(J_1)=k_1+2k_2$ iff $G_1$ has a $k_1$-clique, else $\omega(J_1)\le k_1+2k_2-1$;
+\item $J_2=(2\times H_2)+(k_1+1)$, so $\omega(J_2)=k_1+2k_2+1$ if $G_2$ has a $k_2$-clique, and $\omega(J_2)\le k_1+2k_2-1$ otherwise;
+\item $K=$ the disjoint union of $J_1$ and $J_2$ (no edges between them), and $t=k_1+2k_2$.
+\end{enumerate}
+Then $\omega(K)=\max(\omega(J_1),\omega(J_2))$. Checking the four combinations:
+\begin{itemize}
+\item $G_1$ has a $k_1$-clique and $G_2$ has none: $\omega(J_1)=t$, $\omega(J_2)\le t-1$, so $\omega(K)=t$;
+\item $G_1$ has a $k_1$-clique and $G_2$ has a $k_2$-clique: $\omega(K)=t+1$;
+\item $G_1$ has no $k_1$-clique and $G_2$ has none: $\omega(K)\le t-1$;
+\item $G_1$ has no $k_1$-clique and $G_2$ has a $k_2$-clique: $\omega(K)=t+1$.
+\end{itemize}
+Hence $\enc{G_1,k_1,G_2,k_2}\in Z$ iff $\enc{K,t}\in\mathrm{MAX\text{-}CLIQUE}$. The construction is polynomial. Thus $Z\redp\mathrm{MAX\text{-}CLIQUE}$. Together with Problem~7.47, $\mathrm{MAX\text{-}CLIQUE}$ is $\DP$-complete.
+\end{soln}
+
+\begin{question}{Problem 7.49 $\bigstar$}
+Let $f:\mathbb{N}\to\mathbb{N}$ be any function where $f(n)=o(n\log n)$. Show that $\TIME(f(n))$ contains only the regular languages.
+\end{question}
+\begin{soln}
+\textbf{Idea.} On a single-tape TM (Definition~7.7), time $o(n\log n)$ forces every tape boundary to be crossed only $O(1)$ times. A machine with bounded crossing sequences is essentially a two-way DFA, hence recognizes a regular language. (The bound $n\log n$ is tight: $\{0^k1^k\}$ is in $\TIME(O(n\log n))$ and is not regular.)
+
+Let $M$ be a single-tape TM deciding a language $A$ in time $f(n)=o(n\log n)$, with state set $Q$, $\lvert Q\rvert=q$. For an input $w=\#w_1\cdots w_n\#$ imagine a boundary between every pair of adjacent cells. The \emph{crossing sequence} at a boundary is the sequence of states $M$ occupies each time the head crosses that boundary. Each step of $M$ contributes to at most one crossing sequence, so the sum of the lengths of all crossing sequences is at most $f(n)$.
+
+\textbf{Claim.} There is a constant $c$ such that on every input, every crossing sequence has length at most $c$.
+
+Suppose not. Then for arbitrarily large $k$ some input has a crossing sequence of length $\ge k$. Let $w$ be a \emph{shortest} input on which some boundary $i^*$ has crossing-sequence length at least $k$, and write $n=\lvert w\rvert$. The average crossing-sequence length is $o(\log n)$, so at least $n/2$ boundaries have crossing sequences of length $o(\log n)$. The number of distinct sequences of length at most $\alpha\log n$ is at most $q^{O(\alpha\log n)}=n^{O(\alpha\log q)}$. Choosing $\alpha$ small enough makes this $<n/6$ for large $n$, so two short crossing sequences that lie on the \emph{same} side of $i^*$ are identical, at positions $a<b$. Delete the substring of $w$ strictly between $a$ and $b$. The computation on the shortened string is the original computation with the excursion between $a$ and $b$ spliced out (same crossing sequence), so the long crossing sequence at $i^*$ survives, contradicting shortness of $w$. For $n$ too small to run the pigeonhole argument, $k\le f(n)$ is bounded. Thus a global bound $c$ exists.
+
+\textbf{Regularity.}
+With all crossing sequences of length $\le c$, only finitely many sequences $\sigma$ occur. Build an NFA $N$ whose states are those sequences. On reading an input symbol $a$ in ``state'' $\sigma$ (the crossing sequence on the left of the current cell), $N$ moves to a sequence $\tau$ iff there is a finite local computation of $M$ on a single cell containing $a$ that is consistent with entering/leaving the cell according to $\sigma$ on the left and $\tau$ on the right. (This local check is a finite table, because a cell is entered at most $c$ times.) $N$ accepts iff the guessed sequence of crossing sequences is locally consistent, starts with the unique sequence at the left end of a start configuration, and is compatible with $M$ accepting. Then $L(N)=L(M)=A$, so $A$ is regular.
+
+Therefore every language in $\TIME(f(n))$ is regular.
+\end{soln}
+
+\begin{question}{Problem 7.50 $\bigstar$}
+Call a regular expression \emph{star-free} if it does not contain any star operations. Then let $\mathit{EQ}_{\mathrm{SF\text{-}REX}}=\{\enc{R,S}\mid R$ and $S$ are equivalent star-free regular expressions$\}$. Show that $\mathit{EQ}_{\mathrm{SF\text{-}REX}}$ is in $\coNP$. Why does your argument fail for general regular expressions?
+\end{question}
+\begin{soln}
+\textbf{Idea.} A star-free expression generates only strings no longer than itself, so inequivalence has a short witness. General expressions can first disagree on an exponentially long string.
+
+A star-free expression uses only symbols, $\cup$, concatenation, and parentheses. By induction on the expression, every string in $L(R)$ has length at most the number of alphabet symbols written in $R$. Thus if $L(R)\neq L(S)$, some string $w$ of length at most $\max(\lvert R\rvert,\lvert S\rvert)$ lies in exactly one of the two languages.
+
+To place $\mathit{EQ}_{\mathrm{SF\text{-}REX}}$ in $\coNP$, show that its complement is in $\NP$:
+\begin{enumerate}
+\item On input $\enc{R,S}$, if $R$ or $S$ is not a star-free regular expression, accept (the pair is not in the language).
+\item Convert $R$ and $S$ to NFAs $N_R$ and $N_S$ by the standard construction (linear in the expression size).
+\item Nondeterministically guess a string $w$ of length at most $\max(\lvert R\rvert,\lvert S\rvert)$.
+\item Simulate both NFAs on $w$ by maintaining the set of possible states (time $O(q\lvert w\rvert)$). Accept iff exactly one of them accepts $w$.
+\end{enumerate}
+This is a polynomial-time NTM for the complement, so $\mathit{EQ}_{\mathrm{SF\text{-}REX}}\in\coNP$.
+
+\textbf{Why it fails in general.}
+For unrestricted regular expressions the shortest string in the symmetric difference of $L(R)$ and $L(S)$ may be exponential in $\lvert R\rvert+\lvert S\rvert$ (e.g.\ $(0\cup 1)^n$ versus that expression with one extra forbidden word of length $n$). A witness $w$ need not have polynomial length, so the same certificate argument does not place inequivalence in $\NP$.
+\end{soln}
+
+\begin{question}{Problem 7.51 $\bigstar$}
+This problem investigates \emph{resolution}, a method for proving the unsatisfiability of cnf-formulas. Let $\phi=C_1\land C_2\land\cdots\land C_m$ be a formula in cnf, where the $C_i$ are its clauses. Let $\mathcal{C}=\{C_i\mid C_i$ is a clause of $\phi\}$. In a resolution step, we take two clauses $C_a$ and $C_b$ in $\mathcal{C}$, which both have some variable $x$ occurring positively in one of the clauses and negatively in the other. Thus $C_a=(x\lor y_1\lor y_2\lor\cdots\lor y_k)$ and $C_b=(\overline{x}\lor z_1\lor z_2\lor\cdots\lor z_l)$, where the $y_i$ and $z_i$ are literals. We form the new clause $(y_1\lor y_2\lor\cdots\lor y_k\lor z_1\lor z_2\lor\cdots\lor z_l)$ and remove repeated literals. Add this new clause to $\mathcal{C}$. Repeat the resolution steps until no additional clauses can be obtained. If the empty clause $()$ is in $\mathcal{C}$, then declare $\phi$ unsatisfiable.
+
+Say that resolution is \emph{sound} if it never declares satisfiable formulas to be unsatisfiable. Say that resolution is \emph{complete} if all unsatisfiable formulas are declared to be unsatisfiable.
+\begin{enumerate}[label=\alph*.]
+\item Show that resolution is sound and complete.
+\item Use part~(a) to show that $\mathrm{2SAT}\in\cP$.
+\end{enumerate}
+\end{question}
+\begin{soln}
+\textbf{(a) Soundness.}
+Each resolvent is a logical consequence of the two parent clauses: in any assignment, $x$ is true or false; if $x$ is true then $C_b$ forces a true $z$-literal, and if $x$ is false then $C_a$ forces a true $y$-literal. So every clause added is true in every satisfying assignment of $\phi$. The empty clause is never true. Therefore if the empty clause appears, $\phi$ had no satisfying assignment. Resolution never flags a satisfiable formula.
+
+\textbf{(a) Completeness.}
+We show: if $\phi$ is unsatisfiable, the closure of $\mathcal{C}$ under resolution contains $()$. Proceed by induction on the number $n$ of variables.
+
+If $n=0$, an unsatisfiable cnf is exactly the formula containing $()$ already.
+
+If $n\ge 1$, pick a variable $x$. Let $\psi$ be the formula obtained by performing \emph{all} resolution steps on $x$ (resolving every clause containing $x$ with every clause containing $\overline{x}$) and then deleting every clause that still contains $x$ or $\overline{x}$. The remaining clauses mention only the other $n-1$ variables, and they all appear in the resolution closure of $\phi$.
+
+\textbf{Claim.} If $\phi$ is unsatisfiable then so is $\psi$.
+
+If $\psi$ were satisfiable by an assignment $\alpha$ to the other variables, try extending $\alpha$ by $x=1$. If that satisfies $\phi$ we are done. If not, some clause $(x\lor\alpha_i)$ of $\phi$ has $\alpha_i$ false under $\alpha$. Every resolvent $(\alpha_i\lor\beta_j)$ lies in $\psi$ and is true under $\alpha$, so every $\beta_j$ is true. Setting $x=0$ then satisfies every $(\overline{x}\lor\beta_j)$ and every $(x\lor\alpha_i)$, hence satisfies $\phi$, a contradiction. Thus $\psi$ is unsatisfiable.
+
+By induction, resolution on $\psi$ produces $()$. Those steps are also resolution steps from the closure of $\phi$, so $()$ appears.
+
+\textbf{(b) $\mathrm{2SAT}\in\cP$.}
+In a 2cnf, every clause has at most two literals, and the resolvent of two such clauses has at most two literals. Over $m$ variables there are $O(m^2)$ possible clauses of size at most $2$ (including unit clauses and $()$). Starting from $\phi$, we can therefore add a new clause at most $O(m^2)$ times. Each attempt enumerates pairs of current clauses and a shared variable, which is polynomial. By part~(a) the empty clause appears iff $\phi$ is unsatisfiable. Hence $\mathrm{2SAT}$ is decidable in polynomial time.
+\end{soln}
+
+\begin{question}{Problem 7.52 $\bigstar$}
+Show that $\cP$ is closed under homomorphism iff $\cP=\NP$.
+\end{question}
+\begin{soln}
+\textbf{Idea.} Homomorphisms can hide a satisfying assignment while leaving the formula readable, so the image of a language in $\cP$ can be $\SAT$. Conversely, a nonerasing homomorphism has short preimages, so the image of a language in $\cP$ lies in $\NP$.
+
+A homomorphism is $h:\Sigma\to\Gamma^*$ extended letter by letter to strings (Problem~1.66). \textbf{Convention:} $h$ is \emph{nonerasing}, i.e.\ $h(a)\neq\eps$ for every letter. This is necessary for the statement to be true: with erasing maps $\cP$ is never closed under homomorphism, even if $\cP=\NP$. For example, $\{\enc{M,w}\#c^t\mid M\text{ accepts }w\text{ within }t\text{ steps}\}\in\cP$ (with fresh letters $\#,c$), and erasing $\#$ and $c$ maps it onto the undecidable $\Atm$.
+
+\textbf{If $\cP$ is closed under homomorphism, then $\cP=\NP$.}
+Let
+\[
+\mathrm{SAT\text{-}CHECK}=\{\enc{\phi}\,a\mid a\in\{\mathrm{T},\mathrm{F}\}^m\text{ is a satisfying assignment of $\phi$}\},
+\]
+where $\enc{\phi}$ is written over $\{0,1\}$ and the assignment uses a disjoint alphabet $\{\mathrm{T},\mathrm{F}\}$. Evaluating $\phi$ on $a$ is polynomial, so $\mathrm{SAT\text{-}CHECK}\in\cP$. Define a (nonerasing) homomorphism $h$ by $h(0)=0$, $h(1)=1$, $h(\mathrm{T})=\mathrm{T}$, and $h(\mathrm{F})=\mathrm{T}$. Then
+\[
+h(\mathrm{SAT\text{-}CHECK})=\{\enc{\phi}\,\mathrm{T}^m\mid\phi\in\SAT\}.
+\]
+This language is in $\cP$ iff $\SAT$ is. Closure under $h$ therefore puts $\SAT$ in $\cP$, so $\cP=\NP$ by Theorem~7.27.
+
+\textbf{If $\cP=\NP$, then $\cP$ is closed under homomorphism.}
+Let $A\in\cP$ and let $h$ be a (nonerasing) homomorphism. Then $y\in h(A)$ iff some $x\in A$ has $h(x)=y$. Since every letter maps to a nonempty string, $|x|\le|y|$, so $x$ is a short certificate; checking $h(x)=y$ and $x\in A$ takes polynomial time. Hence $h(A)\in\NP=\cP$.
+\end{soln}
+
+\begin{question}{Problem 7.53 $\bigstar$}
+Let $A\subseteq 1^*$ be any unary language. Show that if $A$ is NP-complete, then $\cP=\NP$. (Hint: Consider a polynomial time reduction $f$ from $\SAT$ to $A$. For a formula $\phi$, let $\phi_{0100}$ be the reduced formula where variables $x_1,x_2,x_3$, and $x_4$ in $\phi$ are set to the values $0,1,0$, and $0$, respectively. What happens when you apply $f$ to all of these exponentially many reduced formulas?)
+\end{question}
+\begin{soln}
+\textbf{Idea.} A reduction $f$ into a unary language can output only polynomially many different strings on inputs of length $n$. Memoizing $\SAT$ queries by the value of $f$ therefore collapses the exponential self-reduction tree of a formula to polynomial size.
+
+Assume $A\subseteq 1^*$ is NP-complete. Then $\SAT\redp A$ via some polynomial-time function $f$, and $\lvert f(\psi)\rvert\le p(\lvert\psi\rvert)$ for a polynomial $p$. Because $A$ is unary, $f(\psi)=1^{s}$ for some $s\le p(\lvert\psi\rvert)$, so $f$ takes at most $p(n)+1$ distinct values on formulas of length $\le n$. Moreover $f(\psi)=f(\psi')$ implies ($\psi\in\SAT$ iff $\psi'\in\SAT$).
+
+For a formula $\phi$ on $x_1,\ldots,x_n$ and a bit-string $s$ of length at most $n$, write $\phi_s$ for $\phi$ with the first $\lvert s\rvert$ variables fixed to the bits of $s$ (the hint's $\phi_{0100}$ is the case $s=0100$). The following recursive procedure, with a table of $f$-values already seen, decides whether $\phi_s$ is satisfiable.
+
+``On input $\phi_s$:
+\begin{enumerate}
+\item If $\lvert s\rvert=n$, evaluate the variable-free formula $\phi_s$ and return the answer.
+\item Compute $u=f(\phi_s)$. If $u$ is already in the table, return the stored satisfiability bit.
+\item Recursively test $\phi_{s0}$ and $\phi_{s1}$. Store that $u$ is satisfiable iff at least one child is, and return that bit.''
+\end{enumerate}
+
+Call the procedure on $\phi_\eps$. Each time stage~3 is reached, a \emph{new} unary string $u$ is written in the table. There are at most $p(\lvert\phi\rvert)+1$ possible values of $u$, so stage~3 runs $O(p(n))$ times. Each run computes $f$ once (polynomial) and makes two recursive calls, each of which either hits the table, hits a leaf, or fills a new table slot. The total number of calls is therefore polynomial in $n$, and each call does polynomial work. The procedure decides $\SAT$ in polynomial time, so $\SAT\in\cP$ and $\cP=\NP$ by Theorem~7.27.
+\end{soln}
+
+\begin{question}{Problem 7.54}
+In a directed graph, the \emph{indegree} of a node is the number of incoming edges and the \emph{outdegree} is the number of outgoing edges. Show that the following problem is NP-complete. Given an undirected graph $G$ and a designated subset $C$ of $G$'s nodes, is it possible to convert $G$ to a directed graph by assigning directions to each of its edges so that every node in $C$ has indegree $0$ or outdegree $0$, and every other node in $G$ has indegree at least $1$?
+\end{question}
+\begin{soln}
+Let $\mathrm{ORIENT}$ be the language of encodings $\enc{G,C}$ where $G$ is undirected, $C\subseteq V(G)$, and some orientation of $G$ makes every node of $C$ a source or a sink and every node outside $C$ have indegree at least $1$.
+
+\textbf{Membership in $\NP$.}
+A certificate is an orientation of the edges (one bit per edge). The verifier computes indegree and outdegree of each node and checks the two conditions, in polynomial time.
+
+\textbf{NP-hardness.}
+Reduce $\threesat$ (Corollary~7.42) to $\mathrm{ORIENT}$. Given a 3cnf-formula $\phi$ with variables $x_1,\ldots,x_m$ and clauses $c_1,\ldots,c_\ell$, build $G$ and $C$ as follows.
+\begin{enumerate}
+\item For each variable $x_i$, add two nodes $x_i$ and $\overline{x_i}$ and the edge $\{x_i,\overline{x_i}\}$. Put both nodes in $C$.
+\item For each clause $c_j$, add a node $v_j\notin C$, and join $v_j$ to the three nodes labelled by the literals of $c_j$.
+\end{enumerate}
+The construction is polynomial. Nodes in $C$ are the literal-nodes; the only nodes outside $C$ are the clause-nodes.
+
+\begin{center}
+\begin{tikzpicture}[every node/.style={font=\small,inner sep=1.2pt}]
+  \node[draw,circle,minimum size=7mm] (xt) at (0,1.55) {$x$};
+  \node[draw,circle,minimum size=7mm] (xf) at (1.7,1.55) {$\bar x$};
+  \node[draw,circle,minimum size=7mm] (yt) at (3.6,1.55) {$y$};
+  \node[draw,circle,minimum size=7mm] (yf) at (5.3,1.55) {$\bar y$};
+  \node[draw,circle,minimum size=7mm] (zt) at (7.2,1.55) {$z$};
+  \node[draw,circle,minimum size=7mm] (zf) at (8.9,1.55) {$\bar z$};
+  \node[draw,circle,minimum size=7mm] (v) at (4.45,-0.15) {$v$};
+  \draw (xt)--(xf);
+  \draw (yt)--(yf);
+  \draw (zt)--(zf);
+  \draw (xt)--(v);
+  \draw (yt)--(v);
+  \draw (zt)--(v);
+  \node[lab,above=0.08cm of xt] {$C$};
+  \node[lab,above=0.08cm of xf] {$C$};
+  \node[lab,above=0.08cm of yt] {$C$};
+  \node[lab,above=0.08cm of yf] {$C$};
+  \node[lab,above=0.08cm of zt] {$C$};
+  \node[lab,above=0.08cm of zf] {$C$};
+  \node[lab,below=0.06cm of v] {$v\notin C$ for the clause $(x\lor y\lor z)$};
+\end{tikzpicture}
+\end{center}
+
+\textbf{$(\Rightarrow)$} Let $\tau$ be a satisfying assignment. Orient each variable-edge from the true literal to the false one. For every other edge incident to a literal-node, orient it \emph{out} of the node if that literal is true and \emph{into} the node if it is false. Then each node in $C$ is a source (true literal) or a sink (false literal). Each clause has a true literal, so the corresponding clause-node has at least one incoming edge.
+
+\enlargethispage{3\baselineskip}\textbf{$(\Leftarrow)$} Take a valid orientation. For each variable, the two literal-nodes are in $C$ and joined by an edge, so one is a source and the other is a sink (they cannot both be sources or both sinks). Set the source-literal TRUE. Each clause-node $v_j\notin C$ has indegree at least $1$, so some incident edge points into $v_j$. That edge comes from a source, i.e.\ a true literal of $c_j$. Hence $\tau$ satisfies $\phi$. Therefore $\threesat\redp\mathrm{ORIENT}$, and $\mathrm{ORIENT}$ is NP-complete.
+\end{soln}

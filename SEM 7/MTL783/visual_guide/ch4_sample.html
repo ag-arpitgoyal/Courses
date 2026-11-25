@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sipser Ch 4 — Decidability (visual guide, SAMPLE)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+<style>
+  :root {
+    --bg: #f6f7fb; --card: #ffffff; --ink: #1d2333; --muted: #5d6680;
+    --line: #e2e6f0; --accent: #3b5bdb; --accent-soft: #edf1ff;
+    --yes: #2b8a3e; --yes-soft: #e6f6ea; --no: #c92a2a; --no-soft: #fdecec;
+    --warn: #e67700; --warn-soft: #fff4e0; --idea: #7048e8; --idea-soft: #f1ecff;
+    --mark: #fab005;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; font-family: "Inter", "Segoe UI", system-ui, sans-serif; background: var(--bg);
+         color: var(--ink); line-height: 1.6; font-size: 16px; }
+  .layout { display: grid; grid-template-columns: 290px 1fr; min-height: 100vh; }
+
+  /* ---------- sidebar ---------- */
+  nav { position: sticky; top: 0; height: 100vh; overflow-y: auto; background: #fff;
+        border-right: 1px solid var(--line); padding: 18px 14px 40px; }
+  nav h1 { font-size: 17px; margin: 0 0 2px; }
+  nav .sub { color: var(--muted); font-size: 13px; margin-bottom: 12px; }
+  .progress { height: 6px; background: var(--line); border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
+  .progress > div { height: 100%; background: var(--yes); width: 0; transition: width .3s; }
+  .progress-label { font-size: 12px; color: var(--muted); margin-bottom: 14px; }
+  nav h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+           margin: 18px 6px 6px; }
+  nav a { display: flex; gap: 8px; align-items: baseline; padding: 5px 8px; border-radius: 6px;
+          color: var(--ink); text-decoration: none; font-size: 14px; }
+  nav a:hover { background: var(--accent-soft); }
+  nav a .num { font-variant-numeric: tabular-nums; color: var(--muted); font-size: 12px; min-width: 38px; }
+  nav a.todo { color: #a3a9bb; }
+  nav a.todo .num { color: #c3c8d6; }
+  nav a.done::after { content: "✓"; margin-left: auto; color: var(--yes); font-weight: 700; }
+
+  /* ---------- main ---------- */
+  main { padding: 28px 40px 120px; max-width: 1020px; }
+  .banner { background: var(--warn-soft); border: 1px solid #ffd8a8; border-radius: 10px;
+            padding: 12px 16px; font-size: 14px; margin-bottom: 24px; }
+  .hero h1 { font-size: 30px; margin: 0; }
+  .hero p { color: var(--muted); margin: 4px 0 18px; }
+  .section-title { font-size: 22px; margin: 44px 0 6px; padding-bottom: 6px; border-bottom: 2px solid var(--line); }
+  .section-intro { color: var(--muted); margin: 6px 0 18px; }
+
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+          padding: 22px 26px; margin: 22px 0; box-shadow: 0 1px 2px rgba(20,30,60,.04); scroll-margin-top: 16px; }
+  .card.placeholder { opacity: .55; padding: 12px 22px; }
+  .card-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .tag { font-size: 12px; font-weight: 700; padding: 3px 9px; border-radius: 999px; letter-spacing: .02em; }
+  .tag.thm { background: var(--accent-soft); color: var(--accent); }
+  .tag.cor { background: #e7f5ff; color: #1971c2; }
+  .tag.def { background: #f3f0ff; color: #6741d9; }
+  .tag.ex  { background: #fff0f6; color: #c2255c; }
+  .tag.dec { background: var(--yes-soft); color: var(--yes); }
+  .tag.undec { background: var(--no-soft); color: var(--no); }
+  .card h3 { margin: 0; font-size: 21px; flex: 1 1 auto; }
+  .understood { font-size: 13px; color: var(--muted); display: flex; gap: 6px; align-items: center; cursor: pointer; user-select: none; }
+
+  .statement { background: #f8f9fc; border-left: 4px solid var(--accent); padding: 10px 14px;
+               margin: 14px 0; border-radius: 0 8px 8px 0; }
+  .story { background: var(--idea-soft); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .story b.label, .why b.label, .trap b.label, .skeleton b.label, .links b.label {
+      display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 2px; }
+  .story b.label { color: var(--idea); }
+  .story .one-liner { font-size: 18px; font-weight: 600; }
+  .why { background: var(--warn-soft); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .why b.label { color: var(--warn); }
+  .trap { background: var(--no-soft); border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .trap b.label { color: var(--no); }
+  .skeleton { border: 1px dashed #b8c1dd; border-radius: 10px; padding: 12px 16px; margin: 14px 0; }
+  .skeleton b.label { color: var(--accent); }
+  .skeleton ol { margin: 6px 0 0; padding-left: 22px; }
+  .tm-desc { font-family: "JetBrains Mono", "Fira Code", monospace; font-size: 14px; background: #fbfbfd;
+             border: 1px solid var(--line); border-radius: 8px; padding: 10px 14px; margin: 8px 0; white-space: pre-wrap; }
+  .links { font-size: 14px; color: var(--muted); margin-top: 10px; }
+  .links a { color: var(--accent); }
+
+  /* ---------- visual stepper ---------- */
+  .visual { border: 1px solid var(--line); border-radius: 12px; margin: 16px 0; overflow: hidden; }
+  .visual-top { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px;
+                background: #fafbff; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--muted); gap: 8px; flex-wrap: wrap; }
+  .visual-stage { padding: 10px; display: flex; justify-content: center; background: #fff; min-height: 120px; }
+  .visual-stage svg { max-width: 100%; height: auto; }
+  .caption { padding: 10px 16px; min-height: 64px; background: #fcfcfe; border-top: 1px solid var(--line); font-size: 15px; }
+  .controls { display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-top: 1px solid var(--line); }
+  .controls button, .toggle button, .quiz button {
+      border: 1px solid #c9d0e4; background: #fff; border-radius: 8px; padding: 6px 12px; cursor: pointer;
+      font: inherit; font-size: 14px; }
+  .controls button:hover, .toggle button:hover, .quiz button:hover { background: var(--accent-soft); }
+  .controls button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .dots { display: flex; gap: 5px; margin-left: auto; }
+  .dots span { width: 9px; height: 9px; border-radius: 50%; background: var(--line); cursor: pointer; }
+  .dots span.on { background: var(--accent); }
+  .toggle { display: flex; gap: 6px; }
+  .toggle button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* diagonal table */
+  table.diag { border-collapse: collapse; font-size: 14px; margin: 6px auto; }
+  table.diag th, table.diag td { border: 1px solid var(--line); padding: 6px 10px; text-align: center; min-width: 66px; height: 34px; transition: background .3s, color .3s; }
+  table.diag th { background: #f4f6fb; font-weight: 600; }
+  td.acc { color: var(--yes); font-weight: 600; }
+  td.rej { color: var(--no); }
+  td.diagcell { background: #fff3bf !important; outline: 2px solid var(--mark); outline-offset: -2px; }
+  td.flip { background: var(--idea-soft); color: var(--idea); font-weight: 700; }
+  td.boom { background: var(--no) !important; color: #fff !important; font-weight: 800; font-size: 18px; animation: pulse 1s infinite; }
+  tr.drow th { background: var(--idea-soft); color: var(--idea); }
+  @keyframes pulse { 50% { transform: scale(1.08); } }
+
+  /* race */
+  .race { width: 100%; max-width: 620px; padding: 8px 4px; }
+  .lane { display: grid; grid-template-columns: 150px 1fr 120px; align-items: center; gap: 10px; margin: 10px 0; font-size: 14px; }
+  .track { height: 26px; background: #f1f3f9; border-radius: 13px; position: relative; overflow: hidden; }
+  .track .fill { position: absolute; inset: 0 auto 0 0; width: 0; background: #a5b4fc; transition: width .35s; }
+  .track .flag { position: absolute; right: 6px; top: 3px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .lane .status { font-weight: 600; }
+  .status.win { color: var(--yes); }
+  .status.loop { color: var(--muted); }
+  .verdict { text-align: center; font-weight: 700; margin-top: 8px; min-height: 26px; }
+
+  /* map */
+  .map-wrap { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 12px; }
+  .map-wrap svg text.lang { cursor: pointer; }
+  .map-wrap svg text.lang:hover { text-decoration: underline; }
+
+  /* quiz */
+  .quiz { margin-top: 14px; }
+  .quiz details { border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; margin: 6px 0; background: #fcfcfe; }
+  .quiz summary { cursor: pointer; font-weight: 600; }
+  .quiz details p { margin: 6px 0 2px; }
+  .quiz-head { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+
+  @media (max-width: 860px) { .layout { grid-template-columns: 1fr; } nav { position: static; height: auto; } main { padding: 20px; } }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ======================= SIDEBAR ======================= -->
+<nav id="toc">
+  <h1>Chapter 4 · Decidability</h1>
+  <div class="sub">Sipser 3rd ed., pp. 193–210</div>
+  <div class="progress"><div id="progbar"></div></div>
+  <div class="progress-label" id="proglabel">0 understood</div>
+
+  <a href="#map"><span class="num">MAP</span>Where everything lives</a>
+
+  <h2>4.1 Decidable languages</h2>
+  <a class="todo" href="#t4-1"><span class="num">4.1</span>A<sub>DFA</sub> is decidable</a>
+  <a class="todo" href="#t4-2"><span class="num">4.2</span>A<sub>NFA</sub> is decidable</a>
+  <a class="todo" href="#t4-3"><span class="num">4.3</span>A<sub>REX</sub> is decidable</a>
+  <a href="#t4-4"><span class="num">4.4</span>E<sub>DFA</sub> is decidable</a>
+  <a class="todo" href="#t4-5"><span class="num">4.5</span>EQ<sub>DFA</sub> is decidable (Fig 4.6)</a>
+  <a class="todo" href="#t4-7"><span class="num">4.7</span>A<sub>CFG</sub> is decidable</a>
+  <a class="todo" href="#t4-8"><span class="num">4.8</span>E<sub>CFG</sub> is decidable</a>
+  <a class="todo" href="#n-eqcfg"><span class="num">note</span>Why EQ<sub>CFG</sub> breaks</a>
+  <a class="todo" href="#t4-9"><span class="num">4.9</span>Every CFL is decidable</a>
+  <a class="todo" href="#f4-10"><span class="num">Fig</span>4.10 Class hierarchy</a>
+
+  <h2>4.2 Undecidability</h2>
+  <a class="todo" href="#u-tm"><span class="num">4.11</span>A<sub>TM</sub> recognizable: universal TM U</a>
+  <a class="todo" href="#d4-12"><span class="num">4.12</span>One-to-one, onto, correspondence</a>
+  <a class="todo" href="#e4-13"><span class="num">4.13</span>ℕ and evens are same size</a>
+  <a class="todo" href="#d4-14"><span class="num">4.14</span>Countable</a>
+  <a class="todo" href="#e4-15"><span class="num">4.15</span>ℚ is countable</a>
+  <a class="todo" href="#t4-17"><span class="num">4.17</span>ℝ is uncountable</a>
+  <a class="todo" href="#c4-18"><span class="num">4.18</span>Some languages not recognizable</a>
+  <a href="#t4-11"><span class="num">4.11</span>A<sub>TM</sub> is undecidable (diagonal)</a>
+  <a href="#t4-22"><span class="num">4.22</span>Decidable ⇔ rec. + co-rec.</a>
+  <a class="todo" href="#c4-23"><span class="num">4.23</span>Complement of A<sub>TM</sub> not recognizable</a>
+
+  <h2>Revision</h2>
+  <a class="todo" href="#cheat"><span class="num">★</span>One-page recap + self-test</a>
+</nav>
+
+<!-- ======================= MAIN ======================= -->
+<main>
+  <div class="banner"><b>Sample for design review.</b> Three cards are fully built (4.4, 4.11, 4.22) plus the map.
+    Greyed sidebar entries will be filled in the full version, in book order.</div>
+
+  <div class="hero">
+    <h1>Chapter 4 — Decidability</h1>
+    <p>Which questions about machines can an algorithm always answer, and which can it never answer?</p>
+  </div>
+
+  <!-- ============ MAP ============ -->
+  <div id="map" class="card" style="scroll-margin-top:16px">
+    <div class="card-head"><span class="tag def">Overview</span><h3>The map: where every Chapter 4 language lives</h3></div>
+    <p>Keep this picture in your head. Every theorem in this chapter places one language somewhere on it. Click a language to jump to its proof.</p>
+    <div class="map-wrap">
+      <svg viewBox="0 0 860 400" id="mapsvg" role="img" aria-label="Language class map">
+        <defs>
+          <pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+            <line x1="0" y1="0" x2="0" y2="8" stroke="#dee2e6" stroke-width="3"/>
+          </pattern>
+        </defs>
+        <rect x="5" y="5" width="850" height="390" rx="16" fill="url(#hatch)" stroke="#adb5bd"/>
+        <text x="20" y="30" font-size="14" fill="#495057" font-weight="700">All languages (uncountably many)</text>
+        <text x="20" y="48" font-size="12" fill="#868e96">most are not recognizable at all (Cor 4.18)</text>
+
+        <ellipse cx="330" cy="225" rx="270" ry="150" fill="#e7f5ff" fill-opacity=".85" stroke="#1971c2" stroke-width="2"/>
+        <ellipse cx="530" cy="225" rx="270" ry="150" fill="#fff0f6" fill-opacity=".6" stroke="#c2255c" stroke-width="2"/>
+        <text x="80" y="170" font-size="14" fill="#1971c2" font-weight="700">Turing-recognizable</text>
+        <text x="650" y="170" font-size="14" fill="#c2255c" font-weight="700">co-recognizable</text>
+
+        <clipPath id="both"><ellipse cx="330" cy="225" rx="270" ry="150"/></clipPath>
+        <ellipse cx="530" cy="225" rx="270" ry="150" clip-path="url(#both)" fill="#e6f6ea" stroke="#2b8a3e" stroke-width="2.5"/>
+        <text x="430" y="122" font-size="14" text-anchor="middle" fill="#2b8a3e" font-weight="700">Decidable</text>
+        <text x="430" y="137" font-size="11" text-anchor="middle" fill="#2b8a3e">(Thm 4.22: rec. ∩ co-rec.)</text>
+
+        <ellipse cx="430" cy="270" rx="75" ry="60" fill="#fff9db" stroke="#e67700" stroke-width="1.5"/>
+        <text x="430" y="228" font-size="12" text-anchor="middle" fill="#e67700" font-weight="700">Context-free</text>
+        <ellipse cx="430" cy="290" rx="38" ry="28" fill="#fff3bf" stroke="#f08c00"/>
+        <text x="430" y="294" font-size="11" text-anchor="middle" fill="#e67700">Regular</text>
+        <text x="430" y="345" font-size="11" text-anchor="middle" fill="#e67700">Thm 4.9</text>
+
+        <text class="lang" data-go="t4-1" x="340" y="160" font-size="13" fill="#2b8a3e">A<tspan font-size="9" dy="3">DFA</tspan><tspan dy="-3"> · A</tspan><tspan font-size="9" dy="3">NFA</tspan><tspan dy="-3"> · A</tspan><tspan font-size="9" dy="3">REX</tspan></text>
+        <text class="lang" data-go="t4-4" x="340" y="180" font-size="13" fill="#2b8a3e" font-weight="700">E<tspan font-size="9" dy="3">DFA</tspan></text>
+        <text class="lang" data-go="t4-5" x="390" y="180" font-size="13" fill="#2b8a3e">EQ<tspan font-size="9" dy="3">DFA</tspan></text>
+        <text class="lang" data-go="t4-7" x="340" y="200" font-size="13" fill="#2b8a3e">A<tspan font-size="9" dy="3">CFG</tspan><tspan dy="-3"> · E</tspan><tspan font-size="9" dy="3">CFG</tspan></text>
+
+        <text class="lang" data-go="t4-11" x="110" y="235" font-size="16" fill="#1971c2" font-weight="700">A<tspan font-size="11" dy="3">TM</tspan></text>
+        <text x="80" y="255" font-size="11" fill="#1971c2">recognizable (by U),</text>
+        <text x="80" y="269" font-size="11" fill="#1971c2">not decidable (Thm 4.11)</text>
+
+        <text class="lang" data-go="c4-23" x="650" y="235" font-size="16" fill="#c2255c" font-weight="700">A<tspan font-size="11" dy="3">TM</tspan><tspan dy="-3"> complement</tspan></text>
+        <text x="650" y="255" font-size="11" fill="#c2255c">co-recognizable,</text>
+        <text x="650" y="269" font-size="11" fill="#c2255c">NOT recognizable (Cor 4.23)</text>
+      </svg>
+    </div>
+    <p class="links">The one rule behind the shape: if a language is both recognizable <i>and</i> co-recognizable, it lies in the overlap, and that overlap is exactly the decidable languages (<a href="#t4-22">Thm 4.22</a>).</p>
+  </div>
+
+  <!-- ============ SECTION 4.1 ============ -->
+  <h2 class="section-title">4.1 Decidable languages</h2>
+  <p class="section-intro">The theme: <b>DFAs and CFGs are finite objects</b>. Any question about them that can be turned into "search a finite thing" is decidable. Whenever the obvious search is infinite, find a way to make it finite.</p>
+
+  <div class="card placeholder" id="t4-1"><b>Thm 4.1 – 4.3</b> · A<sub>DFA</sub>, A<sub>NFA</sub>, A<sub>REX</sub>: in full version (story: "just run it", then "convert, then run it").</div>
+
+  <!-- ===== THEOREM 4.4 ===== -->
+  <div class="card" id="t4-4">
+    <div class="card-head">
+      <span class="tag thm">Theorem 4.4</span>
+      <h3>\(E_{\mathrm{DFA}}\) is decidable</h3>
+      <span class="tag dec">Decidable</span>
+      <label class="understood"><input type="checkbox" data-id="t4-4"> understood</label>
+    </div>
+
+    <div class="statement">\(E_{\mathrm{DFA}} = \{\langle A\rangle \mid A \text{ is a DFA and } L(A) = \emptyset\}\) is a decidable language.</div>
+
+    <div class="story">
+      <b class="label">The story</b>
+      <div class="one-liner">"Spill paint on the start state and let it flow along the arrows. Does any double circle get wet?"</div>
+      A DFA accepts <i>some</i> string exactly when an accept state can be reached from the start state by following arrows.
+      Trying strings one by one never ends, but the DFA has only finitely many states, so the paint has to stop spreading.
+    </div>
+
+    <div class="visual" data-visual="edfa">
+      <div class="visual-top">
+        <span>Visual: the marking algorithm (each round = paint spreads one arrow further)</span>
+        <div class="toggle">
+          <button data-variant="A" class="active">DFA A</button>
+          <button data-variant="B">DFA B (one extra arrow)</button>
+        </div>
+      </div>
+      <div class="visual-stage"><svg viewBox="0 0 560 250" width="560"></svg></div>
+      <div class="caption"></div>
+      <div class="controls">
+        <button data-act="reset">⟲ Reset</button>
+        <button data-act="prev">◀ Prev</button>
+        <button data-act="next" class="primary">Next ▶</button>
+        <div class="dots"></div>
+      </div>
+    </div>
+
+    <div class="skeleton">
+      <b class="label">Write this in the exam</b>
+      <div class="tm-desc">T = "On input ⟨A⟩, where A is a DFA:
+  1. Mark the start state of A.
+  2. Repeat until no new states get marked:
+  3.    Mark any state that has a transition coming into it
+        from any state that is already marked.
+  4. If no accept state is marked, accept; otherwise, reject."</div>
+      <b>Why it halts:</b> each round marks at least one new state or stops, and there are only \(|Q|\) states, so there are at most \(|Q|\) rounds.<br>
+      <b>Why it's correct:</b> marked = reachable from \(q_0\). \(L(A)\neq\emptyset\) ⇔ some accept state is reachable.
+    </div>
+
+    <div class="why">
+      <b class="label">The detail people blank on</b>
+      Look at which way the answer goes. \(E_{\mathrm{DFA}}\) asks "is the language <b>empty</b>?", so <b>no</b> accept state marked means T <b>accepts</b>.
+      It's easy to write it backwards under exam pressure.
+    </div>
+
+    <div class="trap">
+      <b class="label">Trap</b>
+      "Try every string \(w\) and run \(A\) on it" is <b>not</b> a decider: if \(L(A)=\emptyset\) it never stops.
+      The point of the proof is to replace an infinite search over strings with a finite search over states.
+      (Alternative that also works: only test strings of length \(< |Q|\), by the pumping idea. That's still finite.)
+    </div>
+
+    <div class="links"><b class="label" style="display:inline">Used later:</b>
+      <a href="#t4-5">Thm 4.5 EQ<sub>DFA</sub></a> calls T as a subroutine ·
+      <a href="#t4-8">Thm 4.8 E<sub>CFG</sub></a> is the same "paint" idea on variables ·
+      in Ch 5, \(E_{\mathrm{TM}}\) is <b>un</b>decidable because a TM's configurations are <i>not</i> finite.
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-head">Rebuild it yourself</div>
+      <details><summary>Why can't we use the same algorithm for \(E_{\mathrm{TM}}\)?</summary>
+        <p>Marking works because the state graph of a DFA is finite and the state alone determines the future. A TM's future depends on the whole tape, and there are infinitely many configurations, so there is no finite graph to paint.</p></details>
+      <details><summary>What does T output on a DFA whose start state is itself an accept state?</summary>
+        <p>Step 1 already marks an accept state, so \(\varepsilon\in L(A)\), the language is non-empty, and T <b>rejects</b>.</p></details>
+    </div>
+  </div>
+
+  <div class="card placeholder" id="t4-5"><b>Thm 4.5</b> · EQ<sub>DFA</sub>: in full version (visual: symmetric-difference Venn of Fig 4.6, "build a DFA for the disagreement and ask if it's empty").</div>
+  <div class="card placeholder" id="t4-7"><b>Thm 4.7 – 4.9</b>, EQ<sub>CFG</sub> note, Fig 4.10: in full version.</div>
+
+  <!-- ============ SECTION 4.2 ============ -->
+  <h2 class="section-title">4.2 Undecidability</h2>
+  <p class="section-intro">The theme: <b>self-reference</b>. A machine that can be fed its own description can be made to contradict any claimed predictor. In the book, the warm-up (ℝ is uncountable) and the main event (\(A_{\mathrm{TM}}\)) are the same table trick.</p>
+
+  <div class="card placeholder" id="u-tm"><b>Universal TM U, Def 4.12 – Cor 4.18</b>: in full version (visuals: the ℚ zig-zag of Fig 4.16 and the ℝ diagonal of Thm 4.17).</div>
+
+  <!-- ===== THEOREM 4.11 ===== -->
+  <div class="card" id="t4-11">
+    <div class="card-head">
+      <span class="tag thm">Theorem 4.11</span>
+      <h3>\(A_{\mathrm{TM}}\) is undecidable</h3>
+      <span class="tag undec">Undecidable</span>
+      <label class="understood"><input type="checkbox" data-id="t4-11"> understood</label>
+    </div>
+
+    <div class="statement">\(A_{\mathrm{TM}} = \{\langle M, w\rangle \mid M \text{ is a TM and } M \text{ accepts } w\}\) is undecidable.
+      <br><span style="color:var(--muted);font-size:14px">(It <i>is</i> recognizable: the universal TM \(U\) just simulates \(M\) on \(w\). The problem is that \(U\) loops when \(M\) loops.)</span></div>
+
+    <div class="story">
+      <b class="label">The story</b>
+      <div class="one-liner">"The contrarian: ask the oracle what you'd do on yourself, then do the opposite."</div>
+      Suppose someone hands you a perfect oracle \(H\) that always says correctly whether \(M\) accepts \(w\).
+      You build a stubborn program \(D\): given \(\langle M\rangle\), it asks \(H\) "does \(M\) accept its own description?" and does the <b>opposite</b>.
+      Then you feed \(D\) its own code. Whatever \(H\) predicts, \(D\) does the other thing. So \(H\) can't exist.
+    </div>
+
+    <div class="visual" data-visual="diag">
+      <div class="visual-top"><span>Visual: Sipser Figures 4.19 → 4.20 → 4.21. Rows = machines, columns = descriptions fed as input</span></div>
+      <div class="visual-stage"><div id="diag-holder"></div></div>
+      <div class="caption"></div>
+      <div class="controls">
+        <button data-act="reset">⟲ Reset</button>
+        <button data-act="prev">◀ Prev</button>
+        <button data-act="next" class="primary">Next ▶</button>
+        <div class="dots"></div>
+      </div>
+    </div>
+
+    <div class="skeleton">
+      <b class="label">Write this in the exam</b>
+      <ol>
+        <li>Assume for contradiction that \(H\) decides \(A_{\mathrm{TM}}\): \(H(\langle M,w\rangle)\) = accept if \(M\) accepts \(w\), reject otherwise.</li>
+        <li>Build \(D\) = "On input \(\langle M\rangle\): run \(H\) on \(\langle M, \langle M\rangle\rangle\); output the <b>opposite</b>."</li>
+        <li>So \(D(\langle M\rangle)\) accepts ⇔ \(M\) does <b>not</b> accept \(\langle M\rangle\).</li>
+        <li>Put \(M = D\): \(D\) accepts \(\langle D\rangle\) ⇔ \(D\) does not accept \(\langle D\rangle\). Contradiction, so \(H\) does not exist.</li>
+      </ol>
+    </div>
+
+    <div class="why">
+      <b class="label">The detail people blank on</b>
+      <b>Why does \(D\) always halt?</b> Because \(H\) is assumed to be a <i>decider</i>, so it always halts, and \(D\) only flips its answer.
+      That's exactly why the trick fails for the recognizer \(U\): if \(U\) loops, there's no answer to flip.
+      <br><b>Where is the "diagonal"?</b> \(D\)'s row is the flipped diagonal of the table, so \(D\) differs from every \(M_i\) at cell \((i,i)\). Since \(D\) must itself be some row, it disagrees with itself at its own diagonal cell.
+    </div>
+
+    <div class="trap">
+      <b class="label">Trap</b>
+      Don't write "run \(M\) on \(\langle M\rangle\) and do the opposite". That's simulation, and it may loop.
+      \(D\) must call the <b>hypothetical decider \(H\)</b>, never simulate \(M\) directly.
+    </div>
+
+    <div class="links"><b class="label" style="display:inline">Same trick as:</b>
+      <a href="#t4-17">Thm 4.17 (ℝ uncountable)</a>, where the digit flip on the diagonal is the accept/reject flip here.
+      <b>Root of everything in Ch 5:</b> every undecidability proof there reduces <i>from</i> \(A_{\mathrm{TM}}\).
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-head">Rebuild it yourself</div>
+      <details><summary>What exactly does \(D\) feed to \(H\)?</summary><p>The pair \(\langle M, \langle M\rangle\rangle\): the machine together with its own description as input.</p></details>
+      <details><summary>Why does the proof show undecidable but not unrecognizable?</summary><p>The contradiction needs \(H\) to halt on every input. Recognizers may loop, and the universal TM \(U\) really does recognize \(A_{\mathrm{TM}}\).</p></details>
+      <details><summary>Fill in: \(D\) rejects \(\langle D\rangle\) exactly when ____.</summary><p>\(D\) accepts \(\langle D\rangle\). That's the final line of Sipser's three-line summary.</p></details>
+    </div>
+  </div>
+
+  <!-- ===== THEOREM 4.22 ===== -->
+  <div class="card" id="t4-22">
+    <div class="card-head">
+      <span class="tag thm">Theorem 4.22</span>
+      <h3>Decidable ⇔ Turing-recognizable <i>and</i> co-Turing-recognizable</h3>
+      <label class="understood"><input type="checkbox" data-id="t4-22"> understood</label>
+    </div>
+
+    <div class="statement">A language \(A\) is decidable iff both \(A\) and \(\overline{A}\) are Turing-recognizable.</div>
+
+    <div class="story">
+      <b class="label">The story</b>
+      <div class="one-liner">"Two horses, one race: exactly one of them is guaranteed to finish."</div>
+      \(M_1\) shouts "YES" if \(w\in A\); \(M_2\) shouts "YES" if \(w\notin A\). Each may run forever when the answer isn't theirs.
+      Every \(w\) is either in \(A\) or in \(\overline{A}\), so one of them <i>will</i> shout. Watch both, one step at a time, and wait for the shout.
+    </div>
+
+    <div class="visual" data-visual="race">
+      <div class="visual-top">
+        <span>Visual: M alternates one step of M₁, one step of M₂</span>
+        <div class="toggle">
+          <button data-variant="in" class="active">w ∈ A</button>
+          <button data-variant="out">w ∉ A</button>
+        </div>
+      </div>
+      <div class="visual-stage">
+        <div class="race">
+          <div class="lane"><b>M₁ (recognizes A)</b><div class="track"><div class="fill" id="f1"></div><span class="flag">accept</span></div><span class="status" id="s1">waiting</span></div>
+          <div class="lane"><b>M₂ (recognizes Ā)</b><div class="track"><div class="fill" id="f2"></div><span class="flag">accept</span></div><span class="status" id="s2">waiting</span></div>
+          <div class="verdict" id="verdict"></div>
+        </div>
+      </div>
+      <div class="caption"></div>
+      <div class="controls">
+        <button data-act="reset">⟲ Reset</button>
+        <button data-act="prev">◀ Prev</button>
+        <button data-act="next" class="primary">Next ▶</button>
+        <div class="dots"></div>
+      </div>
+    </div>
+
+    <div class="skeleton">
+      <b class="label">Write this in the exam</b>
+      <b>(⇒)</b> Decidable ⇒ recognizable. Decidable languages are closed under complement (swap accept/reject), so \(\overline{A}\) is decidable, hence recognizable.<br>
+      <b>(⇐)</b> Let \(M_1\) recognize \(A\) and \(M_2\) recognize \(\overline{A}\).
+      <div class="tm-desc">M = "On input w:
+  1. Run both M₁ and M₂ on input w in parallel.
+  2. If M₁ accepts, accept; if M₂ accepts, reject."</div>
+      Every \(w\) is in \(A\) or \(\overline{A}\), so \(M_1\) or \(M_2\) accepts it, and \(M\) always halts. It accepts exactly \(A\). So \(M\) decides \(A\).
+    </div>
+
+    <div class="why">
+      <b class="label">The detail people blank on</b>
+      <b>Why "in parallel" and not "run \(M_1\), then \(M_2\)"?</b> If \(w\notin A\), \(M_1\) might loop forever, and you'd never get to \(M_2\).
+      Alternating single steps (two tapes, take turns) means a loop in one machine can't block the other.
+    </div>
+
+    <div class="trap">
+      <b class="label">Trap</b>
+      Don't say "if \(M_1\) rejects, reject". \(M_1\) is only a recognizer, so on \(w\notin A\) it may <i>loop</i> rather than reject.
+      The decider stops only on an <b>accept</b> from one of the two machines.
+    </div>
+
+    <div class="links"><b class="label" style="display:inline">Immediate payoff:</b>
+      <a href="#c4-23">Cor 4.23</a>: \(A_{\mathrm{TM}}\) is recognizable but undecidable, so \(\overline{A_{\mathrm{TM}}}\) can't be recognizable (otherwise this theorem would make \(A_{\mathrm{TM}}\) decidable).
+      This is the key tool for "not recognizable" proofs in Ch 5.
+    </div>
+
+    <div class="quiz">
+      <div class="quiz-head">Rebuild it yourself</div>
+      <details><summary>Can both M₁ and M₂ accept the same w?</summary><p>No. \(M_1\) accepts only strings in \(A\), and \(M_2\) only strings in \(\overline{A}\). These sets are disjoint, so exactly one accepts.</p></details>
+      <details><summary>Using this theorem: a language L is undecidable. What can you conclude about L and \(\overline{L}\)?</summary><p>At least one of \(L\), \(\overline{L}\) is <b>not</b> Turing-recognizable.</p></details>
+    </div>
+  </div>
+
+  <div class="card placeholder" id="t4-17"><b>Thm 4.17</b> · ℝ uncountable: in full version.</div>
+  <div class="card placeholder" id="c4-23"><b>Cor 4.23</b> · \(\overline{A_{\mathrm{TM}}}\) not recognizable: in full version.</div>
+  <div class="card placeholder" id="cheat"><b>Recap page</b>: in full version (one table: language · status · one-line reason · proof technique).</div>
+</main>
+</div>
+
+<script>
+/* ---------- generic stepper ---------- */
+function makeStepper(root, getSteps, render) {
+  let i = 0;
+  const dots = root.querySelector('.dots');
+  const caption = root.querySelector('.caption');
+  function draw() {
+    const steps = getSteps();
+    i = Math.max(0, Math.min(i, steps.length - 1));
+    render(i, steps);
+    caption.innerHTML = steps[i].caption;
+    if (window.renderMathInElement) renderMathInElement(caption, katexOpts);
+    dots.innerHTML = '';
+    steps.forEach((_, k) => {
+      const d = document.createElement('span');
+      if (k === i) d.className = 'on';
+      d.onclick = () => { i = k; draw(); };
+      dots.appendChild(d);
+    });
+  }
+  root.querySelector('[data-act=next]').onclick = () => { i++; draw(); };
+  root.querySelector('[data-act=prev]').onclick = () => { i--; draw(); };
+  root.querySelector('[data-act=reset]').onclick = () => { i = 0; draw(); };
+  return { draw, reset() { i = 0; draw(); } };
+}
+const katexOpts = { delimiters: [{left: '\\(', right: '\\)', display: false}, {left: '$$', right: '$$', display: true}], throwOnError: false };
+
+/* ---------- E_DFA marking visual ---------- */
+(function () {
+  const root = document.querySelector('[data-visual=edfa]');
+  const svg = root.querySelector('svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const pos = { q0: [70, 125], q1: [210, 55], q2: [210, 195], q3: [370, 55], q4: [370, 195], q5: [500, 125] };
+  const accept = new Set(['q3', 'q5']);
+  const base = [['q0','q1'],['q0','q2'],['q1','q2'],['q2','q0'],['q3','q1'],['q4','q3'],['q4','q5'],['q5','q3']];
+  let variant = 'A';
+  const edges = () => variant === 'A' ? base : base.concat([['q2','q4']]);
+
+  function rounds() {
+    const E = edges(); const marked = [new Set(['q0'])];
+    while (true) {
+      const last = marked[marked.length - 1]; const next = new Set(last);
+      E.forEach(([a, b]) => { if (last.has(a)) next.add(b); });
+      if (next.size === last.size) return marked;
+      marked.push(next);
+    }
+  }
+  function getSteps() {
+    const R = rounds(); const steps = [];
+    steps.push({ marked: new Set(), newly: new Set(), caption:
+      `Input: DFA ${variant}. Double circles = accept states. <b>Question:</b> is \\(L(${variant})=\\emptyset\\)? (Arrow labels are omitted; only <i>which arrows exist</i> matters.)` });
+    R.forEach((m, k) => {
+      const prev = k ? R[k - 1] : new Set();
+      const newly = new Set([...m].filter(x => !prev.has(x)));
+      steps.push({ marked: m, newly, caption: k === 0
+        ? 'Stage 1: mark the start state \\(q_0\\). Paint goes here first.'
+        : `Round ${k}: mark every state with an arrow coming in from a marked state → newly marked: <b>${[...newly].join(', ')}</b>.` });
+    });
+    const final = R[R.length - 1];
+    steps.push({ marked: final, newly: new Set(), caption:
+      `Round ${R.length}: no new state can be marked, so we stop. That's guaranteed within \\(|Q| = 6\\) rounds.` });
+    const hit = [...final].filter(x => accept.has(x));
+    steps.push({ marked: final, newly: new Set(), hit: new Set(hit), caption: hit.length
+      ? `Accept state${hit.length > 1 ? 's' : ''} <b>${hit.join(', ')}</b> ${hit.length > 1 ? 'are' : 'is'} marked, so some string reaches it and \\(L(${variant})\\neq\\emptyset\\). T <b style="color:var(--no)">rejects</b>.`
+      : `No accept state is marked: no arrow leads from the painted left side into the right side, so q3 and q5 are unreachable. So \\(L(${variant})=\\emptyset\\) and T <b style="color:var(--yes)">accepts</b>.` });
+    return steps;
+  }
+  function render(i, steps) {
+    const s = steps[i];
+    svg.innerHTML = `<defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#5d6680"/></marker></defs>`;
+    const extra = variant === 'B' ? 'q2>q4' : '';
+    edges().forEach(([a, b]) => {
+      const [x1, y1] = pos[a], [x2, y2] = pos[b];
+      const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy), r = 27;
+      const back = edges().some(([c, d]) => c === b && d === a);
+      const off = back ? 9 : 0, nx = -dy / L * off, ny = dx / L * off;
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('x1', x1 + dx / L * r + nx); line.setAttribute('y1', y1 + dy / L * r + ny);
+      line.setAttribute('x2', x2 - dx / L * r + nx); line.setAttribute('y2', y2 - dy / L * r + ny);
+      const live = s.marked.has(a);
+      line.setAttribute('stroke', `${a}>${b}` === extra ? '#e67700' : (live ? '#f08c00' : '#9aa3b8'));
+      line.setAttribute('stroke-width', live || `${a}>${b}` === extra ? 2.6 : 1.6);
+      if (`${a}>${b}` === extra) line.setAttribute('stroke-dasharray', '6 3');
+      line.setAttribute('marker-end', 'url(#arr)');
+      svg.appendChild(line);
+    });
+    const [sx, sy] = pos.q0;
+    svg.insertAdjacentHTML('beforeend', `<line x1="${sx-62}" y1="${sy}" x2="${sx-29}" y2="${sy}" stroke="#5d6680" stroke-width="1.8" marker-end="url(#arr)"/><text x="${sx-66}" y="${sy-8}" font-size="11" fill="#5d6680">start</text>`);
+    Object.entries(pos).forEach(([q, [x, y]]) => {
+      const m = s.marked.has(q), nw = s.newly.has(q), hit = s.hit && s.hit.has(q);
+      const fill = hit ? '#ffc9c9' : nw ? '#ffe066' : m ? '#fff3bf' : '#fff';
+      const stroke = hit ? '#c92a2a' : m ? '#f08c00' : '#5d6680';
+      svg.insertAdjacentHTML('beforeend',
+        `<circle cx="${x}" cy="${y}" r="25" fill="${fill}" stroke="${stroke}" stroke-width="${m ? 2.6 : 1.6}"/>` +
+        (accept.has(q) ? `<circle cx="${x}" cy="${y}" r="20" fill="none" stroke="${stroke}" stroke-width="1.6"/>` : '') +
+        `<text x="${x}" y="${y + 5}" font-size="15" text-anchor="middle" fill="#1d2333">${q[0]}<tspan font-size="11" dy="3">${q[1]}</tspan></text>`);
+    });
+  }
+  const st = makeStepper(root, getSteps, render);
+  root.querySelectorAll('.toggle button').forEach(b => b.onclick = () => {
+    root.querySelectorAll('.toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active'); variant = b.dataset.variant; st.reset();
+  });
+  window.__steppers = (window.__steppers || []).concat(st);
+})();
+
+/* ---------- A_TM diagonal visual ---------- */
+(function () {
+  const root = document.querySelector('[data-visual=diag]');
+  const holder = root.querySelector('#diag-holder');
+  const fig419 = [['A','','A',''],['A','A','A','A'],['','','',''],['A','A','','']];
+  const cols = ['⟨M₁⟩','⟨M₂⟩','⟨M₃⟩','⟨M₄⟩','⋯','⟨D⟩'];
+  const rows = ['M₁','M₂','M₃','M₄'];
+  const steps = [
+    { caption: 'Fig 4.19: entry \\((i,j)\\) says whether \\(M_i\\) accepts \\(\\langle M_j\\rangle\\). Blank means <i>rejects or loops</i>, so we can\'t tell which by just running it.' },
+    { caption: 'Fig 4.20: assume the decider \\(H\\) exists. Now every blank becomes a definite <b>reject</b>, because \\(H\\) always halts and fills in the whole table.' },
+    { caption: 'Look at the <b>diagonal</b>: what each machine does on <i>its own</i> description. \\(D\\) is built from these cells only.' },
+    { caption: '\\(D\\) = "on \\(\\langle M\\rangle\\), ask \\(H\\) about \\(\\langle M,\\langle M\\rangle\\rangle\\), output the opposite." So \\(D\\)\'s row is the <b>flipped diagonal</b>, and \\(D\\) differs from every \\(M_i\\) in column \\(i\\).' },
+    { caption: 'But \\(D\\) is a TM, so it must appear as a row <i>and</i> a column. Its cell \\((D,\\langle D\\rangle)\\) must equal the opposite of itself. <b>Contradiction</b>, so \\(H\\) can\'t exist and \\(A_{\\mathrm{TM}}\\) is undecidable.' },
+  ];
+  function render(i) {
+    const showD = i >= 3;
+    let h = '<table class="diag"><tr><th></th>' + cols.map(c => `<th>${c}</th>`).join('') + '</tr>';
+    rows.forEach((r, ri) => {
+      h += `<tr><th>${r}</th>`;
+      cols.forEach((c, ci) => {
+        if (c === '⋯') { h += '<td style="color:#adb5bd">⋯</td>'; return; }
+        let v;
+        if (ci === 5) v = i >= 4 ? ['A','A','R','A'][ri] : '';
+        else v = fig419[ri][ci];
+        let cls = '', txt = '';
+        if (v === 'A') { cls = 'acc'; txt = 'accept'; }
+        else if (i >= 1 && (v === '' || v === 'R') && !(ci === 5 && i < 4)) { cls = 'rej'; txt = 'reject'; }
+        if (i >= 2 && ci === ri) cls += ' diagcell';
+        h += `<td class="${cls}">${txt}</td>`;
+      });
+      h += '</tr>';
+    });
+    h += '<tr><th style="color:#adb5bd">⋮</th>' + cols.map(() => '<td style="color:#adb5bd">⋮</td>').join('') + '</tr>';
+    if (showD) {
+      h += '<tr class="drow"><th>D</th>';
+      cols.forEach((c, ci) => {
+        if (c === '⋯') { h += '<td style="color:#adb5bd">⋯</td>'; return; }
+        if (ci === 5) { h += i >= 4 ? '<td class="boom">?</td>' : '<td></td>'; return; }
+        const d = fig419[ci][ci] === 'A' ? 'reject' : 'accept';
+        h += `<td class="flip">${d}</td>`;
+      });
+      h += '</tr>';
+    }
+    holder.innerHTML = h + '</table>';
+  }
+  window.__steppers = (window.__steppers || []).concat(makeStepper(root, () => steps, render));
+})();
+
+/* ---------- 4.22 race visual ---------- */
+(function () {
+  const root = document.querySelector('[data-visual=race]');
+  let variant = 'in';
+  const FINISH = 5;
+  function getSteps() {
+    const winner = variant === 'in' ? 1 : 2;
+    const s = [{ t: 0, caption: `Input \\(w\\) ${variant === 'in' ? '\\(\\in A\\)' : '\\(\\notin A\\)'}. M runs M₁ and M₂ on two tapes, taking turns one step each.` }];
+    for (let t = 1; t <= FINISH; t++) s.push({ t, caption: t < FINISH
+      ? `Turn ${t}: one step of M₁, one step of M₂. Neither has accepted yet. ${variant === 'in' ? 'M₂ may be looping forever. That\'s fine, it can\'t block M₁.' : 'M₁ may be looping forever. That\'s fine, it can\'t block M₂.'}`
+      : `Turn ${t}: <b>M${winner === 1 ? '₁' : '₂'} accepts!</b> So M <b style="color:${winner === 1 ? 'var(--yes)' : 'var(--no)'}">${winner === 1 ? 'accepts' : 'rejects'}</b> and halts. This always happens, because \\(w\\) is in exactly one of \\(A\\), \\(\\overline{A}\\).` });
+    return s;
+  }
+  function render(i, steps) {
+    const t = steps[i].t, winner = variant === 'in' ? 1 : 2;
+    [1, 2].forEach(k => {
+      const f = root.querySelector('#f' + k), s = root.querySelector('#s' + k);
+      const pct = k === winner ? (t / FINISH) * 100 : Math.min(70, t * 14);
+      f.style.width = pct + '%';
+      f.style.background = k === winner && t === FINISH ? '#8ce99a' : '#a5b4fc';
+      if (k === winner && t === FINISH) { s.textContent = 'ACCEPTS ✓'; s.className = 'status win'; }
+      else if (t === 0) { s.textContent = 'waiting'; s.className = 'status'; }
+      else { s.textContent = k === winner ? `step ${t}…` : `step ${t}… (maybe ∞)`; s.className = k === winner ? 'status' : 'status loop'; }
+    });
+    root.querySelector('#verdict').innerHTML = t === FINISH
+      ? (winner === 1 ? '<span style="color:var(--yes)">M accepts w (w ∈ A)</span>' : '<span style="color:var(--no)">M rejects w (w ∉ A)</span>') : '';
+  }
+  const st = makeStepper(root, getSteps, render);
+  root.querySelectorAll('.toggle button').forEach(b => b.onclick = () => {
+    root.querySelectorAll('.toggle button').forEach(x => x.classList.remove('active'));
+    b.classList.add('active'); variant = b.dataset.variant; st.reset();
+  });
+  window.__steppers = (window.__steppers || []).concat(st);
+})();
+
+/* ---------- map links ---------- */
+document.querySelectorAll('#mapsvg text.lang').forEach(t => t.addEventListener('click', () =>
+  document.getElementById(t.dataset.go).scrollIntoView({ behavior: 'smooth' })));
+
+/* ---------- understood checkboxes (saved in browser) ---------- */
+const KEY = 'sipser-ch4-understood';
+const saved = new Set(JSON.parse(localStorage.getItem(KEY) || '[]'));
+const boxes = document.querySelectorAll('.understood input');
+function syncProgress() {
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('done', saved.has(a.getAttribute('href').slice(1))));
+  document.getElementById('progbar').style.width = (saved.size / boxes.length * 100) + '%';
+  document.getElementById('proglabel').textContent = `${saved.size} / ${boxes.length} understood`;
+}
+boxes.forEach(b => {
+  b.checked = saved.has(b.dataset.id);
+  b.onchange = () => { b.checked ? saved.add(b.dataset.id) : saved.delete(b.dataset.id);
+    localStorage.setItem(KEY, JSON.stringify([...saved])); syncProgress(); };
+});
+syncProgress();
+
+/* ---------- math + initial draw ---------- */
+window.addEventListener('load', () => {
+  if (window.renderMathInElement) renderMathInElement(document.body, katexOpts);
+  (window.__steppers || []).forEach(s => s.draw());
+});
+</script>
+</body>
+</html>

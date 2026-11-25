@@ -1,0 +1,1958 @@
+\documentclass[11pt,a4paper]{article}
+
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage[shortlabels]{enumitem}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{fancyhdr}
+\usepackage{setspace}
+\usepackage{microtype}
+\usepackage{titlesec}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage[skins,breakable]{tcolorbox}
+
+\usetikzlibrary{positioning,arrows.meta,calc,fit,shapes.geometric,matrix,decorations.pathreplacing}
+
+\definecolor{ink}{HTML}{222222}
+\definecolor{rulegray}{HTML}{444444}
+\definecolor{boxline}{HTML}{666666}
+\definecolor{boxfill}{HTML}{F4F4F4}
+\definecolor{boxtitle}{HTML}{E8E8E8}
+\definecolor{g1}{HTML}{D0D0D0}
+\definecolor{g2}{HTML}{9A9A9A}
+\definecolor{g3}{HTML}{5A5A5A}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=black,
+  urlcolor=black,
+  pdftitle={MTL 458 Practice Questions: Lectures 15--19},
+  pdfauthor={Minati De, IIT Delhi}
+}
+
+\setstretch{1.12}
+\raggedbottom
+\setlist[itemize]{leftmargin=1.3em,itemsep=0.28em,topsep=0.35em}
+\setlist[enumerate]{leftmargin=1.5em,itemsep=0.35em,topsep=0.4em}
+
+\titleformat{\section}
+  {\Large\bfseries\color{ink}}{\thesection.}{0.6em}{}
+  [{\color{rulegray}\titlerule[0.5pt]}]
+\titleformat{\subsection}
+  {\large\bfseries\color{ink}}{\thesubsection}{0.55em}{}
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{ink}}{\thesubsubsection}{0.5em}{}
+
+\titlespacing*{\section}{0pt}{1.35em}{0.7em}
+\titlespacing*{\subsection}{0pt}{1.05em}{0.45em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.3pt}
+\fancyhead[L]{\small\color{ink}MTL 458 \textbullet\ Operating Systems}
+\fancyhead[R]{\small\color{ink}Practice Questions: Lectures 15--19}
+\fancyfoot[C]{\small\thepage}
+\setlength{\headheight}{14pt}
+
+% ---------------------------------------------------------------------------
+% Boxes
+% ---------------------------------------------------------------------------
+\tcbset{
+  commonbox/.style={
+    colback=boxfill, colframe=boxline, boxrule=0.5pt,
+    left=6pt, right=6pt, top=5pt, bottom=5pt,
+    fonttitle=\bfseries, coltitle=black, colbacktitle=boxtitle,
+    enhanced, sharp corners=south, breakable
+  }
+}
+\newtcolorbox{keybox}[1][]{commonbox, title={#1}}
+\newtcolorbox{quizbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{solbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{warnbox}[1][]{commonbox, title={#1}}
+\newtcolorbox{defbox}[1][]{commonbox, title={#1}}
+
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{g3},
+  numbers=left, numberstyle=\scriptsize\color{g2}, numbersep=6pt,
+  frame=single, rulecolor=\color{boxline},
+  backgroundcolor=\color{boxfill},
+  xleftmargin=1.6em, framexleftmargin=1.4em,
+  columns=fullflexible, keepspaces=true,
+  showstringspaces=false, breaklines=true,
+  aboveskip=0.6em, belowskip=0.6em,
+  morekeywords={cond_t,mutex_t,sem_t,lock_t,rwlock_t,pthread_t,pthread_cond_t,pthread_mutex_t}
+}
+\lstdefinestyle{term}{language={}, numbers=none, basicstyle=\ttfamily\footnotesize,
+  xleftmargin=0.4em, framexleftmargin=0.2em}
+
+% Start a new page unless at least #1 of vertical space remains
+\makeatletter
+\newcommand{\keepspace}[1]{\par\penalty-100\begingroup
+  \setlength{\dimen@}{#1}\dimen@ii\pagegoal\advance\dimen@ii-\pagetotal
+  \ifdim\dimen@>\dimen@ii\ifdim\dimen@ii>\z@\vfil\fi\break\fi\endgroup}
+\makeatother
+
+\newcounter{qn}[section]
+\newcommand{\lecno}{}
+% \Q{type}{title}: numbered question box; solution follows in \begin{solbox}
+\newenvironment{Qn}[2]{\refstepcounter{qn}\keepspace{8\baselineskip}%
+  \begin{quizbox}[Q\lecno.\theqn\ \ [#1] #2]}{\end{quizbox}}
+\newenvironment{Sol}{\begin{solbox}[Solution]}{\end{solbox}\vspace{0.4em}}
+
+\begin{document}
+
+\begin{center}
+{\color{rulegray}\rule{\textwidth}{1.1pt}}\\[0.45em]
+{\LARGE\bfseries Operating Systems}\\[0.25em]
+{\Large\bfseries MTL 458 \textperiodcentered\ Practice Questions}\\[0.35em]
+{\LARGE\bfseries Lectures 15--19}\\[0.2em]
+{\large Swapping \textperiodcentered\ Concurrency \textperiodcentered\ Locks
+\textperiodcentered\ Condition Variables \textperiodcentered\ Semaphores}\\[0.35em]
+{\color{rulegray}\rule{\textwidth}{1.1pt}}
+\end{center}
+
+\vspace{0.4em}
+\begin{keybox}[How to use this set]
+\begin{itemize}
+  \item Questions are grouped by lecture; each one is tagged with its type:
+        \textbf{[T/F]} true/false with justification, \textbf{[Concept]},
+        \textbf{[Trace]} simulate step by step, \textbf{[Bad schedule]}
+        find an interleaving that breaks the code, \textbf{[Fill]} complete
+        missing code/values, \textbf{[Predict]} possible outputs/results,
+        \textbf{[Design]} write synchronization code.
+  \item Within a lecture they go roughly from easy to hard. The style follows
+        past MTL458 papers (fault tables, ticket-lock states, racy list
+        outcomes, Peterson variants, semaphore design).
+  \item Section 1 has all past-year exam questions on these lectures; the remaining sections are new practice questions.
+  \item Try each question before reading its solution box. Everything uses
+        only the content of Lectures 15--19 (and the notes).
+\end{itemize}
+\end{keybox}
+
+\tableofcontents
+\vspace{0.6em}
+\noindent{\color{rulegray}\rule{\textwidth}{0.4pt}}
+
+% ===========================================================================
+\section{Past-year exam questions (Lectures 15--19)}
+% ===========================================================================
+
+\begin{keybox}[What this section contains]
+Every question from the past MTL458 papers in \texttt{pyqs/} that falls in
+Lectures 15--19 (page replacement, races, locks, condition variables,
+semaphores), with full solutions. Questions on other lectures (paging
+arithmetic, scheduling, deadlock detection/Banker's, process API, RAID)
+are left out. The lefty/righty dining philosophers question appeared in
+both Major 2016 and Minor~2 2016; it is included once.
+\end{keybox}
+
+\subsection*{Major 2016 --- Q1(c): LRU page replacement}
+\paragraph{Restatement.}
+Consider the following page reference strings:
+\[
+1,2,3,4,2,1,5,6,2,1,2,3,7,6,3,2,1,2,3,6.
+\]
+How many page faults would occur for the LRU replacement algorithm,
+assuming four frames?
+
+\paragraph{Solution.}
+The four frame columns below denote fixed frame slots, not recency
+order.  A dash in the victim column means either a hit or use of a
+previously empty frame.
+\[
+\begin{array}{c|c|c|c|c|c|c|c}
+\mathrm{Step}&\mathrm{Ref.}&F_1&F_2&F_3&F_4&\mathrm{Result}&\mathrm{Victim}\\ \hline
+1 &1&1&-&-&-&\mathrm{fault}&-\\
+2 &2&1&2&-&-&\mathrm{fault}&-\\
+3 &3&1&2&3&-&\mathrm{fault}&-\\
+4 &4&1&2&3&4&\mathrm{fault}&-\\
+5 &2&1&2&3&4&\mathrm{hit}&-\\
+6 &1&1&2&3&4&\mathrm{hit}&-\\
+7 &5&1&2&5&4&\mathrm{fault}&3\\
+8 &6&1&2&5&6&\mathrm{fault}&4\\
+9 &2&1&2&5&6&\mathrm{hit}&-\\
+10&1&1&2&5&6&\mathrm{hit}&-\\
+11&2&1&2&5&6&\mathrm{hit}&-\\
+12&3&1&2&3&6&\mathrm{fault}&5\\
+13&7&1&2&3&7&\mathrm{fault}&6\\
+14&6&6&2&3&7&\mathrm{fault}&1\\
+15&3&6&2&3&7&\mathrm{hit}&-\\
+16&2&6&2&3&7&\mathrm{hit}&-\\
+17&1&6&2&3&1&\mathrm{fault}&7\\
+18&2&6&2&3&1&\mathrm{hit}&-\\
+19&3&6&2&3&1&\mathrm{hit}&-\\
+20&6&6&2&3&1&\mathrm{hit}&-
+\end{array}
+\]
+Faults occur at steps
+\[
+1,2,3,4,7,8,12,13,14,17,
+\]
+so the exact number of page faults is
+\[
+\boxed{10}.
+\]
+
+\subsection*{Major 2016 --- Q2(c) / Minor 2 2016 --- Q3: Lefty/righty dining philosophers}
+\paragraph{Restatement.}
+Suppose that there are two types of philosophers.  One type always
+picks up his left fork first (a ``lefty''), and the other type always
+picks up his right fork first (a ``righty'').  Using semaphore, define
+both types of philosophers' behavior.
+
+\paragraph{Solution.}
+For \(n\) philosophers, let each fork be a binary semaphore:
+\[
+\mathrm{semaphore}\;\mathrm{fork}[0\ldots n-1],
+\qquad \mathrm{fork}[k]=1\quad\hbox{initially}.
+\]
+For philosopher \(i\), define
+\(\mathrm{left}(i)=i\) and
+\(\mathrm{right}(i)=(i+1)\bmod n\).  Here \(P\) is wait/down and \(V\)
+is signal/up.
+
+\begin{verbatim}
+lefty(i):
+    while (true) {
+        think();
+        P(fork[left(i)]);
+        P(fork[right(i)]);
+        eat();
+        V(fork[right(i)]);
+        V(fork[left(i)]);
+    }
+
+righty(i):
+    while (true) {
+        think();
+        P(fork[right(i)]);
+        P(fork[left(i)]);
+        eat();
+        V(fork[left(i)]);
+        V(fork[right(i)]);
+    }
+\end{verbatim}
+
+Each fork is used by at most one philosopher because its semaphore is
+binary.  If the circle contains both acquisition orientations (the
+usual implementation makes one philosopher a righty and all the
+others lefties), the uniform circular-wait pattern is broken, so all
+philosophers cannot deadlock while holding their first fork.  If every
+philosopher has the same orientation, the familiar circular deadlock
+is still possible.
+
+\subsection*{Major 2016 --- Q3(a): All concurrent traces}
+
+\paragraph{Restatement.}
+Consider a concurrent program with two processes, \(p\) and \(q\),
+defined as follows.  \(A,B,C,D,\) and \(E\) are arbitrary atomic
+(indivisible) statements.  Assume that the main program (not shown)
+does a \texttt{parbegin} of the two processes.
+\begin{verbatim}
+Void p()             void q()
+{ A; B; C; }         { D; E; }
+\end{verbatim}
+Show all the possible interleavings of the execution of the preceding
+two processes (show this by giving execution ``traces'' in terms of the
+atomic statements).
+
+\paragraph{Solution.}
+Every trace must preserve \(A<B<C\) and \(D<E\).  Choosing the three
+positions occupied by \(A,B,C\) gives
+\[
+\binom{5}{3}=\binom{5}{2}=10
+\]
+traces.  All ten are
+\[
+\begin{array}{lllll}
+ABCDE, & ABDCE, & ABDEC, & ADBCE, & ADBEC,\\
+ADEBC, & DABCE, & DABEC, & DAEBC, & DEABC.
+\end{array}
+\]
+
+\subsection*{Major 2016 --- Q3(b): Peterson's algorithm}
+
+\paragraph{Restatement.}
+Prove the correctness of Peterson's algorithm for mutual exclusion and
+progress of some processes requiring access to its critical section.
+
+\paragraph{Solution.}
+The shared variables are initialized by
+\[
+\mathrm{flag}[0]=\mathrm{flag}[1]=\mathrm{false};
+\]
+\(\mathrm{turn}\) may initially have either value.  Process \(P_i\),
+where \(j=1-i\), executes:
+
+\begin{verbatim}
+while (true) {
+    flag[i] = true;
+    turn = j;
+    while (flag[j] && turn == j)
+        ;                       /* spin */
+
+    critical_section();
+
+    flag[i] = false;
+    remainder_section();
+}
+\end{verbatim}
+
+This proof assumes atomic reads and writes, sequentially consistent
+shared memory, and that a process does not remain in its critical
+section forever.
+
+\paragraph{Mutual exclusion.}
+Assume both \(P_0\) and \(P_1\) are simultaneously in their critical
+sections.  Both flags must then be true.  Consider the two entry-section
+writes to \(\mathrm{turn}\), and suppose without loss of generality that
+\(P_0\)'s write \(\mathrm{turn}=1\) occurs last.  Before that write,
+\(P_1\) has already set \(\mathrm{flag}[1]\) to true, and that flag
+cannot be cleared before \(P_1\) leaves its critical section.  Thus
+\(P_0\) subsequently tests
+\(\mathrm{flag}[1]\mathbin{\&\&}\mathrm{turn}=1\), which is true, and
+cannot enter while \(P_1\) is in its critical section.  This
+contradicts the assumption that both entered.  The case in which
+\(P_1\)'s turn write is last is symmetric.  Therefore at most one
+process is in the critical section.
+
+\paragraph{Progress and bounded waiting.}
+If only \(P_i\) wants to enter, then \(\mathrm{flag}[j]\) is false and
+\(P_i\) enters immediately.  If both want to enter, both set their
+flags, and the last write to \(\mathrm{turn}\) determines which process
+waits.  Exactly one loop condition can remain true, so the other
+process enters; there is no state in which both wait for each other.
+On leaving, that process clears its flag, enabling the waiting process.
+Moreover, after \(P_i\) announces its interest, \(P_j\) can enter ahead
+of it at most once before \(P_i\) enters.  Thus the algorithm supplies
+mutual exclusion, progress, and bounded waiting under fair execution.
+
+\subsection*{Major 2016 --- Q3(c): An incorrect bounded-buffer implementation}
+
+\paragraph{Restatement.}
+Provide the algorithms for producer and consumer processes in bounded
+buffer problem and show that they may not function correctly when
+executed concurrently.
+
+\paragraph{Solution.}
+The following tempting implementation uses a circular buffer of size
+\(N\) and a shared count, but no atomic operation, lock, or semaphore:
+
+\begin{verbatim}
+/* shared: item buffer[N]; int in = 0, out = 0, count = 0; */
+
+produce(x):
+    while (count == N)
+        ;                       /* wait for a free slot */
+    buffer[in] = x;
+    in = (in + 1) % N;
+    count = count + 1;
+
+consume():
+    while (count == 0)
+        ;                       /* wait for an item */
+    x = buffer[out];
+    out = (out + 1) % N;
+    count = count - 1;
+    return x;
+\end{verbatim}
+
+The source-level increments are read--modify--write sequences.  For
+example, suppose initially \(\mathrm{count}=1\), and a producer and a
+consumer run concurrently:
+\[
+\begin{array}{c|l}
+1&\mathrm{producer\ reads\ count}=1\\
+2&\mathrm{consumer\ reads\ count}=1\\
+3&\mathrm{producer\ computes}\ 2\\
+4&\mathrm{consumer\ computes}\ 0\\
+5&\mathrm{producer\ stores}\ 2\\
+6&\mathrm{consumer\ stores}\ 0
+\end{array}
+\]
+One item was added and one removed, so the correct final count is
+\(1\), but the stored count is \(0\).  Reversing the final two stores
+makes it \(2\), which is also wrong.  Future executions can therefore
+underflow, overflow, or wait despite the actual buffer state.
+
+With multiple producers, two producers can also both observe
+\(\mathrm{count}=N-1\), pass the full test, use the same value of
+\(\mathrm{in}\), and overwrite one another's item.  Analogous races
+exist for multiple consumers at \(\mathrm{out}\).  Correct bounded
+buffer code needs mutual exclusion around buffer/index updates and
+counting synchronization, conventionally semaphores
+\(\mathrm{empty}=N\), \(\mathrm{full}=0\), and
+\(\mathrm{mutex}=1\).
+
+\subsection*{Major 2020 --- Q1(c),(d): True or false, with justification}
+\begin{enumerate}
+\item[(c)] \emph{Threads \(T_1\) and \(T_2\) share \(x\).  \(T_1\) protects
+\(x\) using a POSIX mutex.  If \(T_2\) writes \(x\) without locking the
+mutex, a trap is generated.}
+
+\textbf{False.}  A POSIX mutex is a software synchronization convention;
+ordinary memory accesses do not carry information about which mutex should
+protect them.  The hardware therefore does not trap merely because \(T_2\)
+failed to lock the mutex.  The accesses constitute a data race (and hence
+undefined behaviour in the C/POSIX memory model) if they are conflicting and
+concurrent, but no protection trap is inherently generated.
+
+\item[(d)] \emph{A thread cannot go to sleep while holding a lock, because
+that might violate atomicity.}
+
+\textbf{False.}  A thread can, for example, issue a blocking I/O operation
+while retaining a mutex.  Other threads then remain excluded, so the mutual
+exclusion, and hence the critical section's atomicity with respect to those
+threads, is not violated.  Doing this is often poor design because it can
+cause long delays, lock convoys, or deadlock.  Some special locks, such as
+kernel spinlocks, impose a separate rule that their holders must not sleep,
+but that is not a property of every lock.
+
+\end{enumerate}
+
+\subsection*{Major 2020 --- Q5: Ticket lock}
+
+\emph{Ten threads correctly use a ticket lock whose \texttt{lock} operation
+atomically fetches and increments \texttt{ticket}, waits for
+\(\texttt{turn}=\texttt{myturn}\), and whose \texttt{unlock} increments
+\texttt{turn}.  Determine whether each given
+\((\texttt{ticket},\texttt{turn})\) pair is possible.}
+
+Ignoring integer wraparound, correct use maintains
+\[
+0\leq \texttt{ticket}-\texttt{turn}\leq 10.
+\]
+The difference is exactly the number of threads that have taken a ticket but
+have not yet completed the corresponding unlock: one may be in the critical
+section and the rest are waiting.
+
+\begin{enumerate}
+\item[(a)] \((0,0)\): \textbf{possible}.  This is the initialized state,
+before any acquisition.
+
+\item[(b)] \((0,1)\): \textbf{impossible}.  It would mean that an unlock had
+advanced \texttt{turn} although no ticket had ever been issued.
+
+\item[(c)] \((1,0)\): \textbf{possible}.  One thread has received ticket 0
+and is either about to enter or is in the critical section; it has not yet
+unlocked.
+
+\item[(d)] \((150,100)\): \textbf{impossible}.  There would be
+\(150-100=50\) outstanding acquisitions, but only ten correctly using
+threads can each have at most one outstanding acquisition.
+
+\item[(e)] \((1005,1000)\): \textbf{possible}.  One thousand acquisitions
+have completed and five of the ten threads currently have outstanding
+tickets.
+\end{enumerate}
+
+\subsection*{Major 2020 --- Q6: Racy linked-list insertion}
+
+\emph{Three threads insert keys 1, 2, and 3 into an initially empty list,
+without synchronization, using}
+
+\begin{verbatim}
+n->next = head;
+head = n;
+\end{verbatim}
+
+\emph{where allocation always succeeds and is thread-safe.  Give every
+possible reachable list length and shape.}
+
+Under the intended interleaving model, pointer reads and writes are atomic.
+Two or more threads can read the same old value of \texttt{head} in the
+first assignment.  Their later writes to \texttt{head} then overwrite one
+another, making some allocated nodes unreachable.
+
+\begin{itemize}
+\item Length 1:
+\[
+1,\qquad 2,\qquad 3.
+\]
+For example, all three threads can read \texttt{NULL} before any of them
+writes \texttt{head}; whichever writes \texttt{head} last is the only
+reachable node.
+
+\item Length 2 (every ordered pair of distinct keys):
+\[
+\begin{array}{lll}
+1\mathbin{\to}2,&1\mathbin{\to}3,&
+2\mathbin{\to}1,\\
+2\mathbin{\to}3,&3\mathbin{\to}1,&
+3\mathbin{\to}2.
+\end{array}
+\]
+The remaining node was allocated but lost.  For example, threads 2 and 3
+may both prepare a node pointing to \texttt{NULL}; thread 2 publishes its
+node, thread 1 records node 2 as its successor, thread 3 temporarily
+overwrites the head, and thread 1 finally publishes node 1.  The reachable
+list is \(1\to2\).
+
+\item Length 3 (every permutation):
+\[
+\begin{array}{lll}
+1\mathbin{\to}2\mathbin{\to}3,&
+1\mathbin{\to}3\mathbin{\to}2,&
+2\mathbin{\to}1\mathbin{\to}3,\\
+2\mathbin{\to}3\mathbin{\to}1,&
+3\mathbin{\to}1\mathbin{\to}2,&
+3\mathbin{\to}2\mathbin{\to}1.
+\end{array}
+\]
+Each is obtained by a suitable serial ordering (or an equivalent
+interleaving) of the three insertions.
+\end{itemize}
+
+Length 0 is impossible because at least one of the three writes to
+\texttt{head} occurs.  No cycle can be formed: an edge from node \(i\) to
+node \(j\) requires \(j\) to have been published before \(i\)'s first
+assignment; the resulting strict ``published earlier'' order cannot form a
+cycle.  Strictly speaking, unsynchronized conflicting accesses to
+\texttt{head} are a C data race and therefore have undefined behaviour;
+the lists above are the complete outcomes in the sequentially consistent,
+atomic-pointer model intended by the question.
+
+\subsection*{Major 2020 --- Q7: Synchronizing a one-doctor clinic}
+
+\emph{There is one doctor, an infinite waiting room, and one shared buffer.
+A patient calls \texttt{consultDoctor()} to write consultation information
+and later calls \texttt{noteTreatment()} to read the treatment.  The doctor
+repeatedly calls \texttt{treatPatient()}, which reads the consultation and
+writes the treatment.  Use only semaphores so patients do not overwrite one
+another, the doctor reads only new valid information, and a patient reads
+only a completed treatment.}
+
+Three semaphores suffice:
+\[
+\begin{array}{c|c|l}
+\mbox{name} & \mbox{initial value} & \mbox{purpose}\\ \hline
+\texttt{office} & 1 & \mbox{only one patient may use the shared buffer}\\
+\texttt{patientInfo} & 0 & \mbox{a complete, new consultation is available}\\
+\texttt{treatmentReady} & 0 & \mbox{the doctor has written the treatment}
+\end{array}
+\]
+Here \(P\) is semaphore wait and \(V\) is semaphore signal.
+
+\begin{verbatim}
+Patient()
+{
+    P(office);             /* wait outside; reserve the buffer */
+    consultDoctor();       /* write this patient's information */
+    V(patientInfo);        /* publish it to the doctor */
+
+    P(treatmentReady);     /* wait until doctor writes result */
+    noteTreatment();       /* read this patient's treatment */
+    V(office);             /* next patient may use the buffer */
+}
+
+Doctor()
+{
+    while (1) {
+        P(patientInfo);    /* never read an empty/stale request */
+        treatPatient();    /* read request and write treatment */
+        V(treatmentReady);
+    }
+}
+\end{verbatim}
+
+\texttt{office} is held by a patient for the complete request--response
+exchange, so another patient cannot overwrite either phase of the shared
+buffer.  The two zero-valued semaphores provide the request and response
+handshakes, including the required memory-ordering points.  The semaphore's
+wait queue represents the unbounded waiting room.
+
+\subsection*{Minor 2 2016 --- Q1: Bounded buffer using \(n-1\) vs.\ \(n\) slots}
+\textbf{Question.}
+First, give a solution (algorithm) which allows at most \(n-1\) entries in
+the buffer, of the producer--consumer problem with a finite buffer.
+Secondly, modify the algorithm to remedy this deficiency.
+
+\textbf{Solution.}
+Let \texttt{buffer[0..n-1]} be a circular buffer.  Initially,
+\(\texttt{in}=\texttt{out}=0\).  For one producer and one consumer, the
+following algorithm reserves one array position in order to distinguish
+``empty'' from ``full'':
+
+\begin{verbatim}
+/* Producer */
+for (;;) {
+    item = produce_item();
+    while ((in + 1) % n == out)
+        ;                       /* full: spin */
+    buffer[in] = item;
+    in = (in + 1) % n;
+}
+
+/* Consumer */
+for (;;) {
+    while (in == out)
+        ;                       /* empty: spin */
+    item = buffer[out];
+    out = (out + 1) % n;
+    consume_item(item);
+}
+\end{verbatim}
+
+Here \(\texttt{in}=\texttt{out}\) denotes an empty buffer, whereas
+\((\texttt{in}+1)\bmod n=\texttt{out}\) denotes a full buffer.  Thus at
+most \(n-1\) items can be stored: one physical slot is deliberately
+wasted.  (With multiple producers or multiple consumers, the index
+updates would additionally need mutual exclusion.)
+
+To use all \(n\) slots, keep empty and full states separately using
+counting semaphores.  Let
+\[
+  \texttt{mutex}=1,\qquad \texttt{empty}=n,\qquad \texttt{full}=0,
+  \qquad \texttt{in}=\texttt{out}=0.
+\]
+The corrected bounded-buffer algorithm is:
+
+\begin{verbatim}
+/* Producer */
+for (;;) {
+    item = produce_item();
+    sem_wait(&empty);
+    sem_wait(&mutex);
+    buffer[in] = item;
+    in = (in + 1) % n;
+    sem_post(&mutex);
+    sem_post(&full);
+}
+
+/* Consumer */
+for (;;) {
+    sem_wait(&full);
+    sem_wait(&mutex);
+    item = buffer[out];
+    out = (out + 1) % n;
+    sem_post(&mutex);
+    sem_post(&empty);
+    consume_item(item);
+}
+\end{verbatim}
+
+\texttt{empty} now records the number of free slots and \texttt{full}
+records the number of occupied slots, so the state with
+\(\texttt{full}=n\) is unambiguous.  Hence all \(n\) slots can be used.
+\texttt{mutex} protects the buffer and indices, so this version also
+works with multiple producers and consumers.
+
+
+\clearpage
+% ===========================================================================
+\section{Lecture 15: Beyond physical memory (swapping)}
+\renewcommand{\lecno}{15}
+% ===========================================================================
+
+\keepspace{17\baselineskip}
+\begin{Qn}{T/F}{Swapping basics}
+State true or false, with a one-line justification.
+\begin{enumerate}[(a)]
+  \item With swapping, a process can run even if its virtual address space
+        is larger than physical memory.
+  \item A page fault means the process accessed an illegal address.
+  \item The hardware clears the use (reference) bits periodically.
+  \item For any reference string, LRU with 4 frames never has more faults
+        than LRU with 3 frames.
+  \item Page faults are handled entirely by hardware on machines with a
+        hardware-managed TLB.
+  \item Evicting a clean page requires no disk write.
+  \item Prepaging always reduces the number of page faults.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+\begin{enumerate}[(a)]
+  \item \textbf{True.} Only the pages in use need to be in memory; the rest
+        live on disk (present=0). That is the whole illusion.
+  \item \textbf{False.} Page fault = valid=1 but present=0: a \emph{legal}
+        page that is on disk. An illegal address (valid=0) gives a
+        segmentation fault.
+  \item \textbf{False.} Hardware only \emph{sets} the use bit on a
+        reference; the OS clears it (e.g.\ the clock hand).
+  \item \textbf{True.} LRU has the stack property: the 3-frame contents are
+        always a subset of the 4-frame contents, so every 3-frame hit is a
+        4-frame hit. (FIFO lacks this: Belady's anomaly.)
+  \item \textbf{False.} Page faults always trap into the OS: disk I/O is
+        too slow and complex for hardware.
+  \item \textbf{True.} Its copy on disk is still correct, so it is simply
+        discarded; only dirty pages are written back.
+  \item \textbf{False.} Wrong predictions waste disk I/O and the prefetched
+        pages can evict pages that were about to be used, \emph{causing}
+        extra faults.
+\end{enumerate}
+\end{Sol}
+
+\begin{Qn}{Concept}{Valid vs.\ present}
+A process's page table is:
+\begin{center}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular}{@{}ccccc@{}}
+  \toprule
+  \textbf{VPN} & \textbf{PFN / disk block} & \textbf{valid} & \textbf{prot} & \textbf{present} \\
+  \midrule
+  0 & 7  & 1 & \texttt{r-x} & 1 \\
+  1 & -- & 0 & --           & -- \\
+  2 & 41 & 1 & \texttt{rw-} & 0 \\
+  3 & 3  & 1 & \texttt{rw-} & 1 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+For each access, say what happens and what the OS does: (a) load from
+VPN 0, (b) store to VPN 2, (c) load from VPN 1, (d) store to VPN 0.
+\end{Qn}
+\begin{Sol}
+\begin{enumerate}[(a)]
+  \item Present, readable: normal translation to PFN 7. No OS involvement
+        (after a TLB miss at most).
+  \item valid=1, present=0: \textbf{page fault}. The 41 is a \emph{disk
+        block}. The OS picks a free frame (evicting a victim if none, and
+        writing it back first if dirty), reads block 41 into it, sets
+        PFN=new frame and present=1, and restarts the store. Since it is a
+        store, the page becomes dirty.
+  \item valid=0: not part of the address space $\Rightarrow$
+        \textbf{segmentation fault}; the process is likely killed.
+  \item Present but \texttt{r-x}: a \textbf{protection fault} (write to a
+        read-only code page); the OS treats it as an illegal access.
+\end{enumerate}
+\end{Sol}
+
+\begin{Qn}{Concept}{Order the page-fault steps}
+Put these in order and say whether hardware (HW) or OS does each:
+(i) update PTE: PFN and present=1;
+(ii) restart the faulting instruction;
+(iii) look up the PTE for the virtual address;
+(iv) read the page from disk into a frame;
+(v) trap into the OS because present=0;
+(vi) find the disk address in the PTE;
+(vii) choose a victim frame and write it back if dirty.
+While (iv) is in progress, what should the scheduler do?
+\end{Qn}
+\begin{Sol}
+(iii) HW (TLB miss, page-table walk) $\to$ (v) HW raises the fault $\to$
+(vi) OS $\to$ (vii) OS (only if no free frame) $\to$ (iv) OS issues
+disk I/O $\to$ (i) OS $\to$ (ii) HW re-executes the instruction when the
+process runs again.
+
+During (iv) the disk read takes milliseconds: the faulting process is
+\textbf{blocked} and the scheduler runs \textbf{another ready process}.
+When the disk interrupt arrives, the process becomes ready again.
+\end{Sol}
+
+\begin{Qn}{Concept}{Restarting instructions}
+Why does demand paging need \emph{precise interrupts}? Explain the problem
+with an instruction like \texttt{move +(SP), R2} (auto-increment), and
+state what the hardware must do.
+\end{Qn}
+\begin{Sol}
+A page fault can occur \emph{in the middle of} an instruction (on fetch or
+on the data access), and the fault must be transparent: after the OS loads
+the page, the instruction must run again as if nothing happened. Precise
+interrupts stop the pipeline so that all earlier instructions have
+completed and the faulting one (and later ones) can be restarted from
+scratch.
+
+\texttt{move +(SP), R2} increments \texttt{SP} and loads from memory. If
+the increment happens and then the load faults, re-running the whole
+instruction increments \texttt{SP} \emph{twice}. The hardware must
+\textbf{track side effects} and undo them before the restart (or be able
+to resume the instruction where it stopped).
+\end{Sol}
+
+\begin{Qn}{Concept}{Locality and policies}
+(a) Name the two kinds of locality and give a code example of each.
+(b) Why does it make sense to spend thousands of instructions choosing a
+victim page? (c) Give one access pattern where prepaging helps and one
+where it hurts.
+\end{Qn}
+\begin{Sol}
+(a) \textbf{Temporal}: the same data is reused soon, e.g.\ a loop counter
+\texttt{i} or \texttt{sum} accessed every iteration. \textbf{Spatial}:
+nearby addresses are used soon, e.g.\ scanning \texttt{a[0], a[1], \ldots},
+or sequential instructions.
+
+(b) A page fault costs a disk access (\textbf{milliseconds} = millions of
+instructions). Even a few thousand instructions of policy code are
+negligible if they avoid a single extra fault. The goal is to minimize
+the number of faults.
+
+(c) Helps: \textbf{sequential} access (reading a file or array page by
+page: fetch \(P+1\) with \(P\)). Hurts: random access (the predicted pages
+are never used; they waste I/O and evict useful pages).
+\end{Sol}
+
+\keepspace{24\baselineskip}
+\begin{Qn}{Trace}{OPT, FIFO, LRU}
+Reference string \texttt{7 0 1 2 0 3 0 4 2 3 0 3 2}, \textbf{3 frames},
+initially empty. For each of OPT, FIFO and LRU give the frame contents
+after every reference, mark misses, and give the total number of misses.
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.02}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}c|lc|lc|lc@{}}
+  \toprule
+  & \multicolumn{2}{c|}{\textbf{OPT}} & \multicolumn{2}{c|}{\textbf{FIFO} (oldest first)} & \multicolumn{2}{c}{\textbf{LRU} (least recent first)} \\
+  \textbf{Ref} & frames & miss & queue & miss & order & miss \\
+  \midrule
+  7 & 7       & M & 7       & M & 7       & M \\
+  0 & 0 7     & M & 7 0     & M & 7 0     & M \\
+  1 & 0 1 7   & M & 7 0 1   & M & 7 0 1   & M \\
+  2 & 0 1 2 (evict 7) & M & 0 1 2 & M & 0 1 2 & M \\
+  0 & 0 1 2   &   & 0 1 2   &   & 1 2 0   &   \\
+  3 & 0 2 3 (evict 1) & M & 1 2 3 & M & 2 0 3 & M \\
+  0 & 0 2 3   &   & 2 3 0   & M & 2 3 0   &   \\
+  4 & 2 3 4 (evict 0) & M & 3 0 4 & M & 3 0 4 & M \\
+  2 & 2 3 4   &   & 0 4 2   & M & 0 4 2   & M \\
+  3 & 2 3 4   &   & 4 2 3   & M & 4 2 3   & M \\
+  0 & 0 2 3 (evict 4) & M & 2 3 0 & M & 2 3 0 & M \\
+  3 & 0 2 3   &   & 2 3 0   &   & 2 0 3   &   \\
+  2 & 0 2 3   &   & 2 3 0   &   & 0 3 2   &   \\
+  \midrule
+  & \multicolumn{2}{r|}{\textbf{7}} & \multicolumn{2}{r|}{\textbf{10}} & \multicolumn{2}{r}{\textbf{9}} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+OPT evicts the page used furthest in the future: at ``2'' both 7 and 1
+are never used again (a tie: evicting either is optimal and gives the same
+total), and we evict 7; at ``3'' it evicts 1 (never used again); at ``4''
+it evicts 0 (next use is furthest); at the second ``0'' it evicts 4.
+OPT \(\le\) LRU \(\le\) FIFO here, as expected (not guaranteed in
+general for LRU vs.\ FIFO).
+\end{Sol}
+
+\begin{Qn}{Trace}{Belady's anomaly, and why LRU is immune}
+Reference string \texttt{1 2 3 4 1 2 5 1 2 3 4 5}.
+(a) Count FIFO misses with 3 and with 4 frames.
+(b) Count LRU misses with 3 and with 4 frames.
+(c) Explain the difference using the stack property.
+\end{Qn}
+\begin{Sol}
+(a) FIFO: \textbf{9} misses with 3 frames, \textbf{10} with 4 frames:
+more memory, more faults (Belady's anomaly). (This is the lecture's
+\texttt{A B C D A B E A B C D E} example with letters renamed.)
+
+(b) LRU: \textbf{10} misses with 3 frames, \textbf{8} with 4 frames.
+
+(c) LRU with \(k\) frames always holds the \(k\) most recently used pages;
+with \(k+1\) frames it holds the \(k+1\) most recently used, a superset. So
+every hit with \(k\) frames is a hit with \(k+1\) frames, and faults can
+only go down. FIFO's contents depend on arrival order, and the 3-frame set
+need not be a subset of the 4-frame set (e.g.\ after ``5'': FIFO-3 =
+\(\{1,2,5\}\), FIFO-4 = \(\{2,3,4,5\}\)), so the anomaly can occur.
+\end{Sol}
+
+\keepspace{26\baselineskip}
+\begin{Qn}{Trace}{Clock algorithm}
+4 frames (0--3), initially empty, clock hand at frame 0. On a fault, an
+empty frame is used first (use bit set to 1); once all frames are full,
+the clock algorithm picks the victim, and the new page's use bit is set to
+1 and the hand advances past it. A hit sets the page's use bit to 1.
+Reference string: \texttt{1 2 3 4 1 5 2 6 1 3}.
+Give the victim on every eviction and the total number of faults. What
+happens at the reference to 5, and why?
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{@{}clll@{}}
+  \toprule
+  \textbf{Ref} & \textbf{Result} & \textbf{Frames 0--3} & \textbf{Use bits, hand after} \\
+  \midrule
+  1--4 & 4 misses (fill) & 1 2 3 4 & 1 1 1 1, hand 0 \\
+  1 & hit & 1 2 3 4 & 1 1 1 1, hand 0 \\
+  5 & miss, \textbf{evict 1} & 5 2 3 4 & 1 0 0 0, hand 1 \\
+  2 & hit & 5 2 3 4 & 1 1 0 0, hand 1 \\
+  6 & miss, \textbf{evict 3} & 5 2 6 4 & 1 0 1 0, hand 3 \\
+  1 & miss, \textbf{evict 4} & 5 2 6 1 & 1 0 1 1, hand 0 \\
+  3 & miss, \textbf{evict 2} & 5 3 6 1 & 0 1 1 1, hand 2 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Total: \textbf{8 faults} (2 hits). At ``5'' all use bits are 1, so the
+hand clears all four in one full sweep and evicts the frame it started at
+(frame 0, page 1), even though 1 was just used. When every bit is set,
+clock degenerates to \textbf{FIFO}. At ``6'' the hand clears frame 1 (page
+2 was re-used) and evicts page 3, which was not used since the sweep: the
+LRU-like behaviour. (For comparison: OPT 6, FIFO 8, LRU 8 faults.)
+\end{Sol}
+
+\begin{Qn}{Concept}{Enhanced clock with dirty bits}
+Frames hold pages with (use, dirty) bits: P = (1,1), Q = (0,1), R = (1,0),
+S = (0,1), T = (1,0), in clock order starting at the hand. (a) Which page
+is evicted using the class rule? (b) Why is (0,1) preferred over (1,0),
+even though evicting (0,1) costs a disk write?
+\end{Qn}
+\begin{Sol}
+(a) Classes from best to worst: (0,0), (0,1), (1,0), (1,1). No page is
+(0,0); the lowest non-empty class is (0,1), containing Q and S. The
+\textbf{first} in clock order is \textbf{Q}.
+
+(b) ``Recently used'' matters more than ``dirty''. A (1,0) page was used
+recently and will probably be needed again, so evicting it likely costs a
+whole page \emph{fault} later (disk read + process blocked). A (0,1) page
+costs one write now, but is probably not needed soon.
+\end{Sol}
+
+\begin{Qn}{Trace}{Nth chance}
+Nth chance with \(N=2\): each sweep, a used page gets
+\texttt{notInUseSince = 0}; an unused page with \texttt{notInUseSince} \(<
+N\) gets it incremented; otherwise it is reclaimed. Page X is used before
+sweep 1 and never again. During which sweep is X reclaimed? How does
+\(N\) trade accuracy against cost, and what is \(N=1\)?
+\end{Qn}
+\begin{Sol}
+Sweep 1: X used $\Rightarrow$ 0. Sweep 2: unused, \(0<2\) $\Rightarrow$ 1.
+Sweep 3: \(1<2\) $\Rightarrow$ 2. Sweep 4: \(2 \not< 2\) $\Rightarrow$
+\textbf{reclaimed in sweep 4} (after \(N=2\) full sweeps without use).
+
+Large \(N\): finer distinction between old and very old pages, closer to
+true LRU, but more sweeps (more work) before a victim is found. Small \(N\)
+is cheaper. The ordinary \textbf{clock} reclaims a page the first time a
+sweep finds it unused; with this exact pseudocode that is \(N = 0\) (for
+\(N = 1\), X would be reclaimed in sweep 3).
+\end{Sol}
+
+\begin{Qn}{Concept}{Implementing perfect LRU}
+Compare software LRU (ordered list) and hardware LRU (timestamp per page):
+what is slow in each? For a 4\,GB machine with 4\,KB pages, how many
+timestamps must be scanned to find a victim? What do real systems do?
+\end{Qn}
+\begin{Sol}
+Software list: move the page to the front on \emph{every memory
+reference}: \textbf{slow references}, fast replacement (take the back).
+Hardware timestamps: storing the clock on a reference is fast, but finding
+the victim means \textbf{scanning all} pages: \(4\,\text{GB} / 4\,\text{KB} =
+2^{32}/2^{12} = 2^{20} \approx 10^6\) registers. Real systems do not
+implement perfect LRU; they approximate it (clock with use bits, Nth
+chance), since LRU itself is only an approximation of OPT: find an
+\emph{old} page, not necessarily the oldest.
+\end{Sol}
+
+% ===========================================================================
+\section{Lecture 16: Concurrency and threads}
+\renewcommand{\lecno}{16}
+% ===========================================================================
+
+\begin{Qn}{Concept}{Shared or private?}
+For two threads of the same process, classify each as \textbf{shared} or
+\textbf{private (per-thread)}: (a) a global variable, (b) a local variable
+of the thread function, (c) a \texttt{malloc}'d object whose pointer is
+stored in a global, (d) the PC/instruction pointer, (e) the stack pointer,
+(f) the page table / PTBR value, (g) open file descriptors, (h) the PID,
+(i) \texttt{\%eax}.
+\end{Qn}
+\begin{Sol}
+Shared: (a), (c), (f) (same address space), (g), (h).
+Private: (b) (on the thread's own stack), (d), (e), (i) (each thread has
+its own register set, saved/restored on a switch).
+Note: (b) is private in use but still in the shared address space; another
+thread could reach it through a pointer.
+\end{Sol}
+
+\begin{Qn}{T/F}{Processes vs.\ threads}
+\begin{enumerate}[(a)]
+  \item Switching between two threads of the same process changes the PTBR.
+  \item Threads communicate through \texttt{pipe()} because they cannot
+        share memory.
+  \item \texttt{pthread\_join} is the thread analogue of \texttt{wait()}.
+  \item Making \texttt{counter} \texttt{volatile} makes
+        \texttt{counter = counter + 1} atomic.
+  \item If a multi-threaded program passes all tests, it has no race
+        conditions.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{False}: same address space, same page table; that is why the
+switch is cheaper (no TLB/cache disruption from a new address space).
+(b) \textbf{False}: threads share the address space; communication is
+plain memory reads/writes (processes needed pipes and copying).
+(c) \textbf{True}.
+(d) \textbf{False}: \texttt{volatile} only forces real loads/stores to
+memory; the update is still load, add, store.
+(e) \textbf{False}: the bad interleaving may simply not have happened in
+the test runs. Assume a malicious scheduler.
+\end{Sol}
+
+\begin{Qn}{Predict}{Thread output orders}
+\texttt{main} prints \texttt{main: begin}, creates \(p_1\) (prints
+\texttt{A}) and \(p_2\) (prints \texttt{B}), then calls
+\texttt{pthread\_join(p2)}, \texttt{pthread\_join(p1)}, and prints
+\texttt{main: end}. List all possible outputs. Does swapping the join order
+change anything?
+\end{Qn}
+\begin{Sol}
+\texttt{main: begin}, then \texttt{A} and \texttt{B} in \textbf{either
+order}, then \texttt{main: end}: exactly 2 outputs. \texttt{main: end}
+always comes last because both joins return only after both threads finish.
+Join order does not affect what the threads print or when; it only decides
+which finished thread main notices first.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{Returning a value from a thread}
+What is wrong with this thread function, and how did the lecture's version
+avoid it?
+\begin{lstlisting}[numbers=none]
+void *mythread(void *arg) {
+    myret_t r;  r.x = 1;  r.y = 2;
+    return (void *) &r;
+}
+\end{lstlisting}
+\end{Qn}
+\begin{Sol}
+\texttt{r} is a local variable on the \textbf{thread's own stack}. When the
+thread returns, that stack frame is gone, so \texttt{pthread\_join}
+receives a dangling pointer. The lecture allocated the return value with
+\texttt{Malloc} (heap), which outlives the thread; \texttt{main} then frees
+it after reading it.
+\end{Sol}
+
+\begin{Qn}{Trace}{Register and memory state}
+\texttt{counter} at \texttt{0x9cd4} starts at 50. Each thread runs
+\texttt{mov 0x9cd4,\%eax}; \texttt{add \$0x1,\%eax};
+\texttt{mov \%eax,0x9cd4}. Schedule: T1 runs 2 instructions, switch, T2
+runs all 3, switch, T1 runs its last instruction. Give \texttt{\%eax} of
+each thread and the memory value after every step, and the final value.
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\begin{tabular}{@{}llccc@{}}
+  \toprule
+  \textbf{Runs} & \textbf{Instruction} & \textbf{T1 \%eax} & \textbf{T2 \%eax} & \textbf{0x9cd4} \\
+  \midrule
+  T1 & \texttt{mov 0x9cd4,\%eax} & 50 & -- & 50 \\
+  T1 & \texttt{add} & 51 & -- & 50 \\
+  \multicolumn{5}{c}{\textit{switch: T1's \%eax = 51 saved in its control block}} \\
+  T2 & \texttt{mov 0x9cd4,\%eax} & (51) & 50 & 50 \\
+  T2 & \texttt{add} & (51) & 51 & 50 \\
+  T2 & \texttt{mov \%eax,0x9cd4} & (51) & 51 & 51 \\
+  \multicolumn{5}{c}{\textit{switch: T1 restored with \%eax = 51}} \\
+  T1 & \texttt{mov \%eax,0x9cd4} & 51 & (51) & \textbf{51} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Final \textbf{51} instead of 52: one increment is lost because both threads
+loaded 50 before either stored.
+\end{Sol}
+
+\begin{Qn}{Predict}{How many interleavings, which results?}
+Thread 1 adds 1 and Thread 2 adds 2 to shared \texttt{x} (each: load, add,
+store; \texttt{x} = 0 initially). (a) How many distinct interleavings of
+the 6 instructions are there? (b) Which final values are possible, and in
+how many interleavings each? (c) In general, how many interleavings do
+two threads with \(m\) and \(n\) atomic steps have?
+\end{Qn}
+\begin{Sol}
+(a) Choose the 3 positions of Thread 1's instructions among 6:
+\(\binom{6}{3} = \mathbf{20}\).
+
+(b) Final value \textbf{3} (correct) in only \textbf{2} interleavings: the
+two serial ones (one thread entirely before the other's load). Otherwise
+both threads load the old value 0 and the \textbf{last store wins}: final
+\textbf{2} (T2 stores last) in \textbf{9}, final \textbf{1} (T1 stores
+last) in \textbf{9}. So \(2+9+9 = 20\).
+
+(c) \(\binom{m+n}{m}\) (each thread's own order is fixed). E.g.\ steps
+\(A;B;C\) and \(D;E\) give \(\binom{5}{2} = 10\) traces (a past exam
+question).
+\end{Sol}
+
+\begin{Qn}{Predict}{Range of a racy counter (hard)}
+Two threads each execute \texttt{counter = counter + 1} twice (load, add,
+store each time); \texttt{counter} starts at 0. What final values are
+possible? Give a schedule achieving the minimum.
+\end{Qn}
+\begin{Sol}
+Possible: \textbf{2, 3, 4}. (Maximum 4: no overlap.)
+
+Minimum 2 schedule: T1 loads 0. T2 does a full increment (counter = 1),
+then loads 1 for its second increment. T1 adds and stores 1, then does its
+whole second increment (load 1, store 2). Finally T2 adds 1 to its stale
+register value 1 and stores \textbf{2}. Three of four increments are
+``partly lost'', but the last increment of each thread still counts once,
+which is why the result cannot go below 2. (With \(N \ge 2\) iterations each, the
+final value can be anything from 2 to \(2N\); with \(N = 1\) it is 1 or 2.)
+\end{Sol}
+
+\begin{Qn}{Concept}{Definitions}
+Define: race condition, critical section, mutual exclusion, atomicity,
+non-determinism. Then explain why ``imagine the scheduler is malicious'' is
+the right way to reason about concurrent code.
+\end{Qn}
+\begin{Sol}
+\textbf{Race condition}: the result depends on the timing (interleaving) of
+threads. \textbf{Critical section}: code that accesses shared data and must
+not be executed by more than one thread at a time. \textbf{Mutual
+exclusion}: if one thread is in the critical section, others cannot be
+(unrelated work is fine). \textbf{Atomicity}: a group of instructions
+executes as an uninterruptable unit (all or nothing, no interleaving
+inside). \textbf{Non-determinism}: same inputs, different results on
+different runs.
+
+A bug shows up only under some schedules; tests may never hit them. If code
+is correct even when the scheduler picks the worst possible switch points,
+it is correct for every schedule.
+\end{Sol}
+
+\begin{Qn}{Concept}{Why threads?}
+(a) Why can't a single-threaded process use a second core? (b) Give two
+costs of building an application from many communicating processes instead
+of threads. (c) Why does CPU frequency stagnation make this matter?
+\end{Qn}
+\begin{Sol}
+(a) A process with one thread has one stream of execution; it can run on
+only one CPU at a time, and cannot overlap its own I/O with computation.
+(b) Cumbersome programming (separate address spaces, explicit messages),
+copying overheads (data goes through the kernel via \texttt{pipe()}),
+expensive context switches (new address space: PTBR change, TLB and cache
+disruption). (c) Clock frequency flattened around 2005; new chips add
+\textbf{more cores} rather than faster ones, so programs only get faster
+through concurrent execution.
+\end{Sol}
+
+% ===========================================================================
+\section{Lecture 17: Locks}
+\renewcommand{\lecno}{17}
+% ===========================================================================
+
+\begin{Qn}{Predict}{Racy linked-list insert}
+The list is \texttt{head} \(\to\) X. Threads A and B each run
+\texttt{new->next = L->head; L->head = new;} (no lock) to insert nodes a
+and b. List every possible final list, and which node (if any) is lost.
+\end{Qn}
+\begin{Sol}
+\begin{itemize}
+  \item \(a \to b \to X\): B completes, then A runs (A reads head = b).
+  \item \(b \to a \to X\): A completes, then B runs.
+  \item \(a \to X\), \textbf{b lost}: both read head = X, B writes head =
+        b, then A writes head = a.
+  \item \(b \to X\), \textbf{a lost}: both read X, A writes first, B last.
+\end{itemize}
+In the lost cases the orphan still points to X but nothing points to it.
+The fix is a lock around the two lines (Approach \#2: the smallest
+critical section).
+\end{Sol}
+
+\begin{Qn}{Concept}{Where should the lock go?}
+For \texttt{List\_Insert} (malloc, set key, set next, set head) and
+\texttt{List\_Lookup} (walk the list):
+(a) which lines of Insert must be inside the critical section, and why
+can \texttt{malloc} be outside?
+(b) Approach \#1 locks the whole of Lookup but unlocks only before
+\texttt{return 0}. What bug is that?
+(c) Why may Lookup skip the lock entirely if there is no
+\texttt{List\_Delete()}?
+\end{Qn}
+\begin{Sol}
+(a) Only \texttt{new->next = L->head; L->head = new;} (the read and write
+of shared \texttt{head}). \texttt{malloc} and \texttt{new->key = key} touch
+a node no other thread can see yet (assuming \texttt{malloc} is
+thread-safe). Bonus: a failed \texttt{malloc} then holds no lock.
+
+(b) The \texttt{return 1} path (key found) returns while still
+\textbf{holding the lock}: every later Insert/Lookup blocks forever. Every
+return path must unlock.
+
+(c) Lookup only reads; Insert publishes a fully built node with a single
+store to \texttt{head}, so a reader sees either the old or new head, and
+nodes are never freed under it. With deletes, a lookup could follow a
+pointer into a freed node.
+\end{Sol}
+
+\begin{Qn}{T/F}{Disabling interrupts}
+\begin{enumerate}[(a)]
+  \item Disabling interrupts gives mutual exclusion on a multiprocessor.
+  \item A user program that disables interrupts can monopolize the CPU.
+  \item The OS kernel never disables interrupts.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{False}: it only stops preemption on the \emph{current} CPU;
+threads on other CPUs can still enter the critical section.
+(b) \textbf{True}: no timer interrupt means the OS never regains control
+(and it also misses I/O interrupts). That is why it must be privileged.
+(c) \textbf{False}: the OS itself briefly masks interrupts around its own
+data structures; inside the kernel the trust problem disappears.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{The single-flag lock}
+\texttt{acquire: while (*lock) ; *lock = true;} --
+\texttt{release: *lock = false;}. Give a 2-thread schedule that breaks
+mutual exclusion, and name the exact property that is missing.
+\end{Qn}
+\begin{Sol}
+\texttt{*lock} = 0. T1: \texttt{while(*lock)} sees 0, exits loop.
+\emph{Switch.} T2: sees 0, exits, sets \texttt{*lock = 1}, enters. \emph{Switch.}
+T1: sets \texttt{*lock = 1}, enters. \textbf{Both are in the critical
+section.} Testing the lock and setting it are \textbf{not atomic}; a switch
+between the test and the set breaks it.
+\end{Sol}
+
+\keepspace{20\baselineskip}
+\begin{Qn}{Bad schedule}{Broken variants of Peterson's algorithm}
+Correct Peterson (\texttt{tid} \(\in \{0,1\}\)):
+\texttt{lock[tid]=true; turn=1-tid; while(lock[1-tid] \&\& turn==1-tid);}.
+For each variant, say which property fails and give a schedule.
+\begin{enumerate}[(a)]
+  \item The two stores are swapped: \texttt{turn=1-tid; lock[tid]=true;}.
+  \item No \texttt{turn}: \texttt{lock[tid]=true; while(lock[1-tid]);}.
+  \item No \texttt{lock[]}: \texttt{turn=1-tid; while(turn==1-tid);}.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{Mutual exclusion fails.} T0: \texttt{turn=1}. T1:
+\texttt{turn=0}, \texttt{lock[1]=true}, tests \texttt{lock[0] \&\&
+turn==0}: \texttt{lock[0]} is still false $\Rightarrow$ T1 enters. T0:
+\texttt{lock[0]=true}, tests \texttt{lock[1] \&\& turn==1}: turn is 0
+$\Rightarrow$ T0 enters. Both inside. (Announcing interest \emph{after}
+giving away the turn lets the other thread miss it.)
+
+(b) \textbf{Progress fails (deadlock).} T0: \texttt{lock[0]=true}. T1:
+\texttt{lock[1]=true}. Now both spin forever, each waiting for the other's
+flag. (Mutual exclusion still holds.)
+
+(c) \textbf{Progress fails.} If only T0 wants the lock: \texttt{turn=1},
+then it waits while \texttt{turn==1} forever; it can only enter after T1
+also tries (strict alternation). Mutual exclusion holds.
+\end{Sol}
+
+\begin{Qn}{Concept}{Peterson: why it works, and its limits}
+(a) Argue mutual exclusion for Peterson's algorithm. (b) Show bounded
+waiting. (c) Why is it not used on modern CPUs?
+\end{Qn}
+\begin{Sol}
+(a) Suppose both are inside. Both flags are true. Consider whichever thread
+wrote \texttt{turn} \emph{last}, say T0 (it wrote \texttt{turn = 1}). T1's
+flag was already true at that time and stays true while T1 is inside, so
+T0's test \texttt{lock[1] \&\& turn==1} stays true and T0 cannot have
+entered. Contradiction. (The last writer of \texttt{turn} waits.)
+
+(b) If T1 is waiting and T0 leaves and immediately tries again, T0 sets
+\texttt{turn = 1}, which makes T0 the one that waits. So T1 waits for at
+most one critical section of T0.
+
+(c) It assumes loads and stores happen in program order. Modern CPUs have
+relaxed memory consistency (they may reorder them), so it can fail; real
+locks use atomic hardware instructions instead.
+\end{Sol}
+
+\begin{Qn}{Fill}{Spinlocks from atomic instructions}
+Fill in the blanks and explain why each works.
+\begin{lstlisting}[numbers=none]
+void init(lock_t *l)    { l->flag = __A__; }
+void acquire(lock_t *l) { while (xchg(&l->flag, __B__) == __C__) ; }
+void release(lock_t *l) { l->flag = __D__; }
+
+void acquire2(lock_t *l) {   // with CompareAndSwap(addr, expected, new)
+    while (CompareAndSwap(&l->flag, __E__, __F__) == __G__) ;
+}
+\end{lstlisting}
+\end{Qn}
+\begin{Sol}
+A = 0, B = 1, C = 1, D = 0; E = 0, F = 1, G = 1.
+
+\texttt{xchg} atomically writes 1 and returns the old value: old 0 means
+the lock was free and we just took it; old 1 means it was held (writing 1
+again changes nothing), so keep spinning. CAS sets the flag to 1
+\emph{only if} it is 0 and returns the old value; we spin while it
+returns 1. Both fix the flag lock because test and set happen in one atomic
+instruction. (On a single CPU these spinlocks need a preemptive scheduler,
+or the spinner never lets the holder run.)
+\end{Sol}
+
+\begin{Qn}{Concept}{Which lock gives what?}
+Fill in yes/no for: Mutual exclusion (ME), Progress, Bounded waiting /
+fairness, ``no wasted CPU while waiting'' --- for: disable interrupts (one
+CPU), single flag, Peterson (2 threads), test-and-set spinlock, ticket
+lock, ticket lock + \texttt{yield}, queue lock (\texttt{park}).
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{@{}lcccc@{}}
+  \toprule
+  \textbf{Lock} & \textbf{ME} & \textbf{Progress} & \textbf{Bounded/fair} & \textbf{No waste} \\
+  \midrule
+  Disable interrupts (1 CPU) & yes & yes & n/a & yes, but unsafe/privileged \\
+  Single flag & \textbf{no} & yes & no & no (spins) \\
+  Peterson (2 threads) & yes & yes & yes & no (spins) \\
+  Test-and-set spinlock & yes & yes & \textbf{no} (can starve) & no \\
+  Ticket lock & yes & yes & \textbf{yes} (FIFO order) & no \\
+  Ticket + \texttt{yield} & yes & yes & yes & less (a switch per check) \\
+  Queue lock + \texttt{park} & yes & yes & yes (queue order) & yes: waiters sleep \\
+  \bottomrule
+\end{tabular}
+\end{center}
+\end{Sol}
+
+\begin{Qn}{Predict}{Possible ticket-lock states}
+Five threads correctly use a ticket lock (\texttt{acquire}:
+\texttt{myturn = FAA(\&ticket); while(turn != myturn);}; \texttt{release}:
+\texttt{FAA(\&turn)}). Which (\texttt{ticket}, \texttt{turn}) pairs are
+possible? (a) (0,0) (b) (3,3) (c) (2,3) (d) (9,3) (e) (8,3) (f) (12,7).
+\end{Qn}
+\begin{Sol}
+Invariant: \(0 \le \texttt{ticket} - \texttt{turn} \le 5\). The difference
+is the number of threads holding a ticket not yet released (one inside, the
+rest spinning), and each thread has at most one outstanding ticket.
+(a) possible (initial). (b) possible (3 completed, nobody waiting).
+(c) \textbf{impossible} (turn \(>\) ticket: more releases than
+acquisitions). (d) \textbf{impossible} (6 outstanding \(>\) 5 threads).
+(e) possible (5 outstanding: 1 inside, 4 spinning). (f) possible (5
+outstanding).
+\end{Sol}
+
+\begin{Qn}{Trace}{Ticket lock run}
+\texttt{ticket = turn = 0}. Events: A lock, B lock, A unlock, C lock,
+A lock, B unlock, C unlock, A unlock. After each event give
+\texttt{ticket}, \texttt{turn}, each thread's \texttt{myturn}, and who is
+in the critical section.
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\begin{tabular}{@{}lccl@{}}
+  \toprule
+  \textbf{Event} & \textbf{ticket} & \textbf{turn} & \textbf{Effect} \\
+  \midrule
+  A lock   & 1 & 0 & A: myturn 0 = turn $\Rightarrow$ \textbf{A in CS} \\
+  B lock   & 2 & 0 & B: myturn 1, spins \\
+  A unlock & 2 & 1 & \textbf{B in CS} \\
+  C lock   & 3 & 1 & C: myturn 2, spins \\
+  A lock   & 4 & 1 & A: myturn 3, spins (behind C) \\
+  B unlock & 4 & 2 & \textbf{C in CS} \\
+  C unlock & 4 & 3 & \textbf{A in CS} \\
+  A unlock & 4 & 4 & nobody; lock free \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Order of entry A, B, C, A: strictly by ticket. With a test-and-set lock A
+could have re-grabbed the lock before C.
+\end{Sol}
+
+\begin{Qn}{Concept}{Spinning costs}
+Four threads A--D share \textbf{one} CPU, time slice 20\,ms, context switch
+0.5\,ms. A holds the lock and needs 5\,ms more of CPU in its critical
+section; B, C, D want the lock. Round-robin order A, B, C, D, A, \ldots,
+and A's slice expired just now. Estimate the time wasted before A releases
+(a) with plain spinning, (b) with \texttt{yield()}. Generalize.
+\end{Qn}
+\begin{Sol}
+(a) B, C, D each spin a full slice: \(3 \times 20 = 60\)\,ms wasted before A
+runs again (then A releases after 5\,ms).
+(b) Each of B, C, D runs only long enough to check and yield:
+\(\approx 3 \times 0.5 = 1.5\)\,ms.
+
+In general waste is \(O(\text{threads} \times \text{time\_slice})\) without
+yield and \(O(\text{threads} \times \text{context\_switch})\) with yield. With
+many threads even the yield version is costly (and the scheduler may keep
+picking waiters), which motivates \textbf{blocking}: waiters leave the
+ready queue entirely.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{Queue lock without \texttt{setpark}}
+In the guard/queue lock, \texttt{acquire} does \texttt{qadd(q, tid);
+guard = false; park();} when the lock is held. (a) Show the race with a
+releasing thread. (b) How does \texttt{setpark()} fix it? (c) Why does
+\texttt{release} not set \texttt{lock = false} when it unparks a waiter?
+(d) Why is spinning on \texttt{guard} acceptable?
+\end{Qn}
+\begin{Sol}
+(a) T1 (acquire): \texttt{qadd}, \texttt{guard = false}. \emph{Switch.}
+T2 (release): takes guard, queue non-empty $\Rightarrow$
+\texttt{unpark(T1)} (T1 is not asleep yet: the wakeup is lost),
+\texttt{guard = false}. \emph{Switch.} T1: \texttt{park()} $\Rightarrow$
+sleeps, possibly \textbf{forever}, although the lock was handed to it.
+
+(b) T1 calls \texttt{setpark()} \emph{before} releasing guard. If an
+\texttt{unpark} arrives between \texttt{setpark} and \texttt{park},
+\texttt{park} returns immediately.
+
+(c) The lock is \textbf{passed directly} to the woken thread: it returns
+from \texttt{park} owning the lock without re-checking (it does not hold
+guard there). If \texttt{lock} were set false, a third thread could grab it
+first and both would be inside.
+
+(d) \texttt{guard} is held only for the few instructions in
+\texttt{acquire}/\texttt{release}, never during the user's critical
+section, so the spin is very short.
+\end{Sol}
+
+\begin{Qn}{Concept}{Spin or block?}
+A lock will be released after time \(t\); a context switch costs \(C\).
+(a) How much CPU is wasted by spin-waiting? by blocking? (b) Decide for
+\(t = 2\,\mu\)s, \(C = 10\,\mu\)s on a multiprocessor; and for \(t = 1\)\,ms.
+(c) What should a waiter do on a \emph{uniprocessor}, whatever \(t\) is?
+(d) What is the practical problem with this rule?
+\end{Qn}
+\begin{Sol}
+(a) Spin: \(t\). Block: \(C\).
+(b) \(t = 2\,\mu\text{s} < C\): \textbf{spin}. \(t = 1\,\text{ms} > C\):
+\textbf{block}.
+(c) \textbf{Always block / yield}: while the waiter runs, the holder cannot,
+so spinning can never shorten the wait.
+(d) It requires knowing \(t\) in advance (the future); predicting it costs
+too much.
+\end{Sol}
+
+% ===========================================================================
+\section{Lecture 18: Condition variables}
+\renewcommand{\lecno}{18}
+% ===========================================================================
+
+\begin{Qn}{T/F}{CV semantics}
+\begin{enumerate}[(a)]
+  \item \texttt{pthread\_cond\_wait} may be called without holding the
+        mutex.
+  \item \texttt{wait} releases the mutex and sleeps atomically, and
+        re-acquires the mutex before returning.
+  \item A \texttt{signal} with no waiting thread is remembered and wakes the
+        next thread that waits.
+  \item After being signalled, the woken thread runs immediately and the
+        condition is guaranteed to still hold.
+  \item \texttt{broadcast} can always replace \texttt{signal} without
+        breaking a correct \texttt{while}-based program.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{False}: \texttt{wait} assumes the lock is held (it releases
+it). (b) \textbf{True}. (c) \textbf{False}: a CV has no state besides its
+queue; with no waiter the signal is lost (hence ``keep state''). (d)
+\textbf{False}: Mesa semantics, a signal is only a hint; another thread
+may run first and change the state (hence \texttt{while}). (e)
+\textbf{True}: extra woken threads re-check and sleep again; only
+performance suffers.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{Join attempts}
+For each version, give a schedule (using the line labels) where the parent
+waits forever, or argue it is correct.
+\begin{enumerate}[(a)]
+  \item Parent: \texttt{lock(x); wait(y); unlock(z)}.
+        Child: \texttt{lock(a); signal(b); unlock(c)}.
+  \item Parent: \texttt{lock(w); if (done==0)(x) wait(y); unlock(z)}.
+        Child: \texttt{done=1 (a); signal (b)} (no lock).
+  \item Parent as in (b). Child: \texttt{lock; signal; done=1; unlock}.
+  \item Parent as in (b). Child: \texttt{lock; done=1; unlock; signal}.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{Broken}: child a, b, c first (signal with nobody waiting is
+lost), then parent x, y: \textbf{waits forever}. No state records that
+the child finished.
+
+(b) \textbf{Broken}: parent w, x (sees 0) $\to$ child a, b (signal lost:
+parent not waiting yet) $\to$ parent y: sleeps forever. The child changes
+the state outside the lock, in the gap between check and wait.
+
+(c) \textbf{Correct.} Signal and \texttt{done = 1} are both inside the
+lock. If the child runs first, the parent sees \texttt{done = 1}. If the
+parent is waiting, it is woken, but can only return from \texttt{wait}
+after re-acquiring the lock, i.e.\ after the child's unlock, by which time
+\texttt{done = 1}. (Order inside a locked region does not matter to other
+threads.)
+
+(d) \textbf{Correct.} \texttt{done} is changed under the lock, so it
+happens either before the parent's check (parent never waits) or after the
+parent is already asleep (the later signal wakes it). Signalling without
+the lock is not strictly needed here; it is still simplest to hold it.
+\end{Sol}
+
+\begin{Qn}{Concept}{Mesa semantics and \texttt{while}}
+(a) What is Mesa semantics vs.\ Hoare semantics? (b) Why does Mesa force
+\texttt{while} instead of \texttt{if}? (c) Give two separate reasons a
+woken thread may find its condition false.
+\end{Qn}
+\begin{Sol}
+(a) Mesa: \texttt{signal} just moves a waiter to the ready state; it runs
+later, whenever scheduled. Hoare: the signalled thread runs
+\emph{immediately}, with the state exactly as the signaller left it
+(stronger, harder to build). Almost all real systems are Mesa.
+(b) Between the signal and the woken thread re-acquiring the lock, other
+threads can run and change the state; the woken thread must re-check.
+(c) Another thread grabbed the lock first and consumed the state (e.g.\ a
+second consumer took the item); \textbf{spurious wakeups} (a library may
+wake a thread without a matching signal, or wake several).
+\end{Sol}
+
+\keepspace{30\baselineskip}
+\begin{Qn}{Bad schedule}{Single CV with \texttt{if}: produce the trace}
+Single buffer, one CV \texttt{cond}, producer \texttt{p1--p6} and consumer
+\texttt{c1--c6} with \texttt{if (count == \ldots) wait}. With consumers
+\(T_{c1}, T_{c2}\) and producer \(T_p\), give a trace ending with a consumer
+calling \texttt{get()} on an empty buffer.
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\renewcommand{\arraystretch}{1.02}
+\begin{tabular}{@{}lll@{}}
+  \toprule
+  \textbf{Step} & \textbf{count} & \textbf{What happens} \\
+  \midrule
+  \(T_{c1}\): c1, c2, c3 & 0 & nothing to get: \(T_{c1}\) sleeps \\
+  \(T_p\): p1, p2, p4 & 1 & buffer now full \\
+  \(T_p\): p5, p6 & 1 & signal: \(T_{c1}\) becomes \emph{ready} (not running) \\
+  \(T_p\): p1, p2, p3 & 1 & buffer full: \(T_p\) sleeps \\
+  \(T_{c2}\): c1, c2, c4 & 0 & \(T_{c2}\) sneaks in and grabs the data \\
+  \(T_{c2}\): c5, c6 & 0 & signal wakes \(T_p\) \\
+  \(T_{c1}\): c4 & 0 & \textbf{returns from wait, does not re-check: get() on empty!} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+The \texttt{assert(count == 1)} in \texttt{get} fires. Fix: \texttt{while}.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{Single CV with \texttt{while}: everyone asleep}
+Now with \texttt{while}, but still one CV. Show how \(T_{c1}, T_{c2}, T_p\)
+can all end up asleep. What is the fix?
+\end{Qn}
+\begin{Sol}
+\(T_{c1}\) and \(T_{c2}\) both find count = 0 and sleep. \(T_p\) puts
+(count = 1), signals: wakes \(T_{c1}\); loops, finds the buffer full,
+sleeps. \(T_{c1}\) re-checks (count = 1), gets (count = 0), and
+\textbf{signals the one CV}: this may wake \(T_{c2}\) instead of \(T_p\).
+\(T_{c1}\) loops, finds 0, sleeps. \(T_{c2}\) re-checks, finds 0, sleeps.
+Now all three are asleep and nobody will signal.
+
+Fix: \textbf{two CVs}. Producers wait on \texttt{empty} and signal
+\texttt{fill}; consumers wait on \texttt{fill} and signal \texttt{empty}.
+A consumer can then only wake a producer and vice versa. (Broadcast would
+also avoid the hang, but two CVs is the clean fix.)
+\end{Sol}
+
+\begin{Qn}{Trace}{Multi-slot buffer}
+\texttt{MAX = 3}, \texttt{put}/\texttt{get} with \texttt{fill},
+\texttt{use}, \texttt{count} as in lecture, initially 0. Operations in
+order: put(10), put(11), get, put(12), put(13), put(14), get, get. Track
+\texttt{buffer}, \texttt{fill}, \texttt{use}, \texttt{count} and say what
+each get returns and where the producer must wait. Assume a producer that
+is woken runs (and completes its put) before the next get.
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\begin{tabular}{@{}llccccl@{}}
+  \toprule
+  \textbf{Op} & \textbf{buffer[0..2]} & \textbf{fill} & \textbf{use} & \textbf{count} & \textbf{Returns} & \textbf{Note} \\
+  \midrule
+  put(10) & 10 -- -- & 1 & 0 & 1 & & \\
+  put(11) & 10 11 -- & 2 & 0 & 2 & & \\
+  get     & 10 11 -- & 2 & 1 & 1 & 10 & \\
+  put(12) & 10 11 12 & 0 & 1 & 2 & & \texttt{fill} wraps \\
+  put(13) & 13 11 12 & 1 & 1 & 3 & & full \\
+  put(14) & & & & 3 & & \texttt{count == MAX}: producer \textbf{waits} on \texttt{empty} \\
+  get     & 13 11 12 & 1 & 2 & 2 & 11 & signals \texttt{empty}; producer wakes, re-checks \\
+  (put(14)) & 13 14 12 & 2 & 2 & 3 & & now completes \\
+  get     & 13 14 12 & 2 & 0 & 2 & 12 & \texttt{use} wraps \\
+  \bottomrule
+\end{tabular}
+\end{center}
+Items come out in FIFO order (10, 11, 12). With one producer and one
+consumer, extra slots mean fewer context switches; with several of each,
+they can also work concurrently.
+\end{Sol}
+
+\begin{Qn}{Concept}{Covering conditions}
+In the allocator (\texttt{allocate} waits \texttt{while (bytesLeft <
+size)}; \texttt{free} adds bytes and signals), 0 bytes are free.
+\(T_a\) calls \texttt{allocate(100)}, \(T_b\) calls \texttt{allocate(10)},
+both sleep. \(T_c\) calls \texttt{free(50)}. (a) What can go wrong with
+\texttt{signal}? (b) What does \texttt{broadcast} do here, step by step?
+(c) What is the cost, and when is needing broadcast a sign of a bug?
+\end{Qn}
+\begin{Sol}
+(a) \texttt{signal} wakes \emph{one} waiter, possibly \(T_a\): it re-checks
+\(50 < 100\) and sleeps again, while \(T_b\), who could proceed, stays
+asleep. Progress stalls although memory is available.
+
+(b) Both wake. Whichever runs first re-checks: \(T_b\) finds
+\(50 \ge 10\), allocates (bytesLeft = 40); \(T_a\) finds \(40 < 100\) (or
+\(50<100\)) and sleeps again.
+
+(c) Cost: threads that cannot proceed are woken, run, and go back to sleep
+(wasted context switches). If a program only works with broadcast where a
+signal should suffice (e.g.\ single-CV producer/consumer), there is
+probably a bug (use separate CVs). Broadcast is right when the signaller
+cannot know which waiter can proceed, as here.
+\end{Sol}
+
+\begin{Qn}{Design}{Strict alternation with a CV}
+Two threads must print \texttt{ping} and \texttt{pong} alternately,
+starting with \texttt{ping}, 100 times each. Write the code using one mutex,
+one CV and a shared variable.
+\end{Qn}
+\begin{Sol}
+\begin{lstlisting}[numbers=none]
+int turn = 0;            // 0: ping's turn, 1: pong's turn
+mutex_t m; cond_t c;
+
+void *ping(void *arg) {               void *pong(void *arg) {
+  for (int i = 0; i < 100; i++) {       for (int i = 0; i < 100; i++) {
+    Mutex_lock(&m);                       Mutex_lock(&m);
+    while (turn != 0)                     while (turn != 1)
+      Cond_wait(&c, &m);                    Cond_wait(&c, &m);
+    printf("ping\n");                     printf("pong\n");
+    turn = 1;                             turn = 0;
+    Cond_signal(&c);                      Cond_signal(&c);
+    Mutex_unlock(&m);                     Mutex_unlock(&m);
+  }                                     }
+}                                     }
+\end{lstlisting}
+All three rules of thumb: state (\texttt{turn}) kept alongside the CV,
+wait/signal with the lock held, \texttt{while} re-checks. One CV is enough
+here because there is only ever one waiter, and it is always the thread
+whose turn it now is.
+\end{Sol}
+
+% ===========================================================================
+\section{Lecture 19: Semaphores}
+\renewcommand{\lecno}{19}
+% ===========================================================================
+
+\begin{Qn}{Concept}{CVs vs.\ semaphores}
+(a) What state does each have? (b) Why does join with a semaphore not need
+a \texttt{done} variable or a mutex? (c) What does \texttt{sem\_init(\&s,
+0, 1)} mean, argument by argument? (d) If a semaphore's value is \(-3\),
+what does that tell you (with the lecture's definition)?
+\end{Qn}
+\begin{Sol}
+(a) A CV has no state except its waiting queue; the programmer tracks the
+condition. A semaphore has an integer value that determines whether
+\texttt{sem\_wait} blocks; the program cannot read it directly.
+(b) The value \emph{is} the state: a \texttt{sem\_post} before anybody waits
+is remembered (value 1), so the later \texttt{sem\_wait} returns at once;
+each operation is atomic, so there is no check-then-sleep gap.
+(c) Semaphore \texttt{s}; 0 = shared between threads of the same process;
+initial value 1.
+(d) Three threads are waiting on it (negative value = number of waiters).
+\end{Sol}
+
+\begin{Qn}{Trace}{Semaphore values}
+\texttt{s} is initialized to 1. In order: T1 \texttt{sem\_wait}, T2
+\texttt{sem\_wait}, T3 \texttt{sem\_wait}, T1 \texttt{sem\_post}, T2
+\texttt{sem\_post}, T3 \texttt{sem\_post}. Give the value and each
+thread's state after every operation. What does \texttt{s} implement?
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\begin{tabular}{@{}lcl@{}}
+  \toprule
+  \textbf{Operation} & \textbf{value} & \textbf{Effect} \\
+  \midrule
+  T1 wait & 0  & T1 continues (enters) \\
+  T2 wait & \(-1\) & T2 sleeps \\
+  T3 wait & \(-2\) & T3 sleeps (2 waiters) \\
+  T1 post & \(-1\) & wakes one waiter, say T2 \\
+  T2 post & 0  & wakes T3 \\
+  T3 post & 1  & nobody waiting \\
+  \bottomrule
+\end{tabular}
+\end{center}
+A \textbf{lock} (binary semaphore, init 1): at most one thread between its
+wait and post.
+\end{Sol}
+
+\begin{Qn}{Fill}{Initial values}
+Give the initial value and explain: (a) lock built from a semaphore;
+(b) join (parent waits for child); (c) at most 4 threads may use a pool of
+4 database connections at once; (d) \texttt{emptyBuffer} and
+\texttt{fullBuffer} for an \(N\)-slot buffer. (e) What goes wrong if the
+lock semaphore is initialized to 0? to 2? If the join semaphore is
+initialized to 1?
+\end{Qn}
+\begin{Sol}
+(a) 1. (b) 0. (c) 4 (counts available resources). (d)
+\texttt{emptyBuffer} = \(N\) (the producer can run \(N\) times first),
+\texttt{fullBuffer} = 0 (the consumer must wait).
+
+(e) Lock at 0: the very first \texttt{acquire} blocks forever (deadlock).
+Lock at 2: two threads can be in the critical section together (no mutual
+exclusion). Join at 1: the parent's \texttt{sem\_wait} returns immediately,
+even if the child has not finished.
+\end{Sol}
+
+\begin{Qn}{Trace}{Join with a semaphore, both orders}
+Join uses one semaphore initialized to 0 (parent \texttt{sem\_wait}, child
+\texttt{sem\_post}). Trace the value and states when (a) the parent waits
+first, (b) the child finishes first. Why did the second order break join
+attempt 1 with CVs but not here?
+\end{Qn}
+\begin{Sol}
+(a) Parent wait: \(0 \to -1\), parent sleeps. Child post: \(-1 \to 0\),
+wakes parent. Parent's \texttt{sem\_wait} returns (value 0).
+
+(b) Child post: \(0 \to 1\), nobody to wake. Later parent wait:
+\(1 \to 0\), not negative, returns immediately.
+
+With CVs, a signal with no waiter is lost, so the parent slept forever. A
+semaphore \textbf{remembers} the post in its value.
+\end{Sol}
+
+\keepspace{24\baselineskip}
+\begin{Qn}{Bad schedule}{Semaphore built from a lock and a CV}
+\begin{lstlisting}[numbers=none]
+void sem_wait(sem_t *s) {             void sem_post(sem_t *s) {
+  lock_acquire(&s->lock);               lock_acquire(&s->lock);
+  if (s->value <= 0)          // !!     s->value++;
+     cond_wait(&s->cond);               cond_signal(&s->cond);
+  s->value--;                           lock_release(&s->lock);
+  lock_release(&s->lock);             }
+}
+\end{lstlisting}
+With \texttt{if} instead of \texttt{while}, show how the value can go
+negative and two threads can pass a semaphore initialized to 1 used as a
+lock.
+\end{Qn}
+\begin{Sol}
+Value 1. T1 \texttt{sem\_wait}: value 0, enters. T2 \texttt{sem\_wait}:
+value 0, waits. T1 \texttt{sem\_post}: value 1, signals T2 (T2 is now
+ready, not yet running). T3 \texttt{sem\_wait} gets the lock first: value
+1 \(> 0\), decrements to 0, enters. T2 finally re-acquires the lock and,
+with \texttt{if}, does not re-check: decrements to \(-1\) and enters.
+\textbf{T2 and T3 are both inside}. With \texttt{while}, T2 would see 0
+and wait again (rule of thumb 3, Mesa semantics).
+\end{Sol}
+
+\begin{Qn}{Design}{Ordering threads}
+Threads A, B, C each print their letter once. Using semaphores only (give
+initial values), force the output order \texttt{C A B}. Then: two threads
+must both reach a point before either continues (a rendezvous). Write it,
+and explain what happens if each thread waits before it posts.
+\end{Qn}
+\begin{Sol}
+Order C, A, B: \texttt{sA = 0, sB = 0}.
+\begin{lstlisting}[numbers=none]
+C: print("C"); sem_post(&sA);
+A: sem_wait(&sA); print("A"); sem_post(&sB);
+B: sem_wait(&sB); print("B");
+\end{lstlisting}
+Rendezvous: \texttt{aArrived = 0, bArrived = 0}.
+\begin{lstlisting}[numbers=none]
+A: ...; sem_post(&aArrived); sem_wait(&bArrived); ...
+B: ...; sem_post(&bArrived); sem_wait(&aArrived); ...
+\end{lstlisting}
+Each announces its arrival and then waits for the other; whichever comes
+second finds the other's post already remembered. If both \emph{wait first}
+(\texttt{sem\_wait} before \texttt{sem\_post}), each waits for a post the
+other can only make after its own wait: \textbf{deadlock}.
+\end{Sol}
+
+\begin{Qn}{Bad schedule}{Mutex placement in producer/consumer}
+Multiple producers/consumers, \(N\) slots, semaphores \texttt{emptyBuffer}
+\(= N\), \texttt{fullBuffer} \(= 0\), \texttt{mutex} \(= 1\).
+(a) Option \#1 takes \texttt{mutex} \emph{before} \texttt{sem\_wait} on
+\texttt{emptyBuffer}/\texttt{fullBuffer}. Give a deadlocking schedule with
+semaphore values. (b) Why does option \#2 (mutex inside) not deadlock?
+(c) Why is option \#3 (mutex only around \texttt{findempty}/\texttt{findfull})
+better? (d) In option \#2, does the order of the two final
+\texttt{sem\_post}s matter?
+\end{Qn}
+\begin{Sol}
+(a) Consumer first: \texttt{wait(mutex)} \(1 \to 0\), then
+\texttt{wait(fullBuffer)} \(0 \to -1\): sleeps \emph{holding mutex}.
+Producer: \texttt{wait(emptyBuffer)} is not reached because it first does
+\texttt{wait(mutex)} \(0 \to -1\): sleeps. Nobody can post: deadlock.
+
+(b) A thread takes \texttt{mutex} only after its resource wait succeeded,
+so it never sleeps while holding \texttt{mutex}; the critical section
+always finishes and releases it.
+
+(c) In \#2 the whole \texttt{Fill}/\texttt{Use} is inside \texttt{mutex}:
+only one thread at a time works on \emph{any} slot. In \#3 only finding
+(and claiming) a slot is serialized; filling/using different slots proceeds
+concurrently.
+
+(d) No: posts never block, so either order releases both semaphores.
+(Only the order of the \emph{waits} matters.)
+\end{Sol}
+
+\begin{Qn}{Concept}{Private or shared indices}
+Why does the circular-buffer code (\texttt{i = (i+1)\%N} in the producer,
+\texttt{j} in the consumer) work with one producer and one consumer but fail
+with several producers? Consider \texttt{i} private and \texttt{i} shared.
+\end{Qn}
+\begin{Sol}
+One producer and one consumer: only the producer touches \texttt{i} and only
+the consumer touches \texttt{j}; the semaphores guarantee they never work
+on the same slot, so no lock is needed.
+
+Several producers, \texttt{i} \textbf{private}: each starts at 0 and they
+fill the \emph{same} slots, overwriting each other. \texttt{i}
+\textbf{shared}: two producers can read the same \texttt{i} before either
+increments it (a race, like the shared counter). Either way each producer
+must claim a unique slot under mutual exclusion.
+\end{Sol}
+
+\keepspace{22\baselineskip}
+\begin{Qn}{Trace}{Reader/writer lock}
+\texttt{lock} = 1, \texttt{writelock} = 1, \texttt{readers} = 0.
+Events: R1 acquire-read, R2 acquire-read, W acquire-write, R3
+acquire-read, R1 release, R2 release, R3 release. Give \texttt{readers},
+\texttt{writelock} and who is inside/waiting after each event. What
+fairness problem does this show?
+\end{Qn}
+\begin{Sol}
+\begin{center}
+\small
+\begin{tabular}{@{}lccl@{}}
+  \toprule
+  \textbf{Event} & \textbf{readers} & \textbf{writelock} & \textbf{State} \\
+  \midrule
+  R1 acquire & 1 & 0 & first reader takes writelock; R1 reading \\
+  R2 acquire & 2 & 0 & R1, R2 reading \\
+  W acquire  & 2 & \(-1\) & W waits on writelock \\
+  R3 acquire & 3 & \(-1\) & R3 \textbf{enters ahead of W} \\
+  R1 release & 2 & \(-1\) & \\
+  R2 release & 1 & \(-1\) & \\
+  R3 release & 0 & 0 & last reader posts writelock: \textbf{W enters} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+(\texttt{lock} goes 1 \(\to\) 0 \(\to\) 1 around each reader's update of
+\texttt{readers}.) As long as new readers keep arriving before the count
+reaches 0, the writer \textbf{starves}. Fixing it requires stopping new
+readers once a writer is waiting (the open question on the slide).
+\end{Sol}
+
+\begin{Qn}{Concept}{Dining philosophers}
+(a) Show the deadlock in the basic solution
+(\texttt{wait(left); wait(right)}). (b) Why does making philosopher 4
+take right first remove it? (c) Lefty/righty: if every philosopher is a
+righty, is deadlock possible? What if there is at least one of each?
+(d) What is the maximum number of philosophers that can eat at once with 5
+forks?
+\end{Qn}
+\begin{Sol}
+(a) Each \(P_i\) takes \(f_i\) (its left) before anyone takes a right
+fork. Then \(P_i\) waits for \(f_{i+1}\), held by \(P_{i+1}\), \ldots,
+\(P_4\) waits for \(f_0\), held by \(P_0\): a \textbf{cycle}; everyone
+waits forever.
+
+(b) \(P_4\) asks for \(f_0\) first. If \(P_0\) holds \(f_0\), \(P_4\) waits
+\emph{without} holding \(f_4\), so \(P_3\) can take \(f_4\), eat and release;
+the chain unwinds. The circular wait is impossible.
+
+(c) All righties: same as all lefties by symmetry, so deadlock is
+possible. At least one lefty and one righty: the acquisition order is no
+longer uniform around the circle, so the cycle cannot form (no deadlock;
+starvation freedom is a separate question).
+
+(d) \textbf{2}: each eater uses 2 of the 5 forks, and
+\(\lfloor 5/2 \rfloor = 2\) (e.g.\ \(P_0\) and \(P_2\)).
+\end{Sol}
+
+\begin{Qn}{Design}{A one-doctor clinic (past-exam style)}
+One doctor, unlimited waiting room, one shared buffer. A patient calls
+\texttt{consult()} (writes symptoms to the buffer) and later
+\texttt{readTreatment()}; the doctor loops calling \texttt{treat()} (reads
+symptoms, writes treatment). Using only semaphores: patients must not
+overwrite each other, the doctor must only read new symptoms, and a patient
+must only read a finished treatment.
+\end{Qn}
+\begin{Sol}
+\texttt{office = 1} (one patient uses the buffer), \texttt{symptoms = 0}
+(new request ready), \texttt{treated = 0} (treatment ready).
+\begin{lstlisting}[numbers=none]
+Patient:                          Doctor:
+  sem_wait(&office);                while (1) {
+  consult();                          sem_wait(&symptoms);
+  sem_post(&symptoms);                treat();
+  sem_wait(&treated);                 sem_post(&treated);
+  readTreatment();                  }
+  sem_post(&office);
+\end{lstlisting}
+\texttt{office} works as a lock held for the whole request--response
+exchange; the two 0-initialized semaphores are join-style ordering
+(``symptoms written before treat'', ``treatment written before read''). The
+waiting room is the queue of \texttt{office}.
+\end{Sol}
+
+\begin{Qn}{Concept}{Equivalence}
+``Semaphores are equally powerful to locks + CVs.'' (a) What has to be
+shown? (b) Which direction did the lecture call really hard? (c) Write
+\texttt{sem\_wait}/\texttt{sem\_post} using a lock and a CV.
+\end{Qn}
+\begin{Sol}
+(a) Each can be built from the other: locks from semaphores, CVs from
+semaphores, and semaphores from locks + CVs (convenience is irrelevant).
+(b) Building \textbf{CVs from semaphores} (possible, but hard to get right).
+(c)
+\begin{lstlisting}[numbers=none]
+void sem_wait(sem_t *s) {               void sem_post(sem_t *s) {
+  lock_acquire(&s->lock);                 lock_acquire(&s->lock);
+  while (s->value <= 0)                   s->value++;
+    cond_wait(&s->cond, &s->lock);        cond_signal(&s->cond);
+  s->value--;                             lock_release(&s->lock);
+  lock_release(&s->lock);               }
+}
+\end{lstlisting}
+(Here the value never goes below 0, so it does not count waiters.)
+\end{Sol}
+
+% ===========================================================================
+\section{Mixed / exam-style}
+\renewcommand{\lecno}{M}
+% ===========================================================================
+
+\keepspace{17\baselineskip}
+\begin{Qn}{T/F}{Across lectures}
+\begin{enumerate}[(a)]
+  \item A thread blocked on a semaphore and a process blocked on a page
+        fault are both removed from the ready queue.
+  \item A thread may go to sleep (e.g.\ wait for I/O) while holding a lock
+        without violating mutual exclusion.
+  \item If \(T_2\) writes a variable without taking the mutex that \(T_1\)
+        uses to protect it, the hardware generates a trap.
+  \item A context switch can happen only after a timer interrupt.
+  \item Spinlocks are a good choice on a uniprocessor.
+\end{enumerate}
+\end{Qn}
+\begin{Sol}
+(a) \textbf{True}: both wait for an event (post / disk I/O), so the
+scheduler runs other ready work.
+(b) \textbf{True}: other threads still cannot enter (it may be slow or
+deadlock-prone, but exclusion holds).
+(c) \textbf{False}: a mutex is a software convention; memory accesses carry
+no lock information. It is a data race, not a trap.
+(d) \textbf{False}: also when a thread blocks (I/O, page fault,
+\texttt{sem\_wait}, \texttt{cond\_wait}, \texttt{park}) or yields.
+(e) \textbf{False}: the holder cannot run while the waiter spins; waste of a
+whole slice per waiter.
+\end{Sol}
+
+\begin{Qn}{Design}{Bounded buffer from scratch}
+Write a correct bounded buffer of size \(N\) for multiple producers and
+consumers (a) with locks + CVs and (b) with semaphores. For each, point to
+the line that would break if changed (\texttt{while} \(\to\) \texttt{if};
+mutex order).
+\end{Qn}
+\begin{Sol}
+(a) Mutex \texttt{m}, CVs \texttt{empty}, \texttt{fill}, \texttt{count}:
+producer \texttt{lock; while (count == N) wait(empty); put; signal(fill);
+unlock}; consumer \texttt{lock; while (count == 0) wait(fill); get;
+signal(empty); unlock}. \texttt{while} \(\to\) \texttt{if}: a woken consumer
+may find the item taken by another consumer (bad data).
+
+(b) \texttt{emptyBuffer = N, fullBuffer = 0, mutex = 1}: producer
+\texttt{wait(emptyBuffer); wait(mutex); myi = findempty; post(mutex);
+Fill; post(fullBuffer)}; consumer symmetric. Taking \texttt{mutex} before
+\texttt{emptyBuffer}/\texttt{fullBuffer}: a thread can sleep holding
+\texttt{mutex} $\Rightarrow$ deadlock.
+\end{Sol}
+
+\end{document}

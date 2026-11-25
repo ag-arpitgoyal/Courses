@@ -1,0 +1,18 @@
+realloc slot 1 200: moved
+region 0 65536
+  32 F 256
+  288 A 128 10
+  416 A 65120 65080
+region 1 65536
+  32 A 240 200
+  272 F 65264
+realloc slot 2 200: moved
+region 0 65536
+  32 A 256 200
+  288 F 128
+  416 A 65120 65080
+region 1 65536
+  32 A 240 200
+  272 F 65264
+bytes slot 1: 4e 62 69
+bytes slot 2: f5 09 10

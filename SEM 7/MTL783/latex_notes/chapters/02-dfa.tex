@@ -1,0 +1,156 @@
+\section{Deterministic finite automata}
+
+\subsection{Formal definition}
+\begin{definition}[DFA]
+A \emph{deterministic finite automaton} is a $5$-tuple
+\[
+  M=(Q,\Sigma,\transition,q_0,F)
+\]
+where
+\begin{enumerate}
+  \item $Q$ is a finite set of states;
+  \item $\Sigma$ is a finite alphabet;
+  \item $\transition:Q\times\Sigma\to Q$ is the \emph{transition function};
+  \item $q_0\in Q$ is the start state;
+  \item $F\subseteq Q$ is the set of accept states.
+\end{enumerate}
+\end{definition}
+
+Two remarks:
+\begin{enumerate}
+  \item $F$ may be empty. Then $\lang{M}=\varnothing$: no string is accepted.
+  \item Determinism means that for every pair $(q,a)\in Q\times\Sigma$ there is
+        \emph{exactly one} next state $\transition(q,a)$.
+\end{enumerate}
+
+\begin{example}[The $5$-tuple for $M_1$]
+\[
+\begin{array}{rl}
+  Q&=\set{q_1,q_2,q_3},\\
+  \Sigma&=\set{0,1},\\
+  q_0&=q_1,\\
+  F&=\set{q_2},
+\end{array}
+\qquad
+\begin{array}{c|cc}
+\transition & 0 & 1\\
+\hline
+q_1 & q_1 & q_2\\
+q_2 & q_3 & q_2\\
+q_3 & q_2 & q_2
+\end{array}
+\]
+If $M$ accepts a set $A$, we call $A$ the \emph{language of} $M$ and write
+$A=\lang{M}$.
+\end{example}
+
+\subsection{A modulo-3 machine with RESET}
+\begin{example}[Running sum modulo $3$]
+Let $\Sigma=\set{0,1,2,\mathtt{RESET}}$. Think of $0,1,2$ as adding that
+value to a running total, and of $\mathtt{RESET}$ as setting the total back
+to $0$. Accept if the current total is $0\bmod 3$.
+
+States $q_0,q_1,q_2$ store the current residue. The start and accept state is
+$q_0$. Transitions on $1$ and $2$ move around the triangle; $0$ is a self-loop;
+$\mathtt{RESET}$ (written $\mathtt{R}$) returns to $q_0$ from every state.
+\begin{center}
+\begin{tikzpicture}[automaton]
+  \node[state,initial,accepting] (q0) at (0,0) {$q_0$};
+  \node[state] (q1) at (3.4,1.7) {$q_1$};
+  \node[state] (q2) at (3.4,-1.7) {$q_2$};
+  \path[->]
+    (q0) edge[loop above] node{$0$} ()
+         edge[bend left=12] node[above]{$1$} (q1)
+         edge[bend right=12] node[below]{$2$} (q2)
+    (q1) edge[loop above] node{$0$} ()
+         edge[bend left=12] node[right]{$1$} (q2)
+         edge[bend left=18] node[above]{$2$} (q0)
+    (q2) edge[loop below] node{$0$} ()
+         edge[bend left=18] node[below]{$1$} (q0)
+         edge[bend left=12] node[right]{$2$} (q1)
+    (q1) edge[bend right=32] node[below left]{\texttt{R}} (q0)
+    (q2) edge[bend left=32] node[above left]{\texttt{R}} (q0)
+    (q0) edge[loop below] node{\texttt{R}} ();
+\end{tikzpicture}
+\end{center}
+Finite memory is enough because only the residue class of the sum matters.
+\end{example}
+
+\subsection{Designing finite automata}
+Design principle:
+\begin{itemize}
+  \item You must be ready to accept or reject after every prefix.
+  \item You do \emph{not} have infinite memory.
+  \item Each state records exactly the information you still need about the
+        prefix read so far.
+\end{itemize}
+
+\begin{example}[Odd number of $1$s]
+$A=\set{w\in\set{0,1}^*:w\text{ has an odd number of }1\text{s}}$.
+Remember only the parity of the number of $1$s.
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=34mm]
+  \node[state,initial] (even) {even};
+  \node[state,accepting,right=of even] (odd) {odd};
+  \path[->]
+    (even) edge[loop above] node{$0$} ()
+          edge[bend left=16] node[above]{$1$} (odd)
+    (odd) edge[loop above] node{$0$} ()
+         edge[bend left=16] node[below]{$1$} (even);
+\end{tikzpicture}
+\end{center}
+\end{example}
+
+\begin{example}[Substring $001$]
+$A=\set{w\in\set{0,1}^*:w\text{ contains }001\text{ as a substring}}$.
+States record the longest prefix of $001$ that is a suffix of the text so
+far:
+\[
+  q_0:\text{nothing},\quad
+  q_1:\text{suffix }0,\quad
+  q_2:\text{suffix }00,\quad
+  q_3:\text{already seen }001.
+\]
+\begin{center}
+\begin{tikzpicture}[automaton,node distance=26mm]
+  \node[state,initial] (q0) {$q_0$};
+  \node[state,right=of q0] (q1) {$q_1$};
+  \node[state,right=of q1] (q2) {$q_2$};
+  \node[state,accepting,right=of q2] (q3) {$q_3$};
+  \path[->]
+    (q0) edge[loop above] node{$1$} ()
+         edge node[above]{$0$} (q1)
+    (q1) edge[bend left=18] node[above]{$1$} (q0)
+         edge node[above]{$0$} (q2)
+    (q2) edge[loop above] node{$0$} ()
+         edge node[above]{$1$} (q3)
+    (q3) edge[loop above] node{$0,1$} ();
+\end{tikzpicture}
+\end{center}
+On a $0$ from $q_2$ we stay in $q_2$, because the suffix is still $00$.
+\end{example}
+
+\subsection{Formal definition of computation}
+\begin{definition}[Computation of a DFA]
+Let $M=(Q,\Sigma,\transition,q_0,F)$ and let $w=w_1w_2\cdots w_n$ with each
+$w_i\in\Sigma$ (the case $n=0$ is $w=\eps$). Then $M$ \emph{accepts} $w$ if
+there is a sequence of states $r_0,r_1,\ldots,r_n\in Q$ such that
+\begin{enumerate}
+  \item $r_0=q_0$;
+  \item $\transition(r_i,w_{i+1})=r_{i+1}$ for $0\leq i\leq n-1$;
+  \item $r_n\in F$.
+\end{enumerate}
+\end{definition}
+Equivalently, extend $\transition$ to strings by
+\[
+  \transition^*(q,\eps)=q,\qquad
+  \transition^*(q,wa)=\transition(\transition^*(q,w),a).
+\]
+Then $\lang{M}=\set{w\in\Sigma^*:\transition^*(q_0,w)\in F}$.
+
+If $\transition(r_i,w_{i+1})=r_{i+1}$, we say that $M$ is in state $r_{i+1}$
+after processing $w_1\cdots w_{i+1}$.
+
+\begin{definition}[Regular language]
+A language is \emph{regular} if some DFA recognizes it.
+\end{definition}

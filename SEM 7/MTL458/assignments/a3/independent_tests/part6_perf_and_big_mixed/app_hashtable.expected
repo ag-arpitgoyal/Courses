@@ -1,0 +1,15 @@
+words 60000 distinct 8823 buckets 16384
+top 1: ka 2448
+top 2: lo 2204
+top 3: mi 2004
+top 4: zu 1771
+top 5: re 1621
+top 6: ta 1390
+top 7: no 1122
+top 8: shi 952
+top 9: ve 725
+top 10: po 508
+removed singletons 3912, remaining 4911, checksum 109684449374735
+bucket stats: used 4260 longest 4
+leak summary: 0 blocks, 0 bytes
+leak summary: 0 blocks, 0 bytes

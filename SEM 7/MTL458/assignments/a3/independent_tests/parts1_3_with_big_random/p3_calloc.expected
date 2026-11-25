@@ -1,0 +1,30 @@
+calloc slot 0: NULL
+calloc slot 1: NULL
+calloc slot 2: NULL
+calloc slot 3: NULL
+calloc slot 4: NULL
+calloc slot 5: NULL
+calloc slot 6: NULL
+calloc slot 7: NULL
+calloc slot 11: zeroed
+calloc slot 12: zeroed
+calloc slot 13: zeroed
+region 0 65536
+  32 A 352 300
+  384 A 128 10
+  512 A 432 392
+  944 A 128 10
+  1072 A 128 1
+  1200 F 64336
+calloc slot 14: zeroed
+calloc slot 14: zeroed
+region 0 65536
+  32 A 352 300
+  384 A 128 10
+  512 A 432 392
+  944 A 128 10
+  1072 A 128 1
+  1200 F 64336
+region 1 131072
+  32 A 100048 100000
+  100080 F 30992

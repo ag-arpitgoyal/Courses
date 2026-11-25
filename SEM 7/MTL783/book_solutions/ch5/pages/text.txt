@@ -1,0 +1,272 @@
+                  EXERCISES
+                      5.1 Show that EQ CFG is undecidable.
+                      5.2 Show that EQ CFG is co-Turing-recognizable.
+                      5.3 Find a match in the following instance of the Post Correspondence Problem.
+                                                   h                            
+                                                       ab i h b i h aba i h aa i
+                                                            ,     ,       ,
+                                                      abab     a       b      a
+
+                      5.4 If A ≤m B and B is a regular language, does that imply that A is a regular lan-
+                          guage? Why or why not?
+                  A
+                      5.5 Show that ATM is not mapping reducible to ETM . In other words, show that no
+                          computable function reduces ATM to ETM . (Hint: Use a proof by contradiction,
+                          and facts you already know about ATM and ETM .)
+                  A
+                      5.6 Show that ≤m is a transitive relation.
+                  A
+                      5.7 Show that if A is Turing-recognizable and A ≤m A, then A is decidable.
+                  A
+                      5.8 In the proof of Theorem 5.15, we modified the Turing machine M so that it never
+                          tries to move its head off the left-hand end of the tape. Suppose that we did not
+                          make this modification to M . Modify the PCP construction to handle this case.
+
+
+
+
+                  PROBLEMS
+                      5.9 Let T = {hM i| M is a TM that accepts wR whenever it accepts w}. Show that T
+                          is undecidable.
+              A
+                  5.10 Consider the problem of determining whether a two-tape Turing machine ever
+                       writes a nonblank symbol on its second tape when it is run on input w. Formulate
+                       this problem as a language and show that it is undecidable.
+              A
+                  5.11 Consider the problem of determining whether a two-tape Turing machine ever
+                       writes a nonblank symbol on its second tape during the course of its computation
+                       on any input string. Formulate this problem as a language and show that it is
+                       undecidable.
+                  5.12 Consider the problem of determining whether a single-tape Turing machine ever
+                       writes a blank symbol over a nonblank symbol during the course of its computation
+                       on any input string. Formulate this problem as a language and show that it is
+                       undecidable.
+                  5.13 A useless state in a Turing machine is one that is never entered on any input string.
+                       Consider the problem of determining whether a Turing machine has any useless
+                       states. Formulate this problem as a language and show that it is undecidable.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+               240                CHAPTER 5 / REDUCIBILITY
+
+
+               5.14 Consider the problem of determining whether a Turing machine M on an input
+                    w ever attempts to move its head left when its head is on the left-most tape cell.
+                    Formulate this problem as a language and show that it is undecidable.
+               5.15 Consider the problem of determining whether a Turing machine M on an input
+                    w ever attempts to move its head left at any point during its computation on w.
+                    Formulate this problem as a language and show that it is decidable.
+               5.16 Let Γ = {0, 1, } be the tape alphabet for all TMs in this problem. Define the busy
+                    beaver function BB: N −→N as follows. For each value of k, consider all k-state
+                    TMs that halt when started with a blank tape. Let BB(k) be the maximum number
+                    of 1s that remain on the tape among all of these machines. Show that BB is not a
+                    computable function.
+               5.17 Show that the Post Correspondence Problem is decidable over the unary alphabet
+                    Σ = {1}.
+               5.18 Show that the Post Correspondence Problem is undecidable over the binary alpha-
+                    bet Σ = {0,1}.
+               5.19 In the silly Post Correspondence Problem, SPCP, the top string in each pair has the
+                    same length as the bottom string. Show that the SPCP is decidable.
+               5.20 Prove that there exists an undecidable subset of {1}∗ .
+               5.21 Let AMBIGCFG = {hGi| G is an ambiguous CFG}. Show that AMBIGCFG is unde-
+                    cidable. (Hint: Use a reduction from PCP. Given an instance
+                                                  h i h i            h t i
+                                                      t1   t2            k
+                                             P =         ,    , ... ,
+                                                      b1   b2           bk
+                           of the Post Correspondence Problem, construct a CFG G with the rules
+                                                           S → T |B
+                                                           T → t1 T a1 | · · · | tk T ak | t1 a1 | · · · | tk ak
+                                                           B → b1 Ba1 | · · · | bk Bak | b1 a1 | · · · | bk ak ,
+                           where a1 , . . . , ak are new terminal symbols. Prove that this reduction works.)
+               5.22 Show that A is Turing-recognizable iff A ≤m ATM .
+               5.23 Show that A is decidable iff A ≤m 0∗ 1∗ .
+               5.24 Let J = {w| either w = 0x for some x ∈ ATM , or w = 1y for some y ∈ ATM }.
+                    Show that neither J nor J is Turing-recognizable.
+               5.25 Give an example of an undecidable language B, where B ≤m B.
+               5.26 Define a two-headed finite automaton (2DFA) to be a deterministic finite automa-
+                    ton that has two read-only, bidirectional heads that start at the left-hand end of the
+                    input tape and can be independently controlled to move in either direction. The
+                    tape of a 2DFA is finite and is just large enough to contain the input plus two ad-
+                    ditional blank tape cells, one on the left-hand end and one on the right-hand end,
+                    that serve as delimiters. A 2DFA accepts its input by entering a special accept state.
+                    For example, a 2DFA can recognize the language {an bn cn | n ≥ 0}.
+                                 a. Let A2DFA = {hM, xi| M is a 2DFA and M accepts x}. Show that A2DFA is
+                                    decidable.
+                                 b. Let E2DFA = {hM i| M is a 2DFA and L(M ) = ∅}. Show that E2DFA is not
+                                    decidable.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                                                          PROBLEMS                          241
+
+                 5.27 A two-dimensional finite automaton (2DIM-DFA) is defined as follows. The input
+                      is an m × n rectangle, for any m, n ≥ 2. The squares along the boundary of the
+                      rectangle contain the symbol # and the internal squares contain symbols over the
+                      input alphabet Σ. The transition function δ : Q × (Σ ∪ {#})−→Q × {L, R, U, D}
+                      indicates the next state and the new head position (Left, Right, Up, Down). The
+                      machine accepts when it enters one of the designated accept states. It rejects if it
+                      tries to move off the input rectangle or if it never halts. Two such machines are
+                      equivalent if they accept the same rectangles. Consider the problem of determin-
+                      ing whether two of these machines are equivalent. Formulate this problem as a
+                      language and show that it is undecidable.
+            A?
+                 5.28 Rice’s theorem. Let P be any nontrivial property of the language of a Turing
+                      machine. Prove that the problem of determining whether a given Turing machine’s
+                      language has property P is undecidable.
+                      In more formal terms, let P be a language consisting of Turing machine descrip-
+                      tions where P fulfills two conditions. First, P is nontrivial—it contains some, but
+                      not all, TM descriptions. Second, P is a property of the TM’s language—whenever
+                      L(M1 ) = L(M2 ), we have hM1 i ∈ P iff hM2 i ∈ P . Here, M1 and M2 are any
+                      TMs. Prove that P is an undecidable language.
+                 5.29 Show that both conditions in Problem 5.28 are necessary for proving that P is
+                      undecidable.
+                 5.30 Use Rice’s theorem, which appears in Problem 5.28, to prove the undecidability of
+                      each of the following languages.
+                               A
+                                 a. INFINITE TM = {hM i| M is a TM and L(M ) is an infinite language}.
+                                 b. {hM i| M is a TM and 1011 ∈ L(M )}.
+                                 c. ALLTM = {hM i| M is a TM and L(M ) = Σ∗ }.
+                 5.31 Let                                                                  (
+                                                                                               3x + 1            for odd x
+                                                                             f (x) =
+                                                                                               x/2               for even x
+                            for any natural number x. If you start with an integer x and iterate f , you obtain a
+                            sequence, x, f (x), f (f (x)), . . . . Stop if you ever hit 1. For example, if x = 17, you
+                            get the sequence 17, 52, 26, 13, 40, 20, 10, 5, 16, 8, 4, 2, 1. Extensive computer
+                            tests have shown that every starting point between 1 and a large positive integer
+                            gives a sequence that ends in 1. But the question of whether all positive starting
+                            points end up at 1 is unsolved; it is called the 3x + 1 problem.
+                            Suppose that ATM were decidable by a TM H. Use H to describe a TM that is
+                            guaranteed to state the answer to the 3x + 1 problem.
+                 5.32 Prove that the following two languages are undecidable.
+                                 a. OVERLAP CFG = {hG, Hi| G and H are CFGs where L(G) ∩ L(H) 6= ∅}.
+                                    (Hint: Adapt the hint in Problem 5.21.)
+                                 b. PREFIX-FREECFG = {hGi| G is a CFG where L(G) is prefix-free}.
+                 5.33 Consider the problem of determining whether a PDA accepts some string of the
+                      form {ww| w ∈ {0,1}∗ } . Use the computation history method to show that this
+                      problem is undecidable.
+                 5.34 Let X = {hM, wi| M is a single-tape TM that never modifies the portion of the
+                      tape that contains the input w}. Is X decidable? Prove your answer.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                 242              CHAPTER 5 / REDUCIBILITY
+
+
+                 5.35 Say that a variable A in CFG G is necessary if it appears in every derivation of some
+                      string w ∈ G. Let NECESSARY CFG = {hG, Ai| A is a necessary variable in G}.
+
+                                a. Show that NECESSARY CFG is Turing-recognizable.
+                                b. Show that NECESSARY CFG is undecidable.
+             ?
+                 5.36 Say that a CFG is minimal if none of its rules can be removed without changing the
+                      language generated. Let MIN CFG = {hGi| G is a minimal CFG}.
+
+                                 a. Show that MIN CFG is T-recognizable.
+                                 b. Show that MIN CFG is undecidable.
+
+
+
+
+                 SELECTED SOLUTIONS
+                  5.5 Suppose for a contradiction that ATM ≤m ETM via reduction f . It follows from
+                      the definition of mapping reducibility that ATM ≤m ETM via the same reduction
+                      function f . However, ETM is Turing-recognizable (see the solution to Exercise 4.5)
+                      and ATM is not Turing-recognizable, contradicting Theorem 5.28.
+
+                  5.6 Suppose A ≤m B and B ≤m C. Then there are computable functions f and
+                      g such that x ∈ A ⇐⇒ f (x) ∈ B and y ∈ B ⇐⇒ g(y) ∈ C. Consider the
+                      composition function h(x) = g(f (x)). We can build a TM that computes h as
+                      follows: First, simulate a TM for f (such a TM exists because we assumed that f
+                      is computable) on input x and call the output y. Then simulate a TM for g on y.
+                      The output is h(x) = g(f (x)). Therefore, h is a computable function. Moreover,
+                      x ∈ A ⇐⇒ h(x) ∈ C. Hence A ≤m C via the reduction function h.
+
+                  5.7 Suppose that A ≤m A. Then A ≤m A via the same mapping reduction. Because A
+                      is Turing-recognizable, Theorem 5.28 implies that A is Turing-recognizable, and
+                      then Theorem 4.22 implies that A is decidable.
+
+                  5.8 You need to handle the case where the head is at the leftmost tape cell and attempts
+                      to move left. To do so, add dominos
+
+                                                                                                  h #qa i
+                                                                                                     #rb
+
+                           for every q, r ∈ Q and a, b ∈ Γ, where δ(q, a) = (r, b, L). Additionally, replace the
+                           first domino with
+                                                          h#                    i
+                                                            ##q0 w1 w2 · · · wn
+
+                           to handle the case where the head attempts to move left in the very first move.
+
+
+
+
+ Copyright 2012 Cengage Learning. All Rights Reserved. May not be copied, scanned, or duplicated, in whole or in part. Due to electronic rights, some third party content may be suppressed from the
+eBook and/or eChapter(s). Editorial review has deemed that any suppressed content does not materially affect the overall learning experience. Cengage Learning reserves the right to remove additional
+                                                                   content at any time if subsequent rights restrictions require it.
+                                                                                                               SELECTED SOLUTIONS                                           243
+
+               5.10 Let B = {hM, wi| M is a two-tape TM that writes a nonblank symbol on its second
+                    tape when it is run on w}. Show that ATM reduces to B. Assume for the sake of
+                    contradiction that TM R decides B. Then construct a TM S that uses R to decide
+                    ATM .
+
+                            S = “On input hM, wi:
+                                  1. Use M to construct the following two-tape TM T .
+                                      T = “On input x:
+                                              1. Simulate M on x using the first tape.
+                                              2. If the simulation shows that M accepts, write a non-
+                                                  blank symbol on the second tape.”
+                                  2. Run R on hT, wi to determine whether T on input w writes a
+                                      nonblank symbol on its second tape.
+                                  3. If R accepts, M accepts w, so accept . Otherwise, reject .”
+
+               5.11 Let C = {hM i| M is a two-tape TM that writes a nonblank symbol on its second
+                    tape when it is run on some input}. Show that ATM reduces to C. Assume for the
+                    sake of contradiction that TM R decides C. Construct a TM S that uses R to decide
+                    ATM .
+
+                            S = “On input hM, wi:
+                                  1. Use M and w to construct the following two-tape TM Tw .
+                                      Tw = “On any input:
+                                              1. Simulate M on w using the first tape.
+                                              2. If the simulation shows that M accepts, write a non-
+                                                  blank symbol on the second tape.”
+                                  2. Run R on hTw i to determine whether Tw ever writes a nonblank
+                                      symbol on its second tape.
+                                  3. If R accepts, M accepts w, so accept . Otherwise, reject .”
+
+               5.28 Assume for the sake of contradiction that P is a decidable language satisfying the
+                    properties and let RP be a TM that decides P . We show how to decide ATM using
+                    RP by constructing TM S. First, let T∅ be a TM that always rejects, so L(T∅ ) = ∅.
+                    You may assume that hT∅ i 6∈ P without loss of generality because you could pro-
+                    ceed with P instead of P if hT∅ i ∈ P . Because P is not trivial, there exists a TM T
+                    with hT i ∈ P . Design S to decide ATM using RP ’s ability to distinguish between
+                    T∅ and T .
+
+                            S = “On input hM, wi:
+                                  1. Use M and w to construct the following TM Mw .
+                                      Mw = “On input x:
+                                               1. Simulate M on w. If it halts and rejects, reject .
+                                                  If it accepts, proceed to stage 2.
+                                               2. Simulate T on x. If it accepts, accept .”
+                                  2. Use TM RP to determine whether hMw i ∈ P . If YES, accept .
+                                      If NO, reject .”
+
+                            TM Mw simulates T if M accepts w. Hence L(Mw ) equals L(T ) if M accepts w
+                            and ∅ otherwise. Therefore, hMw i ∈ P iff M accepts w.
+

@@ -1,0 +1,15 @@
+b-a 128
+c-b 144
+d-c 5040
+align a 0
+align c 0
+a ok
+b ok
+c ok
+d ok
+region 0 65536
+  32 A 128 10
+  160 A 144 89
+  304 A 5040 5000
+  5344 A 128 1
+  5472 F 60064
