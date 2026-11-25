@@ -1,0 +1,300 @@
+============================================================
+MTL782 - Assignment 2  |  Viva Question Bank
+============================================================
+
+Sections:
+  A. Data-quality problems faced
+  B. Preprocessing decisions
+  C. Train / test methodology
+  D. Why each classifier behaves the way it does
+  E. Tuning and metrics
+  F. Cross-validation specifics
+  G. Things specific to our design
+  H. Sanity-check questions
+
+
+============================================================
+A. DATA-QUALITY PROBLEMS FACED
+============================================================
+
+Q: What problems did you find in the Dry Bean dataset?
+A: (1) Strong feature redundancy - Area, Perimeter, ConvexArea,
+   EquivDiameter are all derived from size and very correlated.
+   (2) Very different scales - Area is in tens of thousands,
+   Solidity is ~0.99.
+   (3) Class imbalance - Bombay 4 %, Dermason 26 %.
+   (4) No missing values.
+
+Q: And in MNIST?
+A: (1) High dimensionality (784 raw pixels).
+   (2) Pixels not independent (neighbouring pixels are correlated).
+   (3) Pixel values not Gaussian - they pile up near 0 (background)
+       and 255 (ink).
+   (4) Full dataset is too large to grid-search comfortably.
+
+Q: Did you handle the imbalance in Dry Bean?
+A: Yes - three things:
+   - stratified train/test split,
+   - scoring on f1_macro instead of accuracy,
+   - including class_weight='balanced' in the grids of DT and RF.
+
+Q: Did the redundant features hurt anything?
+A: They violate Naive Bayes' independence assumption - that's why
+   NB is the weakest on Dry Bean. Trees and ensembles cope fine
+   because they're not affected by correlated inputs.
+
+Q: Why didn't you do PCA / drop redundant features?
+A: Trees are scale- and correlation-invariant, and KNN/ANN/NB
+   worked well enough after standard scaling. Removing features
+   would also remove minor information; we'd only do it for
+   interpretability or if compute were a concern.
+
+Q: Were there outliers?
+A: The size features (Area, Perimeter, etc.) have long right
+   tails, but the test scores are stable so we didn't need
+   explicit outlier removal. Standardisation handled the scale
+   issue.
+
+
+============================================================
+B. PREPROCESSING DECISIONS
+============================================================
+
+Q: Why standardise (StandardScaler) and not normalise (MinMaxScaler)?
+A: StandardScaler centres each feature at 0 with unit variance -
+   it doesn't get crushed by a few outliers, unlike MinMax which
+   is highly outlier-sensitive.
+
+Q: Why not scale tree models?
+A: Trees split on thresholds - only the *order* of values matters,
+   not their magnitude. Scaling is a no-op for them.
+
+Q: Why fit the scaler only on the training set?
+A: Otherwise you leak test-set statistics into preprocessing,
+   which biases your evaluation upward.
+
+Q: Why a *new* StandardScaler for the full MNIST?
+A: The subset scaler was fit on 5 600 images - its mean/std isn't
+   representative of the 60 000-image training set. Each training
+   set should fit its own scaler.
+
+Q: Why label-encode the Dry Bean target for PyTorch but not for sklearn?
+A: sklearn classifiers handle string labels natively. PyTorch's
+   CrossEntropyLoss expects integer class indices, so we used
+   LabelEncoder.
+
+
+============================================================
+C. TRAIN / TEST METHODOLOGY
+============================================================
+
+Q: Why stratified split?
+A: Keeps the class proportions in train and test the same as in
+   the full data - essential for imbalanced Q1, prevents flukes
+   for the small Q2 subset.
+
+Q: Why an 80/20 split?
+A: Standard rule of thumb that gives enough test samples for
+   stable accuracy estimates while keeping most of the data for
+   training.
+
+Q: Why 5-fold CV in Q1 and only 3-fold in Q2?
+A: Fewer folds in Q2 because grid search runs 5 classifiers x
+   many configurations; 3-fold cuts compute by ~40 % with similar
+   reliability. Q1's data is small enough that 5-fold is cheap.
+
+Q: Why a *separate inner* validation split for the PyTorch ANN tuning?
+A: PyTorch isn't a sklearn estimator so we can't use cross_val_score.
+   A held-out 20 % validation slice is the simplest substitute.
+
+Q: What does random_state=42 do?
+A: Fixes the pseudo-random shuffling so the same split, same model
+   initialisation, and same CV folds happen every run - makes
+   results reproducible.
+
+
+============================================================
+D. WHY EACH CLASSIFIER BEHAVES THE WAY IT DOES
+============================================================
+
+Q: Why is Naive Bayes so weak on MNIST?
+A: Two assumption violations:
+   (1) pixels aren't conditionally independent given the digit
+       class (neighbouring pixels are highly correlated);
+   (2) pixel intensities aren't Gaussian.
+   So NB picks the wrong likelihood and miscalibrates badly.
+
+Q: Why does Naive Bayes get *worse* with more data?
+A: More samples just sharpen the wrong distribution. Its bias is
+   too high - additional data can't fix a structural model error.
+   Textbook "high bias, low variance" failure mode.
+
+Q: Why is a single Decision Tree weak on MNIST but Random Forest strong?
+A: A single tree is unstable and high-variance on 784-D data -
+   every split is one of many similar pixels. RF averages many
+   decorrelated trees, dropping variance dramatically (bias-
+   variance trade-off).
+
+Q: Why does KNN need scaled features?
+A: KNN uses Euclidean / Manhattan distances. An unscaled feature
+   with a much larger range (Area in pixels) dominates the distance,
+   drowning out everything else.
+
+Q: Why is KNN slow on full MNIST?
+A: Training is O(1) (it just stores points), but PREDICTION is
+   O(n_train * n_test * d). For 60 000 * 10 000 * 784 that's
+   billions of operations - that's why Q2 took 715 s.
+
+Q: Why is ANN/MLP best on MNIST?
+A: Neural nets can learn arbitrary non-linear feature combinations.
+   With enough hidden units, an MLP can approximate the digit-
+   classification boundary far better than a Gaussian-shape model
+   or a simple distance-based classifier.
+
+
+============================================================
+E. TUNING AND METRICS
+============================================================
+
+Q: Difference between Grid and Randomized search?
+A: Grid evaluates every combination of a discrete grid (exhaustive).
+   Randomized samples n_iter configurations from given distributions
+   (cheap, scales to continuous parameters).
+
+Q: When does Randomized beat Grid?
+A: When the search space has continuous parameters or is so large
+   that an exhaustive grid is unfeasible. With n_iter=15 on
+   continuous alpha and lr_init we covered a far wider region than
+   a comparable grid.
+
+Q: When does Grid win?
+A: Tiny discrete spaces - like KNN's (k, p, weights) triplet -
+   where every combination matters and 28 fits is cheap.
+
+Q: Why F1-macro and not F1-weighted?
+A: Macro treats every class equally - it's the right choice for
+   imbalanced data because under-represented classes count fully.
+   Weighted averages by support, so the majority class still
+   dominates.
+
+Q: What is log-loss?
+A: The negative log-likelihood of the true labels under the
+   predicted probabilities. Penalises confident wrong predictions
+   strongly. Sensitive to CALIBRATION, not just rank.
+
+Q: What does ROC-AUC measure in multi-class?
+A: We use one-vs-rest: build 10 binary problems (digit k vs the
+   rest), compute AUC for each, average. AUC is threshold-free -
+   it measures how well the model RANKS class-k examples above
+   non-k examples.
+
+Q: Why is ANN's log-loss best on the subset even though RF has
+   higher accuracy?
+A: RF outputs are averaged tree votes - they tend to be over-
+   confident or jumpy. ANN is trained directly with cross-entropy
+   loss, so its softmax probabilities are better calibrated.
+   Accuracy and log-loss measure different things.
+
+Q: Why didn't the tuned models beat the defaults by much?
+A: RF, KNN with sensible defaults are already close to their
+   ceiling on a relatively easy dataset. Tuning shaved
+   ~0.2-2.5 %. Big gains usually come from feature engineering
+   or model class, not hyperparameters.
+
+
+============================================================
+F. CROSS-VALIDATION SPECIFICS
+============================================================
+
+Q: What is k-fold CV?
+A: Split training data into k equal folds. For each fold, train
+   on the other k-1 and score on the held-out fold. Average the
+   k scores -> robust performance estimate.
+
+Q: Why stratified k-fold?
+A: Each fold preserves class proportions - same reason as
+   stratified split, more reliable on imbalanced data.
+
+Q: Why CV + a separate test set?
+A: CV chooses the best hyperparameters on the training set; the
+   held-out test set gives one final unbiased number. If you tune
+   on the test set, you leak it.
+
+Q: What is var_smoothing in GaussianNB?
+A: A small constant added to the variance of every feature to
+   avoid division by zero / numerical instability when a feature
+   has near-zero variance in some class.
+
+
+============================================================
+G. THINGS SPECIFIC TO OUR DESIGN
+============================================================
+
+Q: Why subset MNIST to 7 000 first and then retrain on full?
+A: To make grid + random search finish in minutes on Kaggle.
+   Hyperparameters generalise from a stratified subset, so the
+   cheap tuning gave near-optimal configs that we then refit on
+   the full 60k.
+
+Q: Did the subset hyperparameters transfer well?
+A: Yes - every model gained accuracy when retrained on the full
+   60k (DT +9.3 %, KNN +3.2 %, RF +2.1 %, ANN +3.8 %). Only NB
+   regressed, but that's a model issue, not a tuning issue.
+
+Q: Why bump MLP's max_iter from 30 to 200?
+A: At 30 iterations on the subset the loss hadn't converged
+   (sklearn raised ConvergenceWarning). On 60k samples it would
+   be even further from the optimum, so we gave it more iterations.
+
+Q: Why use PyTorch instead of MLPClassifier?
+A: Two reasons:
+   (1) GPU support - PyTorch trains the ANN on the T4 in ~1
+       minute vs several minutes on CPU.
+   (2) Full control over training loop (custom dropout, batch
+       size, optimizer).
+
+Q: Why batch size 128 in Q1 and 256 in Q2 final?
+A: Q2 final has 60k samples - bigger batches give better GPU
+   utilisation and faster epochs. Q1's 10k can fit smaller batches
+   without slowdown.
+
+Q: Are 40 epochs enough for the ANN?
+A: Plenty for these dataset sizes - both training and validation
+   loss flatten well before epoch 40. More would risk overfitting
+   unless we add explicit regularisation.
+
+
+============================================================
+H. SANITY-CHECK QUESTIONS
+============================================================
+
+Q: What if you had imbalanced MNIST?
+A: Use f1_macro, class_weight='balanced', oversampling of minority
+   classes (e.g. SMOTE), or focal loss for the ANN.
+
+Q: What if features had missing values?
+A: Numerical: median or mean imputation, possibly with an
+   indicator feature.
+   Categorical: most-frequent or "missing" category.
+   Or use a model that handles them natively (HistGradientBoosting).
+
+Q: How would you scale this to the full 70k MNIST + bigger model?
+A: Switch to a CNN; it exploits spatial structure (which our flat
+   MLP throws away). Plus mini-batch SGD on GPU.
+
+Q: What's the bias-variance trade-off in your results?
+A: Naive Bayes      -> high bias (over-simplified, underfits).
+   Single DT MNIST  -> high variance (different trains give
+                       very different trees).
+   Random Forest    -> reduces variance by averaging.
+   Big ANN          -> low bias, controlled variance via
+                       weight-decay + dropout.
+
+Q: What does n_jobs=-1 do?
+A: Tells sklearn to use all available CPU cores in parallel for
+   fit / predict.
+
+
+============================================================
+END
+============================================================
